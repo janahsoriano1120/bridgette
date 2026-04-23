@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
 import { supabase } from './lib/supabase'
 import LoginScreen from './app/auth/login'
+import PatientHome from './app/patient/home'
 
 export default function App() {
   const [loading, setLoading] = useState(true)
@@ -54,12 +55,5 @@ export default function App() {
   }
 
   // Logged in — show role
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAF8F4' }}>
-      <Text style={{ fontFamily: 'serif', fontSize: 32, color: '#C8524A' }}>bridgette</Text>
-      <Text style={{ fontSize: 16, color: '#7A7A9A', marginTop: 8 }}>
-        Welcome back · {role}
-      </Text>
-    </View>
-  )
+  return <PatientHome />
 }
