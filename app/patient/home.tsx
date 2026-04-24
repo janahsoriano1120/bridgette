@@ -13,6 +13,8 @@ import * as DocumentPicker from 'expo-document-picker'
 import { useAuthStore } from '../../store/authStore'
 import { supabase } from '../../lib/supabase'
 import { extractLabValues } from '../../lib/ocr'
+import RecordDetail from './record'
+import TrendsScreen from './trends'
 
 type MedicalRecord = {
   id: string
@@ -29,6 +31,8 @@ export default function PatientHome() {
   const [records, setRecords] = useState<MedicalRecord[]>([])
   const [loadingRecords, setLoadingRecords] = useState(true)
   const [processingText, setProcessingText] = useState('')
+  const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null)
+  const [showTrends, setShowTrends] = useState(false)
 
   useEffect(() => {
     if (session?.user.id) {
@@ -106,8 +110,6 @@ export default function PatientHome() {
       const userId = session?.user.id!
       const extension = contentType === 'application/pdf' ? 'pdf' : 'jpg'
       const filePath = `${userId}/${Date.now()}.${extension}`
-
-      // Upload to storage
       const response = await fetch(uri)
       const blob = await response.blob()
 
@@ -120,7 +122,6 @@ export default function PatientHome() {
         return
       }
 
-      // Run OCR on images only
       let labFacility = 'Unknown'
       let recordDate = new Date().toISOString().split('T')[0]
       let extractedValues: any[] = []
@@ -137,7 +138,6 @@ export default function PatientHome() {
         }
       }
 
-      // Save medical record
       setProcessingText('Saving...')
       const { data: recordData, error: dbError } = await supabase
         .from('medical_records')
@@ -156,7 +156,6 @@ export default function PatientHome() {
         return
       }
 
-      // Save extracted lab values
       if (extractedValues.length > 0 && recordData) {
         const labValueRows = extractedValues.map((v) => ({
           record_id: recordData.id,
@@ -169,7 +168,6 @@ export default function PatientHome() {
           is_flagged: v.is_flagged,
           record_date: recordDate,
         }))
-
         await supabase.from('lab_values').insert(labValueRows)
       }
 
@@ -189,6 +187,21 @@ export default function PatientHome() {
     }
   }
 
+  if (showTrends) {
+    return <TrendsScreen onBack={() => setShowTrends(false)} />
+  }
+
+  if (selectedRecord) {
+    return (
+      <RecordDetail
+        recordId={selectedRecord.id}
+        labFacility={selectedRecord.lab_facility}
+        recordDate={selectedRecord.record_date}
+        onBack={() => setSelectedRecord(null)}
+      />
+    )
+  }
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -204,6 +217,19 @@ export default function PatientHome() {
           {records.length} record{records.length !== 1 ? 's' : ''} uploaded
         </Text>
       </View>
+
+      {/* Trends button */}
+      <TouchableOpacity
+        style={styles.trendsBtn}
+        onPress={() => setShowTrends(true)}
+      >
+        <Text style={styles.trendsBtnIcon}>📈</Text>
+        <View style={styles.trendsBtnInfo}>
+          <Text style={styles.trendsBtnTitle}>View Lab Trends</Text>
+          <Text style={styles.trendsBtnSub}>Track how your values change over time</Text>
+        </View>
+        <Text style={styles.trendsBtnArrow}>→</Text>
+      </TouchableOpacity>
 
       {uploading && (
         <View style={styles.processingBanner}>
@@ -225,7 +251,11 @@ export default function PatientHome() {
       ) : (
         <View style={styles.recordsList}>
           {records.map((record) => (
-            <View key={record.id} style={styles.recordCard}>
+            <TouchableOpacity
+              key={record.id}
+              style={styles.recordCard}
+              onPress={() => setSelectedRecord(record)}
+            >
               <View style={styles.recordLeft}>
                 <Text style={styles.recordIcon}>📄</Text>
               </View>
@@ -239,7 +269,7 @@ export default function PatientHome() {
               ]}>
                 <Text style={styles.statusText}>{record.status}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}
@@ -277,6 +307,23 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 16 },
   sectionTitle: { fontFamily: 'serif', fontSize: 26, color: '#1A1A2E', marginBottom: 6 },
   sectionSub: { fontSize: 14, color: '#7A7A9A', lineHeight: 20 },
+  trendsBtn: {
+    marginHorizontal: 24,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E4DC',
+    gap: 12,
+  },
+  trendsBtnIcon: { fontSize: 24 },
+  trendsBtnInfo: { flex: 1 },
+  trendsBtnTitle: { fontSize: 14, fontWeight: '600', color: '#1A1A2E', marginBottom: 2 },
+  trendsBtnSub: { fontSize: 12, color: '#7A7A9A' },
+  trendsBtnArrow: { fontSize: 18, color: '#7A7A9A' },
   processingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
