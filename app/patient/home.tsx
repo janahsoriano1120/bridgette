@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker'
 import * as DocumentPicker from 'expo-document-picker'
 import { useAuthStore } from '../../store/authStore'
 import { supabase } from '../../lib/supabase'
+import { extractLabValues } from '../../lib/ocr'
 
 type MedicalRecord = {
   id: string
@@ -27,6 +28,7 @@ export default function PatientHome() {
   const [uploading, setUploading] = useState(false)
   const [records, setRecords] = useState<MedicalRecord[]>([])
   const [loadingRecords, setLoadingRecords] = useState(true)
+  const [processingText, setProcessingText] = useState('')
 
   useEffect(() => {
     if (session?.user.id) {
@@ -41,9 +43,6 @@ export default function PatientHome() {
       .select('*')
       .eq('patient_id', userId)
       .order('created_at', { ascending: false })
-
-    console.log('Records fetched:', data)
-    console.log('Fetch error:', error)
 
     if (!error && data) setRecords(data)
     setLoadingRecords(false)
@@ -101,10 +100,14 @@ export default function PatientHome() {
 
   async function uploadFile(uri: string, contentType: string) {
     setUploading(true)
+    setProcessingText('Uploading...')
+
     try {
       const userId = session?.user.id!
       const extension = contentType === 'application/pdf' ? 'pdf' : 'jpg'
       const filePath = `${userId}/${Date.now()}.${extension}`
+
+      // Upload to storage
       const response = await fetch(uri)
       const blob = await response.blob()
 
@@ -117,28 +120,72 @@ export default function PatientHome() {
         return
       }
 
-      const { error: dbError } = await supabase
+      // Run OCR on images only
+      let labFacility = 'Unknown'
+      let recordDate = new Date().toISOString().split('T')[0]
+      let extractedValues: any[] = []
+
+      if (contentType === 'image/jpeg') {
+        setProcessingText('Reading your lab results...')
+        try {
+          const ocrResult = await extractLabValues(uri)
+          labFacility = ocrResult.lab_facility
+          recordDate = ocrResult.record_date
+          extractedValues = ocrResult.values
+        } catch (ocrError) {
+          console.log('OCR failed:', ocrError)
+        }
+      }
+
+      // Save medical record
+      setProcessingText('Saving...')
+      const { data: recordData, error: dbError } = await supabase
         .from('medical_records')
         .insert({
           patient_id: userId,
           photo_url: filePath,
-          status: 'processing',
-          lab_facility: 'Unknown',
-          record_date: new Date().toISOString().split('T')[0],
+          status: extractedValues.length > 0 ? 'verified' : 'processing',
+          lab_facility: labFacility,
+          record_date: recordDate,
         })
+        .select()
+        .single()
 
       if (dbError) {
         Alert.alert('Save failed', dbError.message)
         return
       }
 
+      // Save extracted lab values
+      if (extractedValues.length > 0 && recordData) {
+        const labValueRows = extractedValues.map((v) => ({
+          record_id: recordData.id,
+          patient_id: userId,
+          test_name: v.test_name,
+          value: v.value,
+          unit: v.unit,
+          reference_low: v.reference_low,
+          reference_high: v.reference_high,
+          is_flagged: v.is_flagged,
+          record_date: recordDate,
+        }))
+
+        await supabase.from('lab_values').insert(labValueRows)
+      }
+
       await fetchRecords(userId)
-      Alert.alert('Success!', 'Your lab result has been uploaded.')
+      Alert.alert(
+        'Done!',
+        extractedValues.length > 0
+          ? `Found ${extractedValues.length} lab values from ${labFacility}`
+          : 'Lab result uploaded. Values will be processed shortly.'
+      )
     } catch (e) {
       Alert.alert('Error', 'Something went wrong. Please try again.')
       console.log(e)
     } finally {
       setUploading(false)
+      setProcessingText('')
     }
   }
 
@@ -157,6 +204,13 @@ export default function PatientHome() {
           {records.length} record{records.length !== 1 ? 's' : ''} uploaded
         </Text>
       </View>
+
+      {uploading && (
+        <View style={styles.processingBanner}>
+          <ActivityIndicator color="#C8524A" size="small" />
+          <Text style={styles.processingText}>{processingText}</Text>
+        </View>
+      )}
 
       {loadingRecords ? (
         <ActivityIndicator style={{ marginTop: 40 }} color="#C8524A" />
@@ -223,6 +277,19 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 16 },
   sectionTitle: { fontFamily: 'serif', fontSize: 26, color: '#1A1A2E', marginBottom: 6 },
   sectionSub: { fontSize: 14, color: '#7A7A9A', lineHeight: 20 },
+  processingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    marginHorizontal: 24,
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E8E4DC',
+  },
+  processingText: { fontSize: 14, color: '#1A1A2E' },
   emptyState: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: 40 },
   emptyIcon: { fontSize: 48, marginBottom: 16 },
   emptyTitle: { fontFamily: 'serif', fontSize: 20, color: '#1A1A2E', marginBottom: 8 },
