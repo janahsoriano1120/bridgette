@@ -206,7 +206,7 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': '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',
+            'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_KEY ?? '',
             'anthropic-version': '2023-06-01',
             'anthropic-dangerous-direct-browser-access': 'true',
           },
