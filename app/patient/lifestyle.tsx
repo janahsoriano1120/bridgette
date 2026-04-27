@@ -86,6 +86,8 @@ type ActivityEntry = {
   log_date: string
 }
 
+const ANTHROPIC_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_KEY ?? ''
+
 export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
   const session = useAuthStore((state) => state.session)
   const [activeTab, setActiveTab] = useState<Tab>('food')
@@ -196,7 +198,6 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
         if (!uploadError) photoUrl = filePath
       }
 
-      // AI analysis
       let aiNotes: string | null = null
       let healthFlag = 'moderate'
       let analysis: any = null
@@ -206,7 +207,7 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_KEY ?? '',
+            'x-api-key': ANTHROPIC_KEY,
             'anthropic-version': '2023-06-01',
             'anthropic-dangerous-direct-browser-access': 'true',
           },
@@ -229,10 +230,15 @@ Return ONLY valid JSON with no other text:
           }),
         })
         const data = await response.json()
-        const text = data.content[0].text.replace(/```json|```/g, '').trim()
-        analysis = JSON.parse(text)
-        aiNotes = analysis.ai_notes
-        healthFlag = analysis.health_flag
+        console.log('API response:', JSON.stringify(data))
+        if (data.content && data.content[0]) {
+          const text = data.content[0].text.replace(/```json|```/g, '').trim()
+          analysis = JSON.parse(text)
+          aiNotes = analysis.ai_notes
+          healthFlag = analysis.health_flag
+        } else {
+          console.log('No content in response:', data)
+        }
       } catch (e) {
         console.log('AI analysis skipped:', e)
         healthFlag = isFastFood ? 'unhealthy' : 'moderate'
@@ -428,7 +434,6 @@ Return ONLY valid JSON with no other text:
 
       <ScrollView style={styles.content}>
 
-        {/* ── FOOD TAB ── */}
         {activeTab === 'food' && (
           <View>
             {foodEntries.length > 0 && (
@@ -596,7 +601,6 @@ Return ONLY valid JSON with no other text:
           </View>
         )}
 
-        {/* ── SLEEP TAB ── */}
         {activeTab === 'sleep' && (
           <View>
             {sleepEntries.length > 0 && (
@@ -685,7 +689,6 @@ Return ONLY valid JSON with no other text:
           </View>
         )}
 
-        {/* ── WORKOUT TAB ── */}
         {activeTab === 'workout' && (
           <View>
             {activityEntries.length > 0 && (

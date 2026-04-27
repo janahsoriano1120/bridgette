@@ -16,6 +16,7 @@ import { supabase } from '../../lib/supabase'
 import TrendsScreen from './trends'
 import LifestyleScreen from './lifestyle'
 import MedicalRecordsScreen from './medicalrecords'
+import ShareLinkScreen from './sharelink'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const DRAWER_WIDTH = 220
@@ -37,7 +38,7 @@ export default function PatientHome() {
   const signOut = useAuthStore((state) => state.signOut)
   const session = useAuthStore((state) => state.session)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [activePage, setActivePage] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle'>('dashboard')
+  const [activePage, setActivePage] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle' | 'share'>('dashboard')
   const [period, setPeriod] = useState<Period>('daily')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [refreshing, setRefreshing] = useState(false)
@@ -80,36 +81,19 @@ export default function PatientHome() {
   }
 
   async function fetchMacros(userId: string) {
-    let query = supabase
-      .from('food_logs')
-      .select('protein_g, carbs_g, fat_g, fiber_g')
-      .eq('patient_id', userId)
-
-    if (period === 'daily') {
-      query = query.eq('log_date', selectedDate)
-    } else if (period === 'weekly') {
-      query = query.gte('log_date', new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0])
-    } else {
-      query = query.gte('log_date', new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0])
-    }
-
+    let query = supabase.from('food_logs').select('protein_g, carbs_g, fat_g, fiber_g').eq('patient_id', userId)
+    if (period === 'daily') query = query.eq('log_date', selectedDate)
+    else if (period === 'weekly') query = query.gte('log_date', new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0])
+    else query = query.gte('log_date', new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0])
     const { data } = await query
-
-    if (!data || data.length === 0) {
-      setHasMacroData(false)
-      setMacros({ protein: 0, carbs: 0, fat: 0, fiber: 0 })
-      return
-    }
-
+    if (!data || data.length === 0) { setHasMacroData(false); return }
     const totals = data.reduce((acc, row) => ({
       protein: acc.protein + (row.protein_g || 0),
       carbs: acc.carbs + (row.carbs_g || 0),
       fat: acc.fat + (row.fat_g || 0),
       fiber: acc.fiber + (row.fiber_g || 0),
     }), { protein: 0, carbs: 0, fat: 0, fiber: 0 })
-
     const total = totals.protein + totals.carbs + totals.fat + totals.fiber
-
     if (total > 0) {
       setHasMacroData(true)
       setMacros({
@@ -120,21 +104,14 @@ export default function PatientHome() {
       })
     } else {
       setHasMacroData(false)
-      setMacros({ protein: 0, carbs: 0, fat: 0, fiber: 0 })
     }
   }
 
   async function fetchSleep(userId: string) {
-    let query = supabase
-      .from('sleep_logs')
-      .select('hours_slept, log_date')
-      .eq('patient_id', userId)
-      .order('log_date', { ascending: true })
-
+    let query = supabase.from('sleep_logs').select('hours_slept, log_date').eq('patient_id', userId).order('log_date', { ascending: true })
     if (period === 'daily') query = query.eq('log_date', selectedDate)
     else if (period === 'weekly') query = query.gte('log_date', new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0])
     else query = query.gte('log_date', new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0])
-
     const { data } = await query
     if (data && data.length > 0) {
       setSleepData(data.map(row => ({
@@ -151,7 +128,6 @@ export default function PatientHome() {
       .eq('patient_id', userId)
       .eq('test_name', selectedTest)
       .order('record_date', { ascending: true })
-
     if (data && data.length > 0) {
       setTrendData(data.map(row => ({
         label: new Date(row.record_date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
@@ -198,14 +174,9 @@ export default function PatientHome() {
     const strokeW = 18
     const circumference = 2 * Math.PI * r
     const colors = ['#3D7A5E', '#C8524A', '#B5720A', '#2C5FAB']
-    const values = hasMacroData
-      ? [macros.protein, macros.carbs, macros.fat, macros.fiber]
-      : [25, 25, 25, 25]
+    const values = hasMacroData ? [macros.protein, macros.carbs, macros.fat, macros.fiber] : [25, 25, 25, 25]
+    const displayVals = hasMacroData ? [macros.protein, macros.carbs, macros.fat, macros.fiber] : [0, 0, 0, 0]
     const labels = ['Protein', 'Carbs', 'Fat', 'Fiber']
-    const displayVals = hasMacroData
-      ? [macros.protein, macros.carbs, macros.fat, macros.fiber]
-      : [0, 0, 0, 0]
-
     let offset = 0
     const segments = values.map((val, i) => {
       const dash = (val / 100) * circumference
@@ -214,27 +185,17 @@ export default function PatientHome() {
       offset += val
       return { dash, gap, rotate, color: hasMacroData ? colors[i] : '#E8E4DC', label: labels[i], val: displayVals[i] }
     })
-
     const dateLabel = formatDate(selectedDate)
     const shortLabel = dateLabel.length > 9 ? dateLabel.substring(0, 8) : dateLabel
-
     return (
       <View style={styles.donutContainer}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {segments.map((seg, i) => (
-            <Circle key={i} cx={cx} cy={cy} r={r} fill="none"
-              stroke={seg.color} strokeWidth={strokeW}
-              strokeDasharray={`${seg.dash} ${seg.gap}`}
-              transform={`rotate(${seg.rotate} ${cx} ${cy})`}
-              strokeLinecap="butt"
-            />
+            <Circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color} strokeWidth={strokeW}
+              strokeDasharray={`${seg.dash} ${seg.gap}`} transform={`rotate(${seg.rotate} ${cx} ${cy})`} strokeLinecap="butt" />
           ))}
-          <SvgText x={cx} y={cy - 5} textAnchor="middle" fontSize="10" fill="#1A1A2E" fontWeight="bold">
-            {shortLabel}
-          </SvgText>
-          <SvgText x={cx} y={cy + 9} textAnchor="middle" fontSize="9" fill="#7A7A9A">
-            {hasMacroData ? 'Macros' : 'No data'}
-          </SvgText>
+          <SvgText x={cx} y={cy - 5} textAnchor="middle" fontSize="10" fill="#1A1A2E" fontWeight="bold">{shortLabel}</SvgText>
+          <SvgText x={cx} y={cy + 9} textAnchor="middle" fontSize="9" fill="#7A7A9A">{hasMacroData ? 'Macros' : 'No data'}</SvgText>
         </Svg>
         <View style={styles.donutLegend}>
           {segments.map((seg, i) => (
@@ -269,7 +230,6 @@ export default function PatientHome() {
     const toY = (val: number) => padTop + ((maxVal - val) / (maxVal - minVal)) * innerH
     const linePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(d.value).toFixed(1)}`).join(' ')
     const areaPath = linePath + ` L${toX(data.length - 1).toFixed(1)},${(chartH - padBottom).toFixed(1)} L${toX(0).toFixed(1)},${(chartH - padBottom).toFixed(1)} Z`
-
     return (
       <Svg width={chartW} height={chartH}>
         <Defs>
@@ -294,12 +254,12 @@ export default function PatientHome() {
   if (activePage === 'records') return <MedicalRecordsScreen onBack={() => setActivePage('dashboard')} />
   if (activePage === 'trends') return <TrendsScreen onBack={() => setActivePage('dashboard')} />
   if (activePage === 'lifestyle') return <LifestyleScreen onBack={() => setActivePage('dashboard')} />
+  if (activePage === 'share') return <ShareLinkScreen onBack={() => setActivePage('dashboard')} />
 
   return (
     <View style={styles.root}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Top bar */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={openDrawer} style={styles.hamburger}>
           <View style={styles.hLine} />
@@ -308,15 +268,14 @@ export default function PatientHome() {
         </TouchableOpacity>
         <Text style={styles.topBarLogo}>B</Text>
         <Text style={styles.topBarTitle}>Dashboard</Text>
-        <TouchableOpacity onPress={onRefresh} style={{ marginRight: 12 }}>
-          <Text style={{ fontSize: 20 }}>{refreshing ? '⏳' : '🔄'}</Text>
+        <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
+          <Text style={styles.refreshIcon}>{refreshing ? '⏳' : '🔄'}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={signOut}>
           <Text style={styles.signOutText}>Sign out</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Period + Date controls */}
       <View style={styles.controls}>
         <View style={styles.periodRow}>
           {(['daily', 'weekly', 'annual'] as Period[]).map(p => (
@@ -343,11 +302,8 @@ export default function PatientHome() {
       <ScrollView
         style={styles.dashboard}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C8524A" colors={['#C8524A']} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C8524A" colors={['#C8524A']} />}
       >
-
         {/* TRENDS */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -359,30 +315,20 @@ export default function PatientHome() {
               <Text style={styles.testSelectorArrow}>{testPickerOpen ? '▲' : '▼'}</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Test picker dropdown */}
           {testPickerOpen && (
             <View style={styles.testDropdown}>
               {AVAILABLE_TESTS.map(test => (
                 <TouchableOpacity
                   key={test}
                   style={[styles.testDropdownItem, selectedTest === test && styles.testDropdownItemActive]}
-                  onPress={() => {
-                    setSelectedTest(test)
-                    setTestPickerOpen(false)
-                  }}
+                  onPress={() => { setSelectedTest(test); setTestPickerOpen(false) }}
                 >
-                  <Text style={[styles.testDropdownText, selectedTest === test && styles.testDropdownTextActive]}>
-                    {test}
-                  </Text>
+                  <Text style={[styles.testDropdownText, selectedTest === test && styles.testDropdownTextActive]}>{test}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           )}
-
-          <View style={{ marginTop: 8 }}>
-            {renderLineChart(trendData, '#3D7A5E')}
-          </View>
+          <View style={{ marginTop: 8 }}>{renderLineChart(trendData, '#3D7A5E')}</View>
           <TouchableOpacity onPress={() => setActivePage('trends')} style={styles.cardLink}>
             <Text style={styles.cardLinkText}>View full trends →</Text>
           </TouchableOpacity>
@@ -399,9 +345,7 @@ export default function PatientHome() {
           <Text style={styles.cardSub}>
             {period === 'daily' ? formatDate(selectedDate) : period === 'weekly' ? 'This week' : 'This year'} · Macro breakdown
           </Text>
-          {!hasMacroData && (
-            <Text style={styles.noDataNote}>No meals logged for this period yet</Text>
-          )}
+          {!hasMacroData && <Text style={styles.noDataNote}>No meals logged for this period yet</Text>}
           {renderDonut()}
         </View>
 
@@ -417,9 +361,7 @@ export default function PatientHome() {
             <View style={[styles.legendDot, { backgroundColor: '#9B59B6' }]} />
             <Text style={styles.legendText}>Duration (hours)</Text>
           </View>
-          <View style={{ marginTop: 8 }}>
-            {renderLineChart(sleepData, '#9B59B6')}
-          </View>
+          <View style={{ marginTop: 8 }}>{renderLineChart(sleepData, '#9B59B6')}</View>
         </View>
 
         {/* SUMMARY */}
@@ -432,12 +374,10 @@ export default function PatientHome() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Overlay */}
       {drawerOpen && (
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeDrawer} />
       )}
 
-      {/* Drawer */}
       <Animated.View style={[styles.drawer, { transform: [{ translateX: drawerAnim }] }]}>
         <View style={styles.drawerInner}>
           <View style={styles.drawerHeader}>
@@ -448,31 +388,31 @@ export default function PatientHome() {
           </View>
 
           <View style={styles.drawerSection}>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('lifestyle')}>
-              <Text style={styles.drawerItemText}>🍽 Logged Foods</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('records')}>
-              <Text style={styles.drawerItemText}>🧪 Medical Records</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('trends')}>
-              <Text style={styles.drawerItemText}>📈 Lab Trends</Text>
-            </TouchableOpacity>
-          </View>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('lifestyle')}>
+    <Text style={styles.drawerItemText}>🍽 Logged Foods</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('records')}>
+    <Text style={styles.drawerItemText}>🧪 Medical Records</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('trends')}>
+    <Text style={styles.drawerItemText}>📈 Lab Trends</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+    <Text style={styles.drawerItemText}>👥 Care Team</Text>
+  </TouchableOpacity>
+</View>
 
-          <View style={styles.drawerDivider} />
+<View style={styles.drawerDivider} />
 
-          <View style={styles.drawerSection}>
-            <Text style={styles.drawerSectionLabel}>CARE TEAM</Text>
-            <View style={styles.drawerItem}>
-              <Text style={styles.drawerItemText}>🩺 Medical</Text>
-            </View>
-            <View style={styles.drawerItem}>
-              <Text style={styles.drawerItemText}>🥗 Nutritionist</Text>
-            </View>
-            <View style={styles.drawerItem}>
-              <Text style={styles.drawerItemText}>🎗 Oncology</Text>
-            </View>
-          </View>
+<View style={styles.drawerSection}>
+  <Text style={styles.drawerSectionLabel}>SHARE HEALTH LINK</Text>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+    <Text style={styles.drawerItemText}>🔗 Share with Doctor</Text>
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+    <Text style={styles.drawerItemText}>🔗 External Link</Text>
+  </TouchableOpacity>
+</View>
 
           <View style={styles.drawerBottom}>
             <TouchableOpacity onPress={signOut} style={styles.drawerSignOut}>
@@ -496,12 +436,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E8E4DC',
-    gap: 10,
   },
-  hamburger: { padding: 4, gap: 5, justifyContent: 'center' },
+  hamburger: { marginRight: 10 },
   hLine: { width: 22, height: 2, backgroundColor: '#1A1A2E', borderRadius: 1, marginBottom: 4 },
-  topBarLogo: { fontFamily: 'serif', fontSize: 22, color: '#3D7A5E', fontWeight: '700' },
+  topBarLogo: { fontFamily: 'serif', fontSize: 22, color: '#3D7A5E', fontWeight: '700', marginRight: 8 },
   topBarTitle: { fontSize: 16, fontWeight: '600', color: '#1A1A2E', flex: 1 },
+  refreshBtn: { marginRight: 12 },
+  refreshIcon: { fontSize: 18 },
   signOutText: { fontSize: 12, color: '#7A7A9A' },
   controls: {
     backgroundColor: '#fff',
@@ -509,9 +450,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E8E4DC',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    gap: 10,
   },
-  periodRow: { flexDirection: 'row', gap: 8 },
+  periodRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   periodBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, backgroundColor: '#F4F2EE', borderWidth: 1, borderColor: '#E8E4DC' },
   periodBtnActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
   periodBtnText: { fontSize: 12, fontWeight: '600', color: '#7A7A9A' },
@@ -532,29 +472,10 @@ const styles = StyleSheet.create({
   cardLinkText: { fontSize: 12, color: '#C8524A', fontWeight: '600' },
   emptyChart: { height: 60, alignItems: 'center', justifyContent: 'center' },
   emptyChartText: { fontSize: 12, color: '#7A7A9A', fontStyle: 'italic' },
-  testSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#F4F2EE',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#E8E4DC',
-    maxWidth: 160,
-  },
+  testSelector: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F2EE', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: '#E8E4DC', maxWidth: 160 },
   testSelectorText: { fontSize: 11, fontWeight: '600', color: '#1A1A2E', flex: 1 },
   testSelectorArrow: { fontSize: 10, color: '#7A7A9A' },
-  testDropdown: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E8E4DC',
-    marginTop: 6,
-    marginBottom: 4,
-    overflow: 'hidden',
-  },
+  testDropdown: { backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#E8E4DC', marginTop: 6, marginBottom: 4, overflow: 'hidden' },
   testDropdownItem: { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#F4F2EE' },
   testDropdownItemActive: { backgroundColor: '#F4F2EE' },
   testDropdownText: { fontSize: 13, color: '#7A7A9A' },
