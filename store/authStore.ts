@@ -7,6 +7,9 @@ type Profile = {
   role: 'patient' | 'provider'
   full_name: string | null
   subscription_tier: string
+  specialty: string | null
+  clinic: string | null
+  prc_number: string | null
 }
 
 type AuthStore = {
@@ -25,8 +28,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   setSession: (session) => set({ session }),
 
-  fetchProfile: async (userId) => {
+  fetchProfile: async (userId: string) => {
     try {
+      if (!userId || userId === 'undefined') {
+        console.log('fetchProfile called with invalid userId:', userId)
+        set({ loading: false })
+        return
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -34,6 +43,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         .single()
 
       if (data) {
+        console.log('Profile loaded:', data.full_name, data.role)
         set({ profile: data, loading: false })
       } else {
         console.log('Profile fetch error:', error)
