@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
+import ConsultationScreen from './consultation'
 
 type ShareLink = {
   id: string
@@ -22,6 +23,16 @@ type ShareLink = {
   expires_at: string
   created_at: string
   is_active: boolean
+}
+
+type Consultation = {
+  date: string
+  summary: string
+  notes: string
+  actionItems: string[]
+  prescriptions: { name: string; dosage: string; instructions: string }[]
+  nextSteps: string[]
+  referredTo: string[]
 }
 
 type Doctor = {
@@ -34,13 +45,6 @@ type Doctor = {
   color: string
   bg: string
   consultations: Consultation[]
-}
-
-type Consultation = {
-  date: string
-  summary: string
-  notes: string
-  actionItems: string[]
 }
 
 const CARE_TEAM: Doctor[] = [
@@ -58,6 +62,10 @@ const CARE_TEAM: Doctor[] = [
         date: 'January 12, 2026',
         summary: 'Follow-up on dyslipidemia management. Patient reports improved dietary habits since stopping Diane-35. LDL still elevated at 154 mg/dL but trending down from December peak of 175 mg/dL. Blood pressure normal. Weight down 2kg.',
         notes: 'Patient tolerating lifestyle changes well. No new complaints. Discussed importance of continued low-saturated-fat diet. Reviewed latest CBC — MCH slightly low, monitoring for iron deficiency. Referred to nutritionist for meal planning.',
+        prescriptions: [
+          { name: 'Rosuvastatin', dosage: '10mg', instructions: 'Take once daily at bedtime. Monitor for muscle pain or weakness.' },
+          { name: 'Omega-3 Fish Oil', dosage: '1000mg', instructions: 'Take twice daily with meals to support lipid management.' },
+        ],
         actionItems: [
           'Repeat lipid panel in 3 months (April 2026)',
           'Continue low-saturated-fat diet',
@@ -65,17 +73,31 @@ const CARE_TEAM: Doctor[] = [
           'Follow up with Beatrix Mercado (Nutritionist)',
           'Return if chest pain, palpitations, or severe headache',
         ],
+        nextSteps: [
+          'Schedule lipid panel blood test by April 2026',
+          'Monitor weight weekly and log in Bridgette',
+          'Return for follow-up July 12, 2026',
+        ],
+        referredTo: ['Beatrix Mercado (Nutritionist)', 'Dr. Jan Tan (Ophthalmologist)'],
       },
       {
         date: 'October 5, 2025',
         summary: 'Routine check-up. Patient on Diane-35 for 6 months. Lipids worsening — Total Cholesterol 218, LDL 148. Discussed pill-related dyslipidemia risk. Patient advised to consider stopping Diane-35.',
         notes: 'Patient reluctant to stop Diane-35 due to acne control. Educated on cardiovascular risk. Advised to consult OB-GYN for alternative contraception. Diet counseling initiated.',
+        prescriptions: [
+          { name: 'Fenofibrate', dosage: '145mg', instructions: 'Take once daily with the main meal to help reduce triglycerides.' },
+        ],
         actionItems: [
           'Consult OB-GYN regarding Diane-35 alternatives',
           'Repeat lipid panel in 3 months',
           'Reduce fried food and processed meat intake',
           'Start regular aerobic exercise 3x per week',
         ],
+        nextSteps: [
+          'Book OB-GYN appointment within the month',
+          'Repeat lipid panel by January 2026',
+        ],
+        referredTo: ['OB-GYN (for contraception review)'],
       },
     ],
   },
@@ -93,6 +115,7 @@ const CARE_TEAM: Doctor[] = [
         date: 'April 21, 2026',
         summary: 'Initial nutrition consultation. Reviewed food logs from Bridgette app. Patient eating high saturated fat diet — frequent fried foods, processed meats. Carb intake elevated. Protein and fiber low.',
         notes: 'Patient motivated to change. Set realistic meal plan targeting 25g fiber/day, lean protein at each meal, olive oil over palm oil. Discussed Filipino food alternatives — grilled liempo instead of lechon, brown rice, more vegetables.',
+        prescriptions: [],
         actionItems: [
           'Follow Mediterranean-style meal plan provided',
           'Target 25g fiber per day',
@@ -100,6 +123,12 @@ const CARE_TEAM: Doctor[] = [
           'Log all meals in Bridgette app daily',
           'Return in 3 months with food log summary',
         ],
+        nextSteps: [
+          'Start meal plan this week',
+          'Log every meal in Bridgette for 90 days',
+          'Return for follow-up July 21, 2026',
+        ],
+        referredTo: [],
       },
     ],
   },
@@ -116,13 +145,21 @@ const CARE_TEAM: Doctor[] = [
       {
         date: 'December 6, 2025',
         summary: 'Annual eye exam. Visual acuity 20/20 bilaterally. No diabetic retinopathy noted. Mild dry eye syndrome. Intraocular pressure normal. Fundus exam unremarkable.',
-        notes: 'No concerning findings. Patient reports occasional eye strain from screen time. Discussed 20-20-20 rule. Prescribed lubricating eye drops. Noted that patient has borderline glucose — will monitor for early diabetic eye changes in future visits.',
+        notes: 'No concerning findings. Patient reports occasional eye strain from screen time. Discussed 20-20-20 rule. Prescribed lubricating eye drops. Noted borderline glucose — will monitor for early diabetic eye changes.',
+        prescriptions: [
+          { name: 'Systane Ultra Eye Drops', dosage: '1-2 drops', instructions: 'Apply to both eyes twice daily or as needed for dryness and irritation.' },
+        ],
         actionItems: [
           'Use lubricating eye drops twice daily',
           'Apply 20-20-20 rule during screen use',
           'Return in 6 months for routine follow-up',
           'Alert if sudden vision changes or eye pain',
         ],
+        nextSteps: [
+          'Schedule follow-up June 6, 2026',
+          'Monitor blood sugar levels closely',
+        ],
+        referredTo: [],
       },
     ],
   },
@@ -137,10 +174,10 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
   const [creating, setCreating] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterType>('all')
 
-  // View consultation modal
-  const [showConsultModal, setShowConsultModal] = useState(false)
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
-  const [selectedConsult, setSelectedConsult] = useState<Consultation | null>(null)
+  // Consultation screen
+  const [showConsultationScreen, setShowConsultationScreen] = useState(false)
+  const [consultationDoctor, setConsultationDoctor] = useState<Doctor | null>(null)
+  const [consultationDetail, setConsultationDetail] = useState<Consultation | null>(null)
 
   // Bridgette share modal
   const [showBridgetteModal, setShowBridgetteModal] = useState(false)
@@ -168,9 +205,9 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
   }
 
   function openConsultation(doctor: Doctor) {
-    setSelectedDoctor(doctor)
-    setSelectedConsult(doctor.consultations[0])
-    setShowConsultModal(true)
+    setConsultationDoctor(doctor)
+    setConsultationDetail(doctor.consultations[0])
+    setShowConsultationScreen(true)
   }
 
   function openBridgetteShare(doctor: Doctor) {
@@ -290,6 +327,18 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
     return true
   })
 
+  // Show consultation screen
+  if (showConsultationScreen && consultationDoctor && consultationDetail) {
+    return (
+      <ConsultationScreen
+        doctor={consultationDoctor}
+        consultation={consultationDetail}
+        onBack={() => setShowConsultationScreen(false)}
+        onChangeConsult={(c) => setConsultationDetail(c)}
+      />
+    )
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -302,7 +351,6 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
 
       <ScrollView style={styles.content}>
 
-        {/* Info banner */}
         <View style={styles.infoBanner}>
           <Text style={styles.infoIcon}>🔒</Text>
           <View style={styles.infoText}>
@@ -313,7 +361,6 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
           </View>
         </View>
 
-        {/* External share banner */}
         <View style={styles.externalSection}>
           <View style={styles.externalSectionLeft}>
             <Text style={styles.externalSectionTitle}>Consulting with a non-Bridgette user?</Text>
@@ -324,7 +371,6 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
           </TouchableOpacity>
         </View>
 
-        {/* Filter chips */}
         <View style={styles.filterRow}>
           {([['all', 'All'], ['md', 'MDs'], ['nonmd', 'Non-MDs']] as [FilterType, string][]).map(([val, label]) => (
             <TouchableOpacity
@@ -410,7 +456,6 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
           )
         })}
 
-        {/* Active links summary */}
         {links.filter(l => l.is_active).length > 0 && (
           <View style={styles.linksSection}>
             <Text style={styles.sectionLabel}>Active Links</Text>
@@ -431,78 +476,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* ── CONSULTATION VIEW MODAL ── */}
-      <Modal visible={showConsultModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.consultModalCard}>
-            <View style={styles.consultModalHeader}>
-              <View>
-                <Text style={styles.consultModalDoctor}>{selectedDoctor?.name}</Text>
-                <Text style={styles.consultModalRole}>{selectedDoctor?.role}</Text>
-              </View>
-              <TouchableOpacity onPress={() => setShowConsultModal(false)} style={styles.closeBtn}>
-                <Text style={styles.closeBtnText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Consultation selector */}
-            {selectedDoctor && selectedDoctor.consultations.length > 1 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.consultPicker}>
-                {selectedDoctor.consultations.map((c, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={[styles.consultPickerChip, selectedConsult === c && styles.consultPickerChipActive]}
-                    onPress={() => setSelectedConsult(c)}
-                  >
-                    <Text style={[styles.consultPickerText, selectedConsult === c && styles.consultPickerTextActive]}>
-                      {c.date}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-
-            <ScrollView style={styles.consultModalContent} showsVerticalScrollIndicator={false}>
-              {selectedConsult && (
-                <>
-                  <View style={styles.consultSection}>
-                    <Text style={styles.consultSectionTitle}>📝 Consultation Summary</Text>
-                    <Text style={styles.consultSectionText}>{selectedConsult.summary}</Text>
-                  </View>
-
-                  <View style={styles.consultSection}>
-                    <Text style={styles.consultSectionTitle}>🩺 Doctor's Notes</Text>
-                    <Text style={styles.consultSectionText}>{selectedConsult.notes}</Text>
-                  </View>
-
-                  <View style={styles.consultSection}>
-                    <Text style={styles.consultSectionTitle}>✅ Action Items</Text>
-                    {selectedConsult.actionItems.map((item, i) => (
-                      <View key={i} style={styles.actionItem}>
-                        <View style={styles.actionDot} />
-                        <Text style={styles.actionItemText}>{item}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </>
-              )}
-              <View style={{ height: 20 }} />
-            </ScrollView>
-
-            <TouchableOpacity
-              style={styles.shareConsultBtn}
-              onPress={() => {
-                setShowConsultModal(false)
-                if (selectedDoctor) openBridgetteShare(selectedDoctor)
-              }}
-            >
-              <Text style={styles.shareConsultBtnText}>📤 Share Records with {selectedDoctor?.name}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* ── BRIDGETTE SHARE MODAL ── */}
+      {/* BRIDGETTE SHARE MODAL */}
       <Modal visible={showBridgetteModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
@@ -534,7 +508,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
         </View>
       </Modal>
 
-      {/* ── EXTERNAL CONSENT MODAL ── */}
+      {/* EXTERNAL CONSENT MODAL */}
       <Modal visible={showExternalModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
@@ -567,7 +541,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
         </View>
       </Modal>
 
-      {/* ── EXTERNAL LIFESTYLE MODAL ── */}
+      {/* EXTERNAL LIFESTYLE MODAL */}
       <Modal visible={showExternalLifestyleModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
@@ -738,69 +712,6 @@ const styles = StyleSheet.create({
   linkRowExpiry: { fontSize: 11, color: '#7A7A9A' },
   revokePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E8E4DC' },
   revokePillText: { fontSize: 12, color: '#C8524A', fontWeight: '600' },
-
-  // Consultation modal
-  consultModalCard: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 0,
-    maxHeight: '90%',
-  },
-  consultModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  consultModalDoctor: { fontFamily: 'serif', fontSize: 18, color: '#1A1A2E', marginBottom: 2 },
-  consultModalRole: { fontSize: 12, color: '#7A7A9A' },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F4F2EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeBtnText: { fontSize: 14, color: '#7A7A9A', fontWeight: '600' },
-  consultPicker: { marginBottom: 16 },
-  consultPickerChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F4F2EE',
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#E8E4DC',
-  },
-  consultPickerChipActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  consultPickerText: { fontSize: 12, fontWeight: '600', color: '#7A7A9A' },
-  consultPickerTextActive: { color: '#fff' },
-  consultModalContent: { flex: 1 },
-  consultSection: {
-    backgroundColor: '#F4F2EE',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-  },
-  consultSectionTitle: { fontSize: 13, fontWeight: '700', color: '#1A1A2E', marginBottom: 8 },
-  consultSectionText: { fontSize: 13, color: '#4A4A6A', lineHeight: 20 },
-  actionItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
-  actionDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8524A', marginTop: 6 },
-  actionItemText: { fontSize: 13, color: '#4A4A6A', lineHeight: 20, flex: 1 },
-  shareConsultBtn: {
-    backgroundColor: '#C8524A',
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 32,
-  },
-  shareConsultBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-
-  // Modals
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 },
   modalTitle: { fontFamily: 'serif', fontSize: 20, color: '#1A1A2E', marginBottom: 8 },
