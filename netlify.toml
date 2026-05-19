@@ -1,0 +1,4 @@
+[build]
+  base = "landing"
+  publish = "."
+  command = "echo 'no build needed'"
