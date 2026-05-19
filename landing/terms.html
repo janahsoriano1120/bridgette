@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Bridgette</title>
+  <meta name="description" content="Terms of Service for Bridgette, the health wallet built for Filipinos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal: #004D40;
+      --teal-mid: #00695C;
+      --sage: #3D7A5E;
+      --mint: #F1F8F6;
+      --cream: #FAF8F4;
+      --ink: #1A1C1E;
+      --gray: #6B707A;
+      --gray-light: #E0ECE8;
+      --gold: #FBC02D;
+      --white: #FFFFFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(250,248,244,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logomark {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-wordmark {
+      font-family: Georgia, serif;
+      font-size: 18px;
+      color: var(--teal);
+      font-weight: 400;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-back {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .nav-back:hover { opacity: 0.7; }
+
+    .page-header {
+      padding: 140px 24px 48px;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-family: Georgia, serif;
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 400;
+      color: var(--teal);
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .page-header .effective-date {
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 96px;
+    }
+
+    .content h2 {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--teal);
+      margin-top: 48px;
+      margin-bottom: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .content h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+
+    .content p {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.75;
+      margin-bottom: 16px;
+    }
+
+    .content ul, .content ol {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.75;
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+
+    .content li {
+      margin-bottom: 6px;
+    }
+
+    .content a {
+      color: var(--sage);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .content .highlight-box {
+      background: var(--mint);
+      border: 1px solid var(--gray-light);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .content .highlight-box p {
+      color: var(--ink);
+      margin: 0;
+      font-weight: 500;
+    }
+
+    footer {
+      background: var(--ink);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-logo {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none;
+    }
+
+    .footer-wordmark {
+      font-family: Georgia, serif;
+      font-size: 16px;
+      color: var(--white);
+    }
+
+    .footer-links {
+      display: flex; align-items: center; gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.8); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logomark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="nav-wordmark">bridgette</span>
+    </a>
+    <a href="/" class="nav-back">Back to home</a>
+  </nav>
+
+  <div class="page-header">
+    <h1>Terms of Service</h1>
+    <p class="effective-date">Effective date: May 20, 2026</p>
+  </div>
+
+  <div class="content">
+
+    <div class="highlight-box">
+      <p>By using Bridgette, you agree to these terms. Please read them carefully. If you do not agree, do not use the service.</p>
+    </div>
+
+    <h2>1. About Bridgette</h2>
+    <p>Bridgette is a health wallet application that allows patients to store, manage, and share their personal health data with healthcare providers. We also provide Scribe Hub, a tool for healthcare providers that transcribes consultations and generates clinical notes using artificial intelligence.</p>
+    <p>Bridgette is operated by Bridgette Health, currently in the process of incorporation as a One Person Corporation (OPC) with the Securities and Exchange Commission (SEC) of the Philippines. All required business registrations are in progress.</p>
+
+    <h2>2. Eligibility</h2>
+    <p>You must be at least 18 years old to create an account on Bridgette. Users under 18 may only use Bridgette through a dependent profile managed by a parent or legal guardian. When a dependent turns 18, ownership and control of their health data and account transfers to them.</p>
+    <p>By creating an account, you confirm that the information you provide is accurate and complete, and that you will keep it up to date.</p>
+
+    <h2>3. Your Account</h2>
+    <p>You are responsible for maintaining the security of your account credentials. Do not share your password or allow others to access your account. You are responsible for all activity that occurs under your account.</p>
+    <p>If you suspect unauthorized access to your account, contact us immediately at <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>.</p>
+
+    <h2>4. Your Health Data</h2>
+
+    <div class="highlight-box">
+      <p>Your health data belongs to you. Bridgette stores and processes it on your behalf, but you maintain full ownership and control at all times.</p>
+    </div>
+
+    <p>You decide what data to upload, which providers can see it, and when to revoke access. For full details on how we handle your data, please see our <a href="/privacy.html">Privacy Policy</a>.</p>
+    <p>You are responsible for the accuracy of the health data you upload. Bridgette does not independently verify the accuracy of user-submitted health records.</p>
+
+    <h2>5. Subscription Plans and Payments</h2>
+
+    <h3>Patient Plans (B2C)</h3>
+    <p>Bridgette offers a free tier and multiple paid subscription plans for patients (Basic, Premium, Couple, Family, and OFW Observer add-on). Paid plans are billed monthly through Apple App Store or Google Play in-app billing. Prices are displayed in Philippine Pesos.</p>
+
+    <h3>Provider Plans (B2B)</h3>
+    <p>Bridgette offers subscription plans for healthcare providers (Starter, Pro, Duo, Group, and Clinic). Provider subscriptions are billed monthly via web-based payment processing.</p>
+
+    <h3>Billing Terms</h3>
+    <ul>
+      <li>Subscriptions renew automatically each month unless cancelled before the renewal date.</li>
+      <li>You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period.</li>
+      <li>Refunds are handled according to Apple App Store and Google Play policies for patient plans.</li>
+      <li>We reserve the right to change pricing with 30 days' notice. Existing subscribers will be notified before any price change takes effect on their account.</li>
+    </ul>
+
+    <h2>6. AI Features and Limitations</h2>
+
+    <div class="highlight-box">
+      <p>Bridgette's AI features are informational tools. They are not medical advice and should never replace professional medical consultation.</p>
+    </div>
+
+    <p>Bridgette uses artificial intelligence to provide health summaries, meal analyses, longevity insights, and consultation transcription. These features are designed to help you understand your health data and support your conversations with healthcare providers.</p>
+    <p>Important limitations:</p>
+    <ul>
+      <li>AI-generated summaries and insights are not diagnoses.</li>
+      <li>AI-generated SOAP notes should be reviewed and approved by the provider before becoming part of any medical record.</li>
+      <li>AI transcription may contain errors, particularly with medical terminology or mixed-language (Filipino and English) conversations.</li>
+      <li>Always consult a qualified healthcare professional for medical decisions.</li>
+    </ul>
+
+    <h2>7. Scribe Hub for Healthcare Providers</h2>
+    <p>Healthcare providers using Scribe Hub are responsible for:</p>
+    <ul>
+      <li>Obtaining informed consent from patients before recording consultations</li>
+      <li>Reviewing and verifying all AI-generated SOAP notes before using them in clinical practice</li>
+      <li>Complying with all applicable medical and data privacy regulations in the Philippines</li>
+      <li>Maintaining their own professional liability coverage</li>
+    </ul>
+    <p>Bridgette is not responsible for clinical decisions made by healthcare providers based on AI-generated content.</p>
+
+    <h2>8. Data Sharing and Provider Access</h2>
+    <p>When you share your health data with a provider through Bridgette:</p>
+    <ul>
+      <li>You grant the provider read-only access to the data categories you select.</li>
+      <li>Share links have an expiration date that you set.</li>
+      <li>You can revoke access at any time.</li>
+      <li>Providers may retain their own clinical notes from consultations independent of Bridgette.</li>
+    </ul>
+
+    <h2>9. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use Bridgette for any unlawful purpose</li>
+      <li>Upload false, misleading, or fraudulent health data</li>
+      <li>Attempt to access another user's account or data without authorization</li>
+      <li>Reverse engineer, decompile, or disassemble any part of the application</li>
+      <li>Use Bridgette to transmit malware, spam, or any harmful content</li>
+      <li>Resell or redistribute access to Bridgette without our written consent</li>
+      <li>Use AI features to generate content for purposes other than personal health management or clinical care</li>
+    </ul>
+
+    <h2>10. Intellectual Property</h2>
+    <p>Bridgette, including its design, branding, code, and AI models, is the intellectual property of Bridgette Health. You may not copy, modify, or distribute any part of the application without our written consent.</p>
+    <p>Your health data remains your property. By using Bridgette, you grant us a limited license to store, process, and display your data solely for the purpose of providing the service to you.</p>
+
+    <h2>11. Disclaimers</h2>
+    <p>Bridgette is provided "as is" and "as available." While we work to maintain reliability and accuracy, we do not guarantee:</p>
+    <ul>
+      <li>That the service will be uninterrupted or error-free</li>
+      <li>That AI-generated content will be completely accurate</li>
+      <li>That transcription will be free of errors</li>
+      <li>That the service will meet all of your specific requirements</li>
+    </ul>
+    <p>Bridgette is not a medical device. It is not registered with the Philippine FDA as a medical device and should not be used as a substitute for professional medical care.</p>
+
+    <h2>12. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by Philippine law, Bridgette Health shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service, including but not limited to damages for loss of data, medical outcomes, or business interruption.</p>
+    <p>Our total liability for any claims related to the service shall not exceed the amount you paid to Bridgette in the 12 months preceding the claim.</p>
+
+    <h2>13. Account Termination</h2>
+    <p>You may delete your account at any time through the app settings. Before your account is deleted, you will be required to provide an email address where a complete export of your health data will be sent. Your health story is yours, and we will never delete it without first giving it back to you.</p>
+    <p>Once your data export has been delivered, your personal and health data will be permanently removed from our systems within 30 days, except where retention is required by law.</p>
+    <p>We may suspend or terminate your account if you violate these terms, with notice when possible. In the event of termination by Bridgette, you will be given 30 days to export your data before it is deleted.</p>
+
+    <h2>14. Changes to These Terms</h2>
+    <p>We may update these Terms of Service from time to time. When we make material changes, we will notify you through the app and update the effective date. Continued use of Bridgette after changes constitutes acceptance of the updated terms.</p>
+    <p>If you do not agree with updated terms, you may cancel your subscription and delete your account.</p>
+
+    <h2>15. Governing Law and Dispute Resolution</h2>
+    <p>These terms are governed by the laws of the Republic of the Philippines. Any disputes arising from these terms or your use of Bridgette shall be resolved through mediation in Metro Manila, Philippines. If mediation is unsuccessful, disputes shall be settled by the appropriate courts of Quezon City, Philippines.</p>
+
+    <h2>16. Contact Us</h2>
+    <p>If you have questions about these terms:</p>
+    <p>
+      Bridgette Health<br />
+      Email: <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+    </p>
+
+  </div>
+
+  <footer>
+    <a href="/" class="footer-logo">
+      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px;">
+        <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
+          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="footer-wordmark">bridgette</span>
+    </a>
+    <div class="footer-links">
+      <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+    <span class="footer-copy">&copy; 2026 Bridgette Health. All rights reserved.</span>
+  </footer>
+
+</body>
+</html>
