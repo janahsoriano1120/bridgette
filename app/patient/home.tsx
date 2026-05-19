@@ -17,6 +17,7 @@ import TrendsScreen from './trends'
 import LifestyleScreen from './lifestyle'
 import MedicalRecordsScreen from './medicalrecords'
 import ShareLinkScreen from './sharelink'
+import PatientNotificationsScreen from './notifications'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const DRAWER_WIDTH = 220
@@ -34,16 +35,19 @@ const AVAILABLE_TESTS = [
   'Testosterone (Total)',
 ]
 
+const MOCK_UNREAD_COUNT = 2
+
 export default function PatientHome() {
   const signOut = useAuthStore((state) => state.signOut)
   const session = useAuthStore((state) => state.session)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [activePage, setActivePage] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle' | 'share'>('dashboard')
+  const [activePage, setActivePage] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle' | 'share' | 'notifications'>('dashboard')
   const [period, setPeriod] = useState<Period>('daily')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [refreshing, setRefreshing] = useState(false)
   const [selectedTest, setSelectedTest] = useState('Glucose (Fasting)')
   const [testPickerOpen, setTestPickerOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(MOCK_UNREAD_COUNT)
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current
 
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0, fiber: 0 })
@@ -255,6 +259,13 @@ export default function PatientHome() {
   if (activePage === 'trends') return <TrendsScreen onBack={() => setActivePage('dashboard')} />
   if (activePage === 'lifestyle') return <LifestyleScreen onBack={() => setActivePage('dashboard')} />
   if (activePage === 'share') return <ShareLinkScreen onBack={() => setActivePage('dashboard')} />
+  if (activePage === 'notifications') return (
+    <PatientNotificationsScreen
+      onBack={() => { setActivePage('dashboard'); setUnreadCount(0) }}
+      onOpenSummary={() => setActivePage('dashboard')}
+      onOpenDataRequest={(provider) => setActivePage('share')}
+    />
+  )
 
   return (
     <View style={styles.root}>
@@ -371,8 +382,21 @@ export default function PatientHome() {
           <Text style={styles.summaryText}>{summary}</Text>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* FLOATING BELL BUTTON */}
+      <TouchableOpacity
+        style={styles.bellFloat}
+        onPress={() => setActivePage('notifications')}
+      >
+        <Text style={styles.bellIcon}>🔔</Text>
+        {unreadCount > 0 && (
+          <View style={styles.bellBadge}>
+            <Text style={styles.bellBadgeText}>{unreadCount}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
 
       {drawerOpen && (
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeDrawer} />
@@ -388,31 +412,41 @@ export default function PatientHome() {
           </View>
 
           <View style={styles.drawerSection}>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('lifestyle')}>
-    <Text style={styles.drawerItemText}>🍽 Logged Foods</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('records')}>
-    <Text style={styles.drawerItemText}>🧪 Medical Records</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('trends')}>
-    <Text style={styles.drawerItemText}>📈 Lab Trends</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-    <Text style={styles.drawerItemText}>👥 Care Team</Text>
-  </TouchableOpacity>
-</View>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('lifestyle')}>
+              <Text style={styles.drawerItemText}>🍽 Logged Foods</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('records')}>
+              <Text style={styles.drawerItemText}>🧪 Medical Records</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('trends')}>
+              <Text style={styles.drawerItemText}>📈 Lab Trends</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+              <Text style={styles.drawerItemText}>👥 Care Team</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('notifications')}>
+              <View style={styles.drawerItemRow}>
+                <Text style={styles.drawerItemText}>🔔 Notifications</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.drawerBadge}>
+                    <Text style={styles.drawerBadgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
 
-<View style={styles.drawerDivider} />
+          <View style={styles.drawerDivider} />
 
-<View style={styles.drawerSection}>
-  <Text style={styles.drawerSectionLabel}>SHARE HEALTH LINK</Text>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-    <Text style={styles.drawerItemText}>🔗 Share with Doctor</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-    <Text style={styles.drawerItemText}>🔗 External Link</Text>
-  </TouchableOpacity>
-</View>
+          <View style={styles.drawerSection}>
+            <Text style={styles.drawerSectionLabel}>SHARE HEALTH LINK</Text>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+              <Text style={styles.drawerItemText}>🔗 Share with Doctor</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
+              <Text style={styles.drawerItemText}>🔗 External Link</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.drawerBottom}>
             <TouchableOpacity onPress={signOut} style={styles.drawerSignOut}>
@@ -490,6 +524,42 @@ const styles = StyleSheet.create({
   summaryIcon: { fontSize: 20, marginBottom: 6 },
   summaryTitle: { fontSize: 14, fontWeight: '700', color: '#6B4FA0', marginBottom: 6 },
   summaryText: { fontSize: 13, color: '#4A3A6A', lineHeight: 20 },
+
+  // Floating bell
+  bellFloat: {
+    position: 'absolute',
+    bottom: 32,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#1A1A2E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 50,
+  },
+  bellIcon: { fontSize: 22 },
+  bellBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#C8524A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#1A1A2E',
+  },
+  bellBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
+
+  // Drawer
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 10 },
   drawer: { position: 'absolute', top: 0, left: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: '#1A1A2E', zIndex: 20, shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 20 },
   drawerInner: { flex: 1, paddingTop: 56 },
@@ -501,6 +571,9 @@ const styles = StyleSheet.create({
   drawerSectionLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5, color: 'rgba(255,255,255,0.35)', paddingHorizontal: 10, marginBottom: 8 },
   drawerItem: { paddingHorizontal: 10, paddingVertical: 13, borderRadius: 10, marginBottom: 2 },
   drawerItemText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
+  drawerItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  drawerBadge: { backgroundColor: '#C8524A', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10 },
+  drawerBadgeText: { fontSize: 10, fontWeight: '700', color: '#fff' },
   drawerDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginHorizontal: 20, marginVertical: 8 },
   drawerBottom: { position: 'absolute', bottom: 40, left: 0, right: 0, paddingHorizontal: 20 },
   drawerSignOut: { paddingVertical: 12, alignItems: 'center', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },

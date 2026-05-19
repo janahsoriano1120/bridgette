@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/authStore'
 import CareTeamScreen from './careteam'
 import PatientLifestyleScreen from './patientlifestyle'
 import ScribeHubScreen from './scribehub'
+import ProviderNotificationsScreen from './notifications'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SIDEBAR_WIDTH = 90
@@ -94,6 +95,8 @@ export default function ProviderDashboard() {
   const [showCareTeam, setShowCareTeam] = useState(false)
   const [showLifestyle, setShowLifestyle] = useState(false)
   const [showScribeHub, setShowScribeHub] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(2)
   const [activeSection, setActiveSection] = useState('Overview')
   const [patientLabs, setPatientLabs] = useState<LabValue[]>([])
   const [labsLoading, setLabsLoading] = useState(false)
@@ -205,6 +208,19 @@ export default function ProviderDashboard() {
     return <ScribeHubScreen patients={patients} onBack={() => setShowScribeHub(false)} />
   }
 
+  if (showNotifications) {
+    return (
+      <ProviderNotificationsScreen
+        onBack={() => { setShowNotifications(false); setUnreadCount(0) }}
+        onViewPatient={(patientId) => {
+          setShowNotifications(false)
+          const patient = patients.find(p => p.id === patientId)
+          if (patient) { setSelectedPatient(patient); fetchPatientLabs(patient.id) }
+        }}
+      />
+    )
+  }
+
   if (showCareTeam && selectedPatient) {
     return <CareTeamScreen patientName={selectedPatient.full_name} onBack={() => setShowCareTeam(false)} />
   }
@@ -215,14 +231,29 @@ export default function ProviderDashboard() {
 
   return (
     <View style={styles.container}>
+
+      {/* MAIN HEADER */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.logo}>bridgette</Text>
           <View style={styles.providerBadge}><Text style={styles.providerBadgeText}>Provider</Text></View>
         </View>
-        <TouchableOpacity onPress={signOut}><Text style={styles.signOut}>Sign out</Text></TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.bellBtn} onPress={() => setShowNotifications(true)}>
+            <Text style={styles.bellIcon}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={signOut}>
+            <Text style={styles.signOut}>Sign out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* WELCOME + SCRIBE HUB */}
       <View style={styles.welcome}>
         <View style={styles.welcomeRow}>
           <View>
@@ -272,6 +303,15 @@ export default function ProviderDashboard() {
                 <TouchableOpacity style={styles.lifestyleBtn} onPress={() => setShowLifestyle(true)}>
                   <Text style={styles.lifestyleBtnLine1}>Life-</Text>
                   <Text style={styles.lifestyleBtnLine2}>style</Text>
+                </TouchableOpacity>
+                {/* Bell in patient detail too */}
+                <TouchableOpacity style={styles.patientBellBtn} onPress={() => setShowNotifications(true)}>
+                  <Text style={styles.bellIcon}>🔔</Text>
+                  {unreadCount > 0 && (
+                    <View style={styles.bellBadgeSmall}>
+                      <Text style={styles.bellBadgeText}>{unreadCount}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -483,10 +523,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E8E4DC',
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   logo: { fontFamily: 'serif', fontSize: 22, color: '#C8524A' },
   providerBadge: { backgroundColor: '#1A1A2E', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   providerBadgeText: { fontSize: 11, fontWeight: '700', color: '#fff' },
   signOut: { fontSize: 13, color: '#7A7A9A' },
+
+  // Bell button in header
+  bellBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: '#F4F2EE',
+    alignItems: 'center', justifyContent: 'center',
+    position: 'relative',
+  },
+  bellIcon: { fontSize: 16 },
+  bellBadge: {
+    position: 'absolute', top: -2, right: -2,
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#C8524A',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: '#fff',
+  },
+  bellBadgeText: { fontSize: 8, fontWeight: '700', color: '#fff' },
+
+  // Bell in patient detail header
+  patientBellBtn: {
+    width: 36, height: 36, borderRadius: 8,
+    backgroundColor: '#F4F2EE',
+    alignItems: 'center', justifyContent: 'center',
+    position: 'relative',
+  },
+  bellBadgeSmall: {
+    position: 'absolute', top: -2, right: -2,
+    width: 14, height: 14, borderRadius: 7,
+    backgroundColor: '#C8524A',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: '#fff',
+  },
+
   welcome: {
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12,
     backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E8E4DC',
@@ -495,12 +569,8 @@ const styles = StyleSheet.create({
   welcomeName: { fontFamily: 'serif', fontSize: 18, color: '#1A1A2E', marginBottom: 2 },
   welcomeSub: { fontSize: 12, color: '#7A7A9A' },
   scribeBtn: {
-    backgroundColor: '#C8524A',
-    borderRadius: 10,
-    width: 64,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#C8524A', borderRadius: 10,
+    width: 64, height: 52, alignItems: 'center', justifyContent: 'center',
   },
   scribeBtnIcon: { fontSize: 18 },
   scribeBtnText: { fontSize: 9, fontWeight: '700', color: '#fff', textAlign: 'center', lineHeight: 12 },
