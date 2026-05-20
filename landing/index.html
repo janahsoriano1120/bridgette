@@ -558,7 +558,7 @@
         </div>
         <div class="form-field" id="specialty-field" style="display:none">
           <label>What is your specialty?</label>
-          <input type="text" id="specialty" placeholder="e.g. Nutritionist, Psychologist, Physical Trainer" />
+          <input type="text" id="specialty" placeholder="e.g. Cardiology, Endocrinology, Nutritionist, Psychologist" />
         </div>
         <button type="submit" class="form-submit" id="submit-btn">Join the waitlist</button>
         <div class="form-error" id="form-error"></div>
@@ -983,8 +983,8 @@
     const providerHint = document.getElementById('provider-hint')
 
     roleSelect.addEventListener('change', () => {
-      specialtyField.style.display = roleSelect.value === 'provider-nonmd' ? 'flex' : 'none'
-      if (roleSelect.value !== 'provider-nonmd') document.getElementById('specialty').value = ''
+      specialtyField.style.display = (roleSelect.value === 'provider-nonmd' || roleSelect.value === 'provider-md') ? 'flex' : 'none'
+      if (roleSelect.value === 'patient') document.getElementById('specialty').value = ''
       providerHint.style.display = (roleSelect.value === 'provider-md' || roleSelect.value === 'provider-nonmd') ? 'block' : 'none'
     })
 

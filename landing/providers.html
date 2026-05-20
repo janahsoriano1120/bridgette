@@ -811,7 +811,7 @@
           </div>
           <div class="form-field" id="p-specialty-field" style="display:none">
             <label>What is your specialty?</label>
-            <input type="text" id="p-specialty" placeholder="e.g. Nutritionist, Psychologist, Physical Trainer" />
+            <input type="text" id="p-specialty" placeholder="e.g. Cardiology, Endocrinology, Nutritionist, Psychologist" />
           </div>
           <button type="submit" class="form-submit" id="p-submit-btn">Join the provider waitlist</button>
           <div class="form-error" id="p-form-error"></div>
@@ -856,8 +856,8 @@
     const pSpecField = document.getElementById('p-specialty-field')
 
     pRole.addEventListener('change', () => {
-      pSpecField.style.display = pRole.value === 'provider-nonmd' ? 'flex' : 'none'
-      if (pRole.value !== 'provider-nonmd') document.getElementById('p-specialty').value = ''
+      pSpecField.style.display = (pRole.value === 'provider-nonmd' || pRole.value === 'provider-md') ? 'flex' : 'none'
+      if (!pRole.value.startsWith('provider')) document.getElementById('p-specialty').value = ''
     })
 
     // FORM SUBMIT
