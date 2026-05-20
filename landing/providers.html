@@ -362,6 +362,8 @@
       .features-grid { grid-template-columns: 1fr; }
       .how-steps { grid-template-columns: 1fr 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
+      .care-team-grid { grid-template-columns: 1fr !important; }
+      .care-team-grid > div:last-child { border-left: none !important; border-top: 1px solid #E5DACB; }
       footer { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
   </style>
@@ -468,7 +470,7 @@
         <p class="section-desc" style="margin:0 auto">When your patient shares their Bridgette story, you see notes from every provider they've visited. No more asking patients to relay messages between specialists.</p>
       </div>
 
-      <div class="fade-in" style="background:var(--warm-bg, #F5F2EC);border:2px solid #E5DACB;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:900px;margin:0 auto">
+      <div class="fade-in care-team-grid" style="background:var(--warm-bg, #F5F2EC);border:2px solid #E5DACB;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:900px;margin:0 auto">
         <div style="padding:40px;display:flex;flex-direction:column;justify-content:center">
           <div style="font-size:15px;color:#6B6560;line-height:1.7;margin-bottom:20px">Your patient saw a cardiologist last week. Instead of asking "What did your other doctor say?", you open Bridgette and read the full notes. You're aligned before the consultation even starts.</div>
           <div style="display:flex;flex-direction:column;gap:10px">

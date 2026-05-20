@@ -498,6 +498,8 @@
       .who-grid { grid-template-columns: 1fr; }
       .showcase-grid { grid-template-columns: 1fr; }
       .showcase-inner > .fade-in[style] { grid-template-columns: 1fr !important; }
+      .care-team-grid { grid-template-columns: 1fr !important; }
+      .care-team-grid > div:last-child { border-left: none !important; border-top: 1px solid var(--warm-border); }
       footer { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
   </style>
@@ -649,7 +651,7 @@
         <p class="section-desc" style="margin:0 auto">Your health story travels with you. Every doctor on your care team sees the same complete picture, so no one is ever in the dark.</p>
       </div>
 
-      <div class="fade-in" style="background:var(--white);border:2px solid var(--warm-border);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:900px;margin:0 auto">
+      <div class="fade-in care-team-grid" style="background:var(--white);border:2px solid var(--warm-border);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:900px;margin:0 auto">
         <div style="padding:40px;display:flex;flex-direction:column;justify-content:center">
           <div style="font-size:15px;color:var(--text-secondary);line-height:1.7;margin-bottom:20px">When your cardiologist writes a note, your endocrinologist sees it on the next visit. No more "Can you tell me what your last doctor said?" Your care team is finally on the same page.</div>
           <div style="display:flex;flex-direction:column;gap:10px">
