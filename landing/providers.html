@@ -14,16 +14,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --teal: #5C7340;
-      --teal-mid: #6B8548;
-      --sage: #8B9A6E;
+      --forest: #5C7340;
+      --forest-light: #6B8548;
+      --olive: #8B9A6E;
+      --terracotta: #C47D4E;
+      --burnt: #B5451B;
+      --amber: #C4922A;
+      --plum: #7B4B94;
       --mint: #F7F5F0;
       --cream: #FFFFFF;
       --ink: #3D3229;
       --gray: #6B6560;
       --gray-light: #E5DACB;
-      --gold: #C4922A;
-      --red: #B5451B;
       --warm-bg: #F5F2EC;
       --warm-border: #E5DACB;
       --white: #FFFFFF;
@@ -51,11 +53,11 @@
     .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 
     .nav-logomark {
-      width: 32px; height: 32px; background: var(--teal); border-radius: 9px;
+      width: 32px; height: 32px; background: #5C7340; border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
     }
 
-    .nav-wordmark { font-family: Georgia, serif; font-size: 18px; color: var(--teal); font-weight: 400; letter-spacing: -0.3px; }
+    .nav-wordmark { font-family: Georgia, serif; font-size: 18px; color: #5C7340; font-weight: 400; letter-spacing: -0.3px; }
 
     .nav-links { display: flex; gap: 10px; align-items: center; }
 
@@ -66,7 +68,7 @@
 
     .nav-cta-primary { background: #C4611A; color: white; }
     .nav-cta-primary:hover { background: #D4712A; }
-    .nav-cta-outline { background: transparent; border: 1.5px solid var(--teal); color: var(--teal); }
+    .nav-cta-outline { background: transparent; border: 1.5px solid var(--terracotta); color: var(--terracotta); }
     .nav-cta-outline:hover { opacity: 0.7; }
 
     /* HERO */
@@ -90,17 +92,17 @@
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
       background: var(--white); border: 1px solid var(--gray-light); border-radius: 100px;
-      padding: 6px 14px 6px 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500; color: var(--sage);
+      padding: 6px 14px 6px 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500; color: var(--olive);
     }
 
-    .hero-badge-dot { width: 6px; height: 6px; background: var(--sage); border-radius: 50%; }
+    .hero-badge-dot { width: 6px; height: 6px; background: var(--olive); border-radius: 50%; }
 
     .hero h1 {
-      font-family: Georgia, serif; font-size: clamp(34px, 5vw, 56px); font-weight: 400;
-      line-height: 1.12; color: var(--teal); margin-bottom: 20px; letter-spacing: -1px;
+      font-family: Georgia, serif; 
+      line-height: 1.12; color: #3D3229; margin-bottom: 20px; letter-spacing: -1px;
     }
 
-    .hero h1 em { font-style: italic; color: var(--sage); }
+    .hero h1 em { font-style: italic; color: var(--terracotta); }
 
     .hero-sub {
       font-size: 18px; color: var(--gray); max-width: 480px; line-height: 1.65; margin-bottom: 32px;
@@ -124,7 +126,7 @@
     }
 
     .hv-header {
-      background: var(--teal); padding: 16px 20px;
+      background: var(--terracotta); padding: 16px 20px;
       display: flex; align-items: center; justify-content: space-between;
     }
 
@@ -139,7 +141,7 @@
     }
 
     .hv-avatar {
-      width: 40px; height: 40px; background: var(--sage); border-radius: 50%;
+      width: 40px; height: 40px; background: var(--olive); border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
@@ -155,7 +157,7 @@
       border-bottom: 2px solid transparent; cursor: default;
     }
 
-    .hv-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+    .hv-tab.active { color: var(--terracotta); border-bottom-color: var(--terracotta); }
 
     .hv-trend {
       background: var(--mint); border-radius: 10px; padding: 14px; margin-bottom: 12px;
@@ -179,12 +181,12 @@
 
     .section-label {
       display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--sage); margin-bottom: 12px;
+      text-transform: uppercase; color: var(--olive); margin-bottom: 12px;
     }
 
     .section-title {
       font-family: Georgia, serif; font-size: clamp(28px, 4vw, 44px); font-weight: 400;
-      color: var(--teal); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 16px;
+      color: #5C7340; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 16px;
     }
 
     .section-desc { font-size: 18px; color: var(--gray); line-height: 1.7; max-width: 560px; }
@@ -205,8 +207,8 @@
       display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
     }
 
-    .feature-card h3 {
-      font-family: Georgia, serif; font-size: 19px; color: var(--teal);
+    
+      font-family: Georgia, serif; font-size: 19px; color: var(--terracotta);
       font-weight: 400; margin-bottom: 10px;
     }
 
@@ -256,7 +258,7 @@
     }
 
     .price-card h3 {
-      font-family: Georgia, serif; font-size: 22px; color: var(--teal);
+      font-family: Georgia, serif; font-size: 22px; color: var(--terracotta);
       font-weight: 400; margin-bottom: 6px;
     }
 
@@ -277,7 +279,7 @@
 
     .price-features li:last-child { border-bottom: none; }
 
-    .check-icon { color: var(--sage); font-weight: 700; }
+    .check-icon { color: var(--olive); font-weight: 700; }
 
     .price-cta {
       display: block; text-align: center; padding: 12px; border-radius: 100px;
@@ -285,7 +287,7 @@
     }
 
     .price-cta-primary { background: #C4611A; color: white; }
-    .price-cta-outline { background: transparent; border: 1.5px solid var(--teal); color: var(--teal); }
+    .price-cta-outline { background: transparent; border: 1.5px solid var(--terracotta); color: var(--terracotta); }
 
     /* WAITLIST */
     .provider-waitlist {
@@ -316,7 +318,7 @@
     }
 
     .form-field input:focus,
-    .form-field select:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,122,94,0.12); }
+    .form-field select:focus { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(61,122,94,0.12); }
 
     .form-submit {
       width: 100%; padding: 14px; background: #C4611A; color: white; border: none;
@@ -327,12 +329,12 @@
     .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .form-success { display: none; text-align: center; padding: 16px 0; }
-    .form-success h4 { font-family: Georgia, serif; font-size: 20px; color: var(--teal); margin-bottom: 6px; }
+    .form-success h4 { font-family: Georgia, serif; font-size: 20px; color: var(--terracotta); margin-bottom: 6px; }
     .form-success p { font-size: 15px; color: var(--gray); }
 
     .form-error {
       display: none; background: rgba(200,82,74,0.15); border: 1px solid rgba(200,82,74,0.2);
-      border-radius: 8px; padding: 10px 14px; font-size: 14px; color: var(--red); margin-top: 10px;
+      border-radius: 8px; padding: 10px 14px; font-size: 14px; color: var(--burnt); margin-top: 10px;
     }
 
     /* FOOTER */
@@ -440,7 +442,7 @@
             </svg>
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray);margin-top:4px">
               <span>126 mg/dL</span>
-              <span style="color:var(--sage);font-weight:600">92 mg/dL (now)</span>
+              <span style="color:var(--olive);font-weight:600">92 mg/dL (now)</span>
             </div>
           </div>
 
@@ -585,7 +587,7 @@
     .badge-core { background: #F8F0DC; color: #8A6B1A; }
     .badge-new { background: #F0E8F5; color: #7B4B94; }
     .mock-phone { width: 100%; max-width: 240px; background: #FFFFFF; border-radius: 16px; border: 1.5px solid #E5DACB; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-    .mock-hdr { padding: 10px 14px; background: #4A6233; display: flex; align-items: center; justify-content: space-between; }
+    .mock-hdr { padding: 10px 14px; background: #C47D4E; display: flex; align-items: center; justify-content: space-between; }
     .mock-hdr-t { font-size: 11px; font-weight: 600; color: white; }
     .mock-body { padding: 12px; }
     @media (max-width: 768px) { .showcase-grid { grid-template-columns: 1fr; } .highlight-split { grid-template-columns: 1fr !important; } }
@@ -685,7 +687,7 @@
                     <span style="font-size:10px;color:#3D3229">Reduce rice portions to 1/2 cup</span>
                   </div>
                 </div>
-                <div style="background:#EDF1E6;border-radius:8px;padding:8px;margin-top:8px;text-align:center">
+                <div style="background:#C47D4E;border-radius:8px;padding:8px;margin-top:8px;text-align:center">
                   <span style="font-size:9px;font-weight:600;color:white">Send to patient</span>
                 </div>
               </div>
@@ -885,7 +887,7 @@
             <li><span class="check-icon">&#10003;</span> Shared clinic dashboard</li>
             <li><span class="check-icon">&#10003;</span> 1 free Family Plan per doctor</li>
             <li><span class="check-icon">&#10003;</span> Team management</li>
-            <li><span class="check-icon">&#10003;</span> 11+ doctors? <a href="mailto:hello@bridgette.com.ph" style="color:var(--sage)">Contact us</a></li>
+            <li><span class="check-icon">&#10003;</span> 11+ doctors? <a href="mailto:hello@bridgette.com.ph" style="color:var(--olive)">Contact us</a></li>
           </ul>
           <a href="#provider-waitlist" class="price-cta price-cta-outline">Join waitlist</a>
         </div>
@@ -929,6 +931,11 @@
         <div class="form-success" id="p-form-success">
           <h4>You're on the list.</h4>
           <p>We'll reach out when your provider account is ready. Salamat, Doc!</p>
+          <p style="margin-top:14px;font-size:13px;color:#6B6560">While you wait, follow us on Instagram for updates on launch.</p>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+            <a href="https://www.instagram.com/bridgette.careteam/" target="_blank" rel="noopener" style="font-size:13px;font-weight:600;color:#C47D4E;text-decoration:none;border:1px solid #E5DACB;padding:6px 14px;border-radius:100px">@bridgette.careteam</a>
+            <a href="https://www.instagram.com/bridgette.app/" target="_blank" rel="noopener" style="font-size:13px;font-weight:600;color:#5C7340;text-decoration:none;border:1px solid #E5DACB;padding:6px 14px;border-radius:100px">@bridgette.app</a>
+          </div>
         </div>
       </div>
     </div>
@@ -947,6 +954,8 @@
     </a>
     <div class="footer-links">
       <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <a href="https://www.instagram.com/bridgette.app/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.instagram.com/bridgette.careteam/" target="_blank" rel="noopener">Instagram for Providers</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
     </div>
