@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bridgette for Providers — Your Patient's Full Story, Before They Walk In</title>
+  <meta name="description" content="Bridgette gives healthcare providers the full patient picture: labs, lifestyle, trends, and AI-powered consultation transcription. For MDs, nutritionists, psychologists, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal: #5C7340;
+      --teal-mid: #6B8548;
+      --sage: #8B9A6E;
+      --mint: #F7F5F0;
+      --cream: #FFFFFF;
+      --ink: #3D3229;
+      --gray: #6B6560;
+      --gray-light: #E5DACB;
+      --gold: #C4922A;
+      --red: #B5451B;
+      --warm-bg: #F5F2EC;
+      --warm-border: #E5DACB;
+      --white: #FFFFFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+    .nav-logomark {
+      width: 32px; height: 32px; background: var(--teal); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-wordmark { font-family: Georgia, serif; font-size: 18px; color: var(--teal); font-weight: 400; letter-spacing: -0.3px; }
+
+    .nav-links { display: flex; gap: 10px; align-items: center; }
+
+    .nav-cta {
+      padding: 10px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
+      text-decoration: none; transition: background 0.2s, opacity 0.2s;
+    }
+
+    .nav-cta-primary { background: #C4611A; color: white; }
+    .nav-cta-primary:hover { background: #D4712A; }
+    .nav-cta-outline { background: transparent; border: 1.5px solid var(--teal); color: var(--teal); }
+    .nav-cta-outline:hover { opacity: 0.7; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 120px 24px 80px; position: relative; overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(92,115,64,0.12) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139,154,110,0.12) 0%, transparent 60%);
+    }
+
+    .hero-inner {
+      position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--white); border: 1px solid var(--gray-light); border-radius: 100px;
+      padding: 6px 14px 6px 8px; margin-bottom: 24px; font-size: 14px; font-weight: 500; color: var(--sage);
+    }
+
+    .hero-badge-dot { width: 6px; height: 6px; background: var(--sage); border-radius: 50%; }
+
+    .hero h1 {
+      font-family: Georgia, serif; font-size: clamp(34px, 5vw, 56px); font-weight: 400;
+      line-height: 1.12; color: var(--teal); margin-bottom: 20px; letter-spacing: -1px;
+    }
+
+    .hero h1 em { font-style: italic; color: var(--sage); }
+
+    .hero-sub {
+      font-size: 18px; color: var(--gray); max-width: 480px; line-height: 1.65; margin-bottom: 32px;
+    }
+
+    .hero-cta { background: #C4611A !important;
+      display: inline-block; background: #C47D4E; color: white;
+      padding: 14px 32px; border-radius: 100px; font-size: 16px; font-weight: 600;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .hero-cta:hover { background: #B5451B; }
+
+    .hero-roles {
+      margin-top: 20px; font-size: 14px; color: var(--gray);
+    }
+
+    /* HERO VISUAL */
+    .hero-visual {
+      background: var(--white); border: 1px solid var(--gray-light); border-radius: 20px;
+      overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+
+    .hv-header {
+      background: var(--teal); padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .hv-header-title { color: white; font-size: 14px; font-weight: 600; }
+    .hv-header-sub { color: rgba(255,255,255,0.5); font-size: 11px; }
+
+    .hv-content { padding: 20px; }
+
+    .hv-patient-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--cream); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+    }
+
+    .hv-avatar {
+      width: 40px; height: 40px; background: var(--sage); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .hv-patient-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .hv-patient-meta { font-size: 11px; color: var(--gray); }
+
+    .hv-tabs {
+      display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid var(--gray-light);
+    }
+
+    .hv-tab {
+      padding: 8px 14px; font-size: 11px; font-weight: 600; color: var(--gray);
+      border-bottom: 2px solid transparent; cursor: default;
+    }
+
+    .hv-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    .hv-trend {
+      background: var(--mint); border-radius: 10px; padding: 14px; margin-bottom: 12px;
+    }
+
+    .hv-trend-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+    .hv-soap {
+      background: var(--cream); border-radius: 10px; padding: 14px; border-left: 3px solid var(--gold);
+    }
+
+    .hv-soap-label {
+      font-size: 9px; font-weight: 700; color: #C4922A; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
+    }
+
+    .hv-soap-text { font-size: 11px; color: var(--ink); line-height: 1.6; }
+
+    /* SECTIONS */
+    section { padding: 96px 24px; }
+
+    .section-label {
+      display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--sage); margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: Georgia, serif; font-size: clamp(28px, 4vw, 44px); font-weight: 400;
+      color: var(--teal); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 16px;
+    }
+
+    .section-desc { font-size: 18px; color: var(--gray); line-height: 1.7; max-width: 560px; }
+
+    /* FEATURES */
+    .features { background: var(--white); }
+    .features-inner { max-width: 1080px; margin: 0 auto; }
+    .features-header { text-align: center; margin-bottom: 56px; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    .feature-card {
+      background: var(--cream); border: 1px solid var(--gray-light); border-radius: 20px; padding: 32px;
+    }
+
+    .feature-icon {
+      width: 48px; height: 48px; background: var(--mint); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-family: Georgia, serif; font-size: 19px; color: var(--teal);
+      font-weight: 400; margin-bottom: 10px;
+    }
+
+    .feature-card p { font-size: 15px; color: var(--gray); line-height: 1.65; }
+
+    /* HOW IT WORKS */
+    .how { background: var(--warm-bg, #F5F2EC); color: #3D3229; border-top: 1px solid #E5DACB; border-bottom: 1px solid #E5DACB; }
+    .how .section-label { color: #C47D4E; }
+    .how .section-title { color: #5C7340; }
+    .how-inner { max-width: 1080px; margin: 0 auto; }
+    .how-header { text-align: center; margin-bottom: 56px; }
+
+    .how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+
+    .how-step {
+      background: #FFFFFF; border: 1px solid #E5DACB;
+      border-radius: 16px; padding: 28px; text-align: center;
+    }
+
+    .how-step-num {
+      width: 36px; height: 36px; background: #C4611A; border-radius: 50%; color: white;
+      font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .how-step h4 { font-size: 15px; font-weight: 600; color: #3D3229; margin-bottom: 8px; }
+    .how-step p { font-size: 13px; color: #6B6560; line-height: 1.6; }
+
+    /* PRICING */
+    .pricing { background: var(--mint); }
+    .pricing-inner { max-width: 1080px; margin: 0 auto; }
+    .pricing-header { text-align: center; margin-bottom: 56px; }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    .price-card {
+      background: var(--white); border: 1px solid var(--gray-light); border-radius: 20px;
+      padding: 32px; position: relative;
+    }
+
+    .price-card.featured { border-color: #C4611A; border-width: 2px; }
+
+    .price-popular {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: #C4611A; color: white; font-size: 11px; font-weight: 700;
+      padding: 4px 14px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .price-card h3 {
+      font-family: Georgia, serif; font-size: 22px; color: var(--teal);
+      font-weight: 400; margin-bottom: 6px;
+    }
+
+    .price-card .price {
+      font-size: 32px; font-weight: 700; color: var(--ink); margin-bottom: 4px;
+    }
+
+    .price-card .price span { font-size: 14px; font-weight: 400; color: var(--gray); }
+
+    .price-card .price-desc { font-size: 13px; color: var(--gray); margin-bottom: 20px; }
+
+    .price-features { list-style: none; padding: 0; margin-bottom: 24px; }
+
+    .price-features li {
+      font-size: 14px; color: var(--ink); padding: 8px 0; border-bottom: 1px solid var(--gray-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .price-features li:last-child { border-bottom: none; }
+
+    .check-icon { color: var(--sage); font-weight: 700; }
+
+    .price-cta {
+      display: block; text-align: center; padding: 12px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; text-decoration: none; transition: opacity 0.2s;
+    }
+
+    .price-cta-primary { background: #C4611A; color: white; }
+    .price-cta-outline { background: transparent; border: 1.5px solid var(--teal); color: var(--teal); }
+
+    /* WAITLIST */
+    .provider-waitlist {
+      background: var(--cream); text-align: center;
+    }
+
+    .pw-inner { max-width: 480px; margin: 0 auto; }
+
+    .pw-form {
+      background: var(--white); border: 1px solid var(--gray-light); border-radius: 20px;
+      padding: 36px; margin-top: 36px; text-align: left;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    }
+
+    .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+    .form-field label {
+      font-size: 13px; font-weight: 600; color: var(--ink);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .form-field input,
+    .form-field select {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--gray-light); border-radius: 10px;
+      font-size: 16px; font-family: 'DM Sans', sans-serif; color: var(--ink);
+      background: var(--cream); outline: none; appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,122,94,0.12); }
+
+    .form-submit {
+      width: 100%; padding: 14px; background: #C4611A; color: white; border: none;
+      border-radius: 100px; font-size: 16px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s; margin-top: 6px;
+    }
+    .form-submit:hover { background: #B5451B; }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .form-success { display: none; text-align: center; padding: 16px 0; }
+    .form-success h4 { font-family: Georgia, serif; font-size: 20px; color: var(--teal); margin-bottom: 6px; }
+    .form-success p { font-size: 15px; color: var(--gray); }
+
+    .form-error {
+      display: none; background: rgba(200,82,74,0.15); border: 1px solid rgba(200,82,74,0.2);
+      border-radius: 8px; padding: 10px 14px; font-size: 14px; color: var(--red); margin-top: 10px;
+    }
+
+    /* FOOTER */
+    footer {
+      background: #3D3229; padding: 32px 48px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .footer-wordmark { font-family: Georgia, serif; font-size: 16px; color: var(--white); }
+
+    .footer-links { display: flex; align-items: center; gap: 24px; }
+    .footer-links a { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: rgba(255,255,255,0.8); }
+
+    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { gap: 6px; }
+      .nav-cta { padding: 8px 14px; font-size: 12px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hero-visual { order: -1; }
+      .features-grid { grid-template-columns: 1fr; }
+      .how-steps { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-logomark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="nav-wordmark">bridgette</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-cta nav-cta-outline">For Patients</a>
+      <a href="#provider-waitlist" class="nav-cta nav-cta-primary">Join Provider Waitlist</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">
+          <div class="hero-badge-dot"></div>
+          Bridgette for Providers
+        </div>
+        <h1>Your patient's full story,<br /><em>before they walk in.</em></h1>
+        <p class="hero-sub">
+          Bridgette gives you your patient's complete health picture: labs, lifestyle trends, and medical history. Plus AI-powered consultation transcription that writes your notes for you.
+        </p>
+        <a href="#provider-waitlist" class="hero-cta">Join the Provider Waitlist</a>
+        <div style="margin-top:14px"><a href="/demo.html" style="font-size:14px;font-weight:600;color:#C47D4E;text-decoration:none;border-bottom:1.5px solid #C47D4E;padding-bottom:2px;display:inline-flex;align-items:center;gap:6px">See a sample patient share link <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L7 3M10 6L7 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+        <p class="hero-roles">For MDs, nutritionists, psychologists, physical trainers, and allied health professionals.</p>
+      </div>
+
+      <!-- HERO VISUAL: Provider Dashboard Preview -->
+      <div class="hero-visual">
+        <div class="hv-header">
+          <span class="hv-header-title">Scribe Hub</span>
+          <span class="hv-header-sub">Patient view</span>
+        </div>
+        <div class="hv-content">
+          <div class="hv-patient-bar">
+            <div class="hv-avatar">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="6" r="3" stroke="white" stroke-width="1.3"/>
+                <path d="M3 16C3 13.239 5.686 11 9 11C12.314 11 15 13.239 15 16" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="hv-patient-name">Maria Santos</div>
+              <div class="hv-patient-meta">32 yrs, Female, PCOS, Dyslipidemia</div>
+            </div>
+          </div>
+
+          <div class="hv-tabs">
+            <div class="hv-tab active">Overview</div>
+            <div class="hv-tab">Labs</div>
+            <div class="hv-tab">Trends</div>
+            <div class="hv-tab">Lifestyle</div>
+          </div>
+
+          <div class="hv-trend">
+            <div class="hv-trend-label">Fasting Glucose (6 months)</div>
+            <svg width="100%" height="40" viewBox="0 0 240 40" fill="none">
+              <polyline points="0,8 40,12 80,16 120,22 160,28 200,32 240,35" stroke="#8B9A6E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="240" cy="35" r="3" fill="#8B9A6E"/>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray);margin-top:4px">
+              <span>126 mg/dL</span>
+              <span style="color:var(--sage);font-weight:600">92 mg/dL (now)</span>
+            </div>
+          </div>
+
+          <div class="hv-soap">
+            <div class="hv-soap-label">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L6 4H9L6.5 6L7.5 9L5 7L2.5 9L3.5 6L1 4H4L5 1Z" stroke="#C4922A" stroke-width="0.8" stroke-linejoin="round"/></svg>
+              AI-Generated SOAP Note
+            </div>
+            <div class="hv-soap-text">
+              <strong>S:</strong> Pt reports improved energy since diet changes. Compliant with metformin.<br />
+              <strong>O:</strong> FBS 92 (prev 126), HbA1c 5.6%, BMI stable at 24.1<br />
+              <strong>A:</strong> Pre-diabetes resolving. Lipid panel improving.<br />
+              <strong>P:</strong> Continue current plan. Recheck labs in 3 months.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SHOWCASE -->
+  <style>
+    .showcase { background: var(--warm-bg, #F5F2EC); padding: 96px 24px; }
+    .showcase-inner { max-width: 1120px; margin: 0 auto; }
+    .showcase-header { text-align: center; margin-bottom: 64px; }
+    .showcase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .showcase-card { background: #FFFFFF; border: 1px solid #E5DACB; border-radius: 20px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .showcase-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+    .showcase-visual { padding: 24px 24px 16px; background: #F5F2EC; border-bottom: 1px solid #E5DACB; min-height: 200px; display: flex; align-items: center; justify-content: center; }
+    .showcase-body { padding: 24px; }
+    .showcase-body h3 { font-family: Georgia, serif; font-size: 19px; color: #5C7340; font-weight: 400; margin-bottom: 8px; }
+    .showcase-body p { font-size: 15px; color: #6B6560; line-height: 1.65; }
+    .showcase-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; margin-bottom: 10px; }
+    .badge-live { background: #EBF0E4; color: #5C7340; }
+    .badge-core { background: #F8F0DC; color: #8A6B1A; }
+    .badge-new { background: #F0E8F5; color: #7B4B94; }
+    .mock-phone { width: 100%; max-width: 240px; background: #FFFFFF; border-radius: 16px; border: 1.5px solid #E5DACB; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .mock-hdr { padding: 10px 14px; background: #4A6233; display: flex; align-items: center; justify-content: space-between; }
+    .mock-hdr-t { font-size: 11px; font-weight: 600; color: white; }
+    .mock-body { padding: 12px; }
+    @media (max-width: 768px) { .showcase-grid { grid-template-columns: 1fr; } .highlight-split { grid-template-columns: 1fr !important; } }
+  </style>
+
+  <section class="showcase">
+    <div class="showcase-inner">
+      <div class="showcase-header fade-in">
+        <span class="section-label">See it in action</span>
+        <h2 class="section-title">Built to save you time<br />and improve patient care.</h2>
+        <p class="section-desc" style="margin:0 auto">Every feature designed around how Filipino providers actually work.</p>
+      </div>
+
+      <div class="showcase-grid">
+
+        <!-- 1. Scribe Hub Recording -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual">
+            <div class="mock-phone">
+              <div class="mock-hdr"><span class="mock-hdr-t">Scribe Hub</span><span style="font-size:9px;color:rgba(255,255,255,0.85)">Recording</span></div>
+              <div class="mock-body">
+                <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:8px 0">
+                  <div style="width:48px;height:48px;background:#FAEAE3;border-radius:50%;display:flex;align-items:center;justify-content:center">
+                    <div style="width:18px;height:18px;background:#B5451B;border-radius:50%;animation:pulse 1.5s infinite"></div>
+                  </div>
+                  <div style="font-size:11px;font-weight:600;color:#B5451B">Recording... 4:32</div>
+                  <div style="font-size:9px;color:#6B6560">Filipino + English detected</div>
+                </div>
+                <div style="background:#F5F2EC;border-radius:8px;padding:8px 10px;margin-top:6px">
+                  <div style="font-size:8px;font-weight:700;color:#8B9A6E;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Live transcript</div>
+                  <div style="font-size:9px;color:#3D3229;line-height:1.6"><span style="color:#5C7340;font-weight:600">Doc:</span> Kumusta na 'yung blood sugar mo?<br/><span style="color:#C47D4E;font-weight:600">Patient:</span> Bumaba na po, Doc. 92 na last check ko.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-core">Core Feature</span>
+            <h3>AI transcription in Taglish</h3>
+            <p>Record the consultation. Bridgette transcribes Filipino, English, and mixed-language conversations in real-time.</p>
+          </div>
+        </div>
+
+        <!-- 2. SOAP Notes Generated -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual">
+            <div class="mock-phone">
+              <div class="mock-hdr"><span class="mock-hdr-t">SOAP Note</span><span style="font-size:9px;color:rgba(255,255,255,0.85)">AI Generated</span></div>
+              <div class="mock-body">
+                <div style="background:#F5F2EC;border-radius:8px;padding:8px 10px;border-left:3px solid #C4922A;margin-bottom:8px">
+                  <div style="font-size:8px;font-weight:700;color:#C4922A;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Subjective</div>
+                  <div style="font-size:9px;color:#3D3229;line-height:1.5">Pt reports improved energy. FBS down. Compliant with metformin.</div>
+                </div>
+                <div style="background:#F5F2EC;border-radius:8px;padding:8px 10px;border-left:3px solid #5C7340;margin-bottom:8px">
+                  <div style="font-size:8px;font-weight:700;color:#5C7340;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Objective</div>
+                  <div style="font-size:9px;color:#3D3229;line-height:1.5">FBS 92 (prev 126), HbA1c 5.6%, BMI 24.1</div>
+                </div>
+                <div style="background:#F5F2EC;border-radius:8px;padding:8px 10px;border-left:3px solid #7B4B94;margin-bottom:8px">
+                  <div style="font-size:8px;font-weight:700;color:#7B4B94;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Assessment</div>
+                  <div style="font-size:9px;color:#3D3229;line-height:1.5">Pre-diabetes resolving. Lipids improving.</div>
+                </div>
+                <div style="background:#F5F2EC;border-radius:8px;padding:8px 10px;border-left:3px solid #C47D4E">
+                  <div style="font-size:8px;font-weight:700;color:#C47D4E;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Plan</div>
+                  <div style="font-size:9px;color:#3D3229;line-height:1.5">Continue current meds. Recheck in 3 mos.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-core">Core Feature</span>
+            <h3>SOAP notes in seconds</h3>
+            <p>AI generates structured clinical notes from your conversation. Review, edit if needed, and save. Minutes, not hours.</p>
+          </div>
+        </div>
+
+        <!-- 3. Action Items -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual">
+            <div class="mock-phone">
+              <div class="mock-hdr"><span class="mock-hdr-t">Action Items</span><span style="font-size:9px;color:rgba(255,255,255,0.85)">From consultation</span></div>
+              <div class="mock-body">
+                <div style="font-size:9px;color:#6B6560;margin-bottom:8px">AI-extracted from today's session:</div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="background:#FFFFFF;border:1px solid #E5DACB;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                    <div style="width:18px;height:18px;border:1.5px solid #5C7340;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#5C7340" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+                    <span style="font-size:10px;color:#3D3229">Continue metformin 500mg 2x daily</span>
+                  </div>
+                  <div style="background:#FFFFFF;border:1px solid #E5DACB;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                    <div style="width:18px;height:18px;border:1.5px solid #E5DACB;border-radius:4px;flex-shrink:0"></div>
+                    <span style="font-size:10px;color:#3D3229">Recheck FBS + HbA1c in 3 months</span>
+                  </div>
+                  <div style="background:#FFFFFF;border:1px solid #E5DACB;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                    <div style="width:18px;height:18px;border:1.5px solid #E5DACB;border-radius:4px;flex-shrink:0"></div>
+                    <span style="font-size:10px;color:#3D3229">Start 30-min walks, 3x/week</span>
+                  </div>
+                  <div style="background:#FFFFFF;border:1px solid #E5DACB;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                    <div style="width:18px;height:18px;border:1.5px solid #E5DACB;border-radius:4px;flex-shrink:0"></div>
+                    <span style="font-size:10px;color:#3D3229">Reduce rice portions to 1/2 cup</span>
+                  </div>
+                </div>
+                <div style="background:#EDF1E6;border-radius:8px;padding:8px;margin-top:8px;text-align:center">
+                  <span style="font-size:9px;font-weight:600;color:white">Send to patient</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-new">New</span>
+            <h3>Auto-generated action items</h3>
+            <p>Bridgette extracts action items from your consultation. Medications, follow-ups, lifestyle changes. Ready to send to your patient.</p>
+          </div>
+        </div>
+
+        <!-- 4. Send to Patient -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual" style="background:#FFFFFF;border-bottom:1px solid #E5DACB">
+            <div style="width:100%;max-width:260px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:10px;font-weight:600;color:#3D3229;text-align:center;margin-bottom:4px">Send notes to patient</div>
+              <!-- Bridgette user -->
+              <div style="background:#F5F2EC;border:1px solid #E5DACB;border-radius:12px;padding:14px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <div style="width:28px;height:28px;background:#5C7340;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="white" stroke-width="1"/><path d="M2 10C2 8.343 3.791 7 6 7C8.209 7 10 8.343 10 10" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;font-weight:600;color:#3D3229">Maria Santos</div>
+                    <div style="font-size:9px;color:#5C7340;font-weight:500">Bridgette user</div>
+                  </div>
+                </div>
+                <div style="background:#C4611A;color:white;border-radius:8px;padding:8px;text-align:center;font-size:10px;font-weight:600">Send to Bridgette app</div>
+              </div>
+              <!-- Non-Bridgette user -->
+              <div style="background:#FFFFFF;border:1px solid #E5DACB;border-radius:12px;padding:14px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <div style="width:28px;height:28px;background:#E5DACB;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="#6B6560" stroke-width="1"/><path d="M2 10C2 8.343 3.791 7 6 7C8.209 7 10 8.343 10 10" stroke="#6B6560" stroke-width="1" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;font-weight:600;color:#3D3229">Juan dela Cruz</div>
+                    <div style="font-size:9px;color:#6B6560">Not on Bridgette</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <div style="flex:1;background:#F5F2EC;border:1px solid #E5DACB;border-radius:6px;padding:7px 10px;font-size:10px;color:#6B6560">juan@email.com</div>
+                  <div style="background:#C47D4E;color:white;border-radius:6px;padding:7px 12px;font-size:10px;font-weight:600;flex-shrink:0">Send</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-core">Core Feature</span>
+            <h3>Send notes to any patient</h3>
+            <p>Bridgette user? Notes go straight to their app. Not a user? Enter their email and Bridgette sends a clean summary. No patient left behind.</p>
+          </div>
+        </div>
+
+        <!-- 5. Patient History Viewer -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual">
+            <div class="mock-phone">
+              <div class="mock-hdr"><span class="mock-hdr-t">Patient History</span><span style="font-size:9px;color:rgba(255,255,255,0.85)">Shared via link</span></div>
+              <div class="mock-body">
+                <div style="display:flex;align-items:center;gap:8px;background:#F5F2EC;border-radius:8px;padding:8px;margin-bottom:8px">
+                  <div style="width:28px;height:28px;background:#8B9A6E;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="white" stroke-width="1"/><path d="M2 10C2 8.343 3.791 7 6 7C8.209 7 10 8.343 10 10" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
+                  </div>
+                  <div><div style="font-size:10px;font-weight:600;color:#3D3229">Maria Santos</div><div style="font-size:8px;color:#6B6560">32F, PCOS, Dyslipidemia</div></div>
+                </div>
+                <div style="font-size:9px;color:#6B6560;margin-bottom:4px">Lab Trends (6 mos)</div>
+                <svg width="100%" height="36" viewBox="0 0 200 36" fill="none">
+                  <polyline points="10,28 45,24 80,20 115,14 150,10 185,5" stroke="#5C7340" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                  <circle cx="185" cy="5" r="2.5" fill="#5C7340"/>
+                </svg>
+                <div style="display:flex;justify-content:space-between;font-size:8px;color:#6B6560;margin-top:2px"><span style="color:#B5451B">FBS: 126</span><span style="color:#5C7340;font-weight:600">FBS: 92 (now)</span></div>
+                <div style="display:flex;gap:4px;margin-top:8px">
+                  <div style="flex:1;background:#F5F2EC;border-radius:6px;padding:5px;text-align:center"><div style="font-size:8px;color:#6B6560">Sleep</div><div style="font-size:10px;font-weight:600;color:#3D3229">7.2h</div></div>
+                  <div style="flex:1;background:#F5F2EC;border-radius:6px;padding:5px;text-align:center"><div style="font-size:8px;color:#6B6560">Cal</div><div style="font-size:10px;font-weight:600;color:#3D3229">1,680</div></div>
+                  <div style="flex:1;background:#F5F2EC;border-radius:6px;padding:5px;text-align:center"><div style="font-size:8px;color:#6B6560">Activity</div><div style="font-size:10px;font-weight:600;color:#3D3229">45min</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-live">Live</span>
+            <h3>Full patient picture</h3>
+            <p>Labs, lifestyle, medications, and trends. All in one view, organized by your patient. You're prepared before they sit down.</p>
+            <a href="/demo.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;font-weight:600;color:#C47D4E;text-decoration:none;border-bottom:1.5px solid #C47D4E;padding-bottom:2px">See a sample patient share link <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L7 3M10 6L7 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          </div>
+        </div>
+
+        <!-- 6. Free Premium Account -->
+        <div class="showcase-card fade-in">
+          <div class="showcase-visual" style="background:linear-gradient(135deg, #FFFFFF 0%, #F5F2EC 100%);border-bottom:1px solid #E5DACB">
+            <div style="text-align:center;padding:12px 0">
+              <div style="width:64px;height:64px;background:#F8F0DC;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 4L16.5 10.5H23L18 14.5L20 21L14 17L8 21L10 14.5L5 10.5H11.5L14 4Z" stroke="#C4922A" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div style="font-size:16px;font-weight:600;color:#3D3229;margin-bottom:4px">You're a patient too.</div>
+              <div style="font-size:12px;color:#6B6560;max-width:180px;margin:0 auto;line-height:1.5">Every provider plan includes a free Bridgette Premium account for your own health.</div>
+              <div style="display:flex;gap:6px;justify-content:center;margin-top:14px">
+                <div style="background:#EDF1E6;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:600;color:#5C7340">Your own labs</div>
+                <div style="background:#F2EBF6;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:600;color:#7B4B94">AI insights</div>
+                <div style="background:#FAF3E3;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:600;color:#C4922A">Trend tracking</div>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-body">
+            <span class="showcase-badge badge-core">Included</span>
+            <h3>Free Premium for you</h3>
+            <p>Track your own health story. Every provider plan comes with a free Bridgette Premium patient account, because providers deserve the same care.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <style>@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
+
+  <!-- HOW IT WORKS -->
+  <section class="how">
+    <div class="how-inner">
+      <div class="how-header fade-in">
+        <span class="section-label">How it works</span>
+        <h2 class="section-title">Ready in four steps.</h2>
+      </div>
+      <div class="how-steps">
+        <div class="how-step fade-in">
+          <div class="how-step-num">1</div>
+          <h4>Patient shares their link</h4>
+          <p>Your patient sends you their Bridgette health story link before the visit.</p>
+        </div>
+        <div class="how-step fade-in">
+          <div class="how-step-num">2</div>
+          <h4>Review their full picture</h4>
+          <p>Labs, trends, medications, lifestyle. Everything in one view before they sit down.</p>
+        </div>
+        <div class="how-step fade-in">
+          <div class="how-step-num">3</div>
+          <h4>Record the consultation</h4>
+          <p>Scribe Hub transcribes your conversation in Filipino and English. Hands-free.</p>
+        </div>
+        <div class="how-step fade-in">
+          <div class="how-step-num">4</div>
+          <h4>SOAP notes, done</h4>
+          <p>AI generates your clinical notes. Review, edit if needed, and save. Minutes, not hours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing">
+    <div class="pricing-inner">
+      <div class="pricing-header fade-in">
+        <span class="section-label">Provider plans</span>
+        <h2 class="section-title">Built for solo practitioners<br />and growing clinics.</h2>
+        <p class="section-desc" style="margin:0 auto">Free during beta. All plans include a free Bridgette Premium patient account for you.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="price-card fade-in">
+          <h3>Starter</h3>
+          <div class="price">&#8369;500<span>/mo</span></div>
+          <div class="price-desc">For solo providers just getting started</div>
+          <ul class="price-features">
+            <li><span class="check-icon">&#10003;</span> 10 Scribe Hub uses/month</li>
+            <li><span class="check-icon">&#10003;</span> Patient history viewer</li>
+            <li><span class="check-icon">&#10003;</span> AI SOAP note generation</li>
+            <li><span class="check-icon">&#10003;</span> 1 free Premium patient account</li>
+          </ul>
+          <a href="#provider-waitlist" class="price-cta price-cta-outline">Join waitlist</a>
+        </div>
+
+        <div class="price-card featured fade-in">
+          <div class="price-popular">Most popular</div>
+          <h3>Pro</h3>
+          <div class="price">&#8369;1,500<span>/mo</span></div>
+          <div class="price-desc">Unlimited for busy practitioners</div>
+          <ul class="price-features">
+            <li><span class="check-icon">&#10003;</span> Unlimited Scribe Hub uses</li>
+            <li><span class="check-icon">&#10003;</span> Full patient history viewer</li>
+            <li><span class="check-icon">&#10003;</span> AI SOAP note generation</li>
+            <li><span class="check-icon">&#10003;</span> 1 free Premium patient account</li>
+            <li><span class="check-icon">&#10003;</span> Priority support</li>
+          </ul>
+          <a href="#provider-waitlist" class="price-cta price-cta-primary">Join waitlist</a>
+        </div>
+
+        <div class="price-card fade-in">
+          <h3>Group</h3>
+          <div class="price">&#8369;899<span>/doctor/mo</span></div>
+          <div class="price-desc">For clinics with 3 to 10 providers</div>
+          <ul class="price-features">
+            <li><span class="check-icon">&#10003;</span> Unlimited Scribe Hub per doctor</li>
+            <li><span class="check-icon">&#10003;</span> Shared clinic dashboard</li>
+            <li><span class="check-icon">&#10003;</span> 1 free Family Plan per doctor</li>
+            <li><span class="check-icon">&#10003;</span> Team management</li>
+            <li><span class="check-icon">&#10003;</span> 11+ doctors? <a href="mailto:hello@bridgette.com.ph" style="color:var(--sage)">Contact us</a></li>
+          </ul>
+          <a href="#provider-waitlist" class="price-cta price-cta-outline">Join waitlist</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROVIDER WAITLIST -->
+  <section class="provider-waitlist" id="provider-waitlist">
+    <div class="pw-inner">
+      <span class="section-label">Get early access</span>
+      <h2 class="section-title">Join the provider waitlist.</h2>
+      <p class="section-desc" style="margin:0 auto">Free during beta. We'll reach out when your account is ready.</p>
+
+      <div class="pw-form">
+        <form id="provider-form">
+          <div class="form-field">
+            <label>Full name</label>
+            <input type="text" id="p-name" placeholder="Dr. Maria Santos" required />
+          </div>
+          <div class="form-field">
+            <label>Email address</label>
+            <input type="email" id="p-email" placeholder="maria@clinic.com" required />
+          </div>
+          <div class="form-field">
+            <label>I am a</label>
+            <select id="p-role" required>
+              <option value="" disabled selected>Select your role</option>
+              <option value="provider-md">Medical Doctor (MD)</option>
+              <option value="provider-nonmd">Non-MD Provider</option>
+            </select>
+          </div>
+          <div class="form-field" id="p-specialty-field" style="display:none">
+            <label>What is your specialty?</label>
+            <input type="text" id="p-specialty" placeholder="e.g. Nutritionist, Psychologist, Physical Trainer" />
+          </div>
+          <button type="submit" class="form-submit" id="p-submit-btn">Join the provider waitlist</button>
+          <div class="form-error" id="p-form-error"></div>
+        </form>
+
+        <div class="form-success" id="p-form-success">
+          <h4>You're on the list.</h4>
+          <p>We'll reach out when your provider account is ready. Salamat, Doc!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="/" class="footer-logo">
+      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px;">
+        <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
+          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="footer-wordmark">bridgette</span>
+    </a>
+    <div class="footer-links">
+      <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+    <span class="footer-copy">&copy; 2026 Bridgette Health. All rights reserved.</span>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://rkyxxxmbrwvgrljiqzdp.supabase.co'
+    const SUPABASE_ANON_KEY = 'sb_publishable_0CYJ10mUwscehXGMBSf-UA_jOXpRipg'
+
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // SPECIALTY TOGGLE
+    const pRole = document.getElementById('p-role')
+    const pSpecField = document.getElementById('p-specialty-field')
+
+    pRole.addEventListener('change', () => {
+      pSpecField.style.display = pRole.value === 'provider-nonmd' ? 'flex' : 'none'
+      if (pRole.value !== 'provider-nonmd') document.getElementById('p-specialty').value = ''
+    })
+
+    // FORM SUBMIT
+    const pForm = document.getElementById('provider-form')
+    const pSuccess = document.getElementById('p-form-success')
+    const pError = document.getElementById('p-form-error')
+    const pSubmit = document.getElementById('p-submit-btn')
+
+    pForm.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      pError.style.display = 'none'
+
+      const name = document.getElementById('p-name').value.trim()
+      const email = document.getElementById('p-email').value.trim()
+      const role = document.getElementById('p-role').value
+      const specialty = document.getElementById('p-specialty').value.trim()
+
+      if (!role) {
+        pError.textContent = 'Please select your role.'
+        pError.style.display = 'block'
+        return
+      }
+
+      pSubmit.disabled = true
+      pSubmit.textContent = 'Joining...'
+
+      const row = { full_name: name, email: email, role: role }
+      if (specialty) row.specialty = specialty
+
+      const { error } = await db.from('waitlist').insert([row])
+
+      if (error) {
+        pSubmit.disabled = false
+        pSubmit.textContent = 'Join the provider waitlist'
+        if (error.code === '23505') {
+          pError.textContent = 'This email is already on the waitlist.'
+        } else {
+          pError.textContent = 'Something went wrong. Please try again or email hello@bridgette.com.ph'
+        }
+        pError.style.display = 'block'
+      } else {
+        pForm.style.display = 'none'
+        pSuccess.style.display = 'block'
+      }
+    })
+
+    // SCROLL ANIMATIONS
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible') })
+    }, { threshold: 0.08 })
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+
+    // SMOOTH SCROLL
+    document.querySelectorAll('a[href="#provider-waitlist"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault()
+        document.getElementById('provider-waitlist').scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
+    })
+  </script>
+
+</body>
+</html>

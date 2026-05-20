@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridgette — Health Story ni Juan dela Cruz</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #FFFFFF;
+    color: #3A3530;
+    line-height: 1.5;
+    padding: 16px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* COLORS */
+  :root {
+    --forest: #5C7340; --olive: #8B9A6E; --terracotta: #C47D4E;
+    --burnt: #B5451B; --amber: #C4922A; --plum: #7B4B94;
+    --text: #3A3530; --sec: #6B6560; --bg: #F5F2EC;
+    --border: #E5DACB; --white: #FFFFFF; --espresso: #3D3229;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--white); border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 32px; height: 32px; background: var(--forest); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-family: Georgia, serif; font-weight: bold; font-size: 16px;
+  }
+  .brand-name { font-family: Georgia, serif; font-size: 18px; color: var(--forest); }
+  .share-meta { font-size: 12px; color: var(--sec); text-align: right; }
+  .share-meta strong { color: var(--text); }
+
+  .patient-block { display: flex; gap: 16px; align-items: center; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .patient-avatar {
+    width: 52px; height: 52px; background: var(--forest); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-family: Georgia, serif; font-size: 20px; color: white; font-weight: 400;
+  }
+  .patient-name { font-family: Georgia, serif; font-size: 22px; color: var(--forest); }
+  .patient-name span { color: var(--terracotta); }
+  .patient-details { font-size: 13px; color: var(--sec); }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; }
+  .t-red { background: rgba(181,69,27,0.15); color: var(--burnt); }
+  .t-amber { background: rgba(196,146,42,0.18); color: #8A6B1A; }
+  .t-green { background: rgba(92,115,64,0.15); color: var(--forest); }
+  .consent-pill {
+    margin-left: auto; font-size: 11px; font-weight: 600;
+    background: rgba(92,115,64,0.15); color: var(--forest);
+    padding: 4px 12px; border-radius: 100px;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex; gap: 0; background: var(--bg); border-radius: 12px;
+    padding: 4px; margin-bottom: 16px; border: 1px solid var(--border);
+  }
+  .vt-btn {
+    flex: 1; padding: 12px 16px; text-align: center; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s; border: none; background: transparent;
+    color: var(--sec); font-family: inherit;
+  }
+  .vt-btn.active { background: var(--white); color: var(--forest); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* SPECIALTY TABS */
+  .spec-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .spec-tab {
+    padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    cursor: pointer; white-space: nowrap; border: 1px solid var(--border);
+    background: var(--white); color: var(--sec); transition: all 0.2s; font-family: inherit;
+  }
+  .spec-tab.active { background: var(--forest); color: white; border-color: var(--forest); }
+  .spec-tab:hover:not(.active) { border-color: var(--olive); color: var(--text); }
+
+  /* TIME RANGE */
+  .time-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .time-tab {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--white); color: var(--sec); font-family: inherit;
+    transition: all 0.2s;
+  }
+  .time-tab.active { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+
+  /* CARDS */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--terracotta); margin-bottom: 12px;
+  }
+
+  /* AI SUMMARY */
+  .ai-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 12px;
+  }
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(196,146,42,0.18); padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; color: #8A6B1A;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+  }
+  .ai-text { font-size: 15px; color: var(--text); line-height: 1.7; }
+
+  /* FLAGS */
+  .flags { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .flag {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+  }
+  .flag-good { background: rgba(92,115,64,0.12); color: var(--forest); border: 1px solid rgba(92,115,64,0.2); }
+  .flag-warn { background: rgba(196,146,42,0.12); color: #8A6B1A; border: 1px solid rgba(196,146,42,0.2); }
+  .flag-alert { background: rgba(181,69,27,0.1); color: var(--burnt); border: 1px solid rgba(181,69,27,0.15); }
+
+  /* ACTION BAR */
+  .action-bar {
+    display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; font-family: inherit; transition: opacity 0.2s;
+  }
+  .ab-primary { background: var(--terracotta); color: white; }
+  .ab-secondary { background: var(--white); color: var(--forest); border: 1.5px solid var(--forest); }
+
+  /* LAB GRID */
+  .lab-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .lab-item {
+    background: var(--bg); border-radius: 10px; padding: 14px;
+    border-left: 3px solid var(--forest);
+  }
+  .lab-item.alert { border-left-color: var(--burnt); }
+  .lab-item.improving { border-left-color: var(--amber); }
+  .lab-label { font-size: 11px; color: var(--sec); text-transform: uppercase; letter-spacing: 0.3px; }
+  .lab-value { font-size: 22px; font-weight: 700; margin: 2px 0; }
+  .lab-value.good { color: var(--forest); }
+  .lab-value.warn { color: var(--amber); }
+  .lab-value.bad { color: var(--burnt); }
+  .lab-ref { font-size: 11px; color: var(--sec); }
+  .lab-trend { font-size: 11px; font-weight: 600; margin-top: 4px; }
+
+  /* TIMELINE */
+  .timeline-item {
+    display: flex; gap: 16px; padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    margin-top: 4px; flex-shrink: 0;
+  }
+  .tl-date { font-size: 13px; font-weight: 600; color: var(--text); }
+  .tl-type { font-size: 12px; color: var(--sec); }
+  .tl-soap {
+    background: var(--bg); border-radius: 10px; padding: 12px;
+    margin-top: 8px; font-size: 13px; color: var(--text); line-height: 1.65;
+    border-left: 3px solid var(--amber);
+  }
+  .tl-soap strong { color: var(--forest); }
+
+  /* MEDS */
+  .med-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; background: var(--bg); border-radius: 10px;
+    margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .med-pill {
+    width: 32px; height: 32px; background: rgba(123,75,148,0.15);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 14px;
+  }
+  .med-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .med-dose { font-size: 12px; color: var(--sec); }
+  .med-status {
+    margin-left: auto; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .ms-active { background: rgba(92,115,64,0.15); color: var(--forest); }
+  .ms-prn { background: rgba(196,146,42,0.15); color: #8A6B1A; }
+
+  /* LIFESTYLE */
+  .ls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .ls-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+  .ls-val { font-size: 18px; font-weight: 700; }
+  .ls-unit { font-size: 11px; color: var(--sec); }
+  .ls-trend { font-size: 10px; font-weight: 600; margin-top: 3px; }
+  .ls-label { font-size: 10px; color: var(--sec); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+  /* FOOD LOG */
+  .food-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .food-row:last-child { border-bottom: none; }
+  .food-date { font-weight: 600; color: var(--forest); min-width: 70px; }
+  .food-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px;
+    margin-left: auto; white-space: nowrap;
+  }
+  .ft-low { background: rgba(92,115,64,0.15); color: var(--forest); }
+  .ft-mod { background: rgba(196,146,42,0.15); color: #8A6B1A; }
+  .ft-high { background: rgba(181,69,27,0.12); color: var(--burnt); }
+
+  /* DEMO FOOTER */
+  .demo-bar {
+    text-align: center; padding: 24px; margin-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .demo-cta {
+    display: inline-block; background: var(--terracotta); color: white;
+    padding: 14px 32px; border-radius: 100px; font-size: 15px; font-weight: 600;
+    text-decoration: none; margin-bottom: 8px;
+  }
+  .demo-note { font-size: 12px; color: var(--sec); }
+
+  .hidden { display: none; }
+
+  @media (max-width: 768px) {
+    .lab-grid { grid-template-columns: 1fr 1fr; }
+    .ls-grid { grid-template-columns: 1fr 1fr 1fr; }
+    .patient-block { flex-direction: column; align-items: flex-start; }
+    .consent-pill { margin-left: 0; }
+    .flags { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-mark">B</div>
+        <span class="brand-name">bridgette</span>
+      </div>
+      <div class="share-meta">
+        <strong>Share Token:</strong> brg_jDc82kPqR7vL9n<br/>
+        Labs + Lifestyle, May 2026 to Nov 2026<br/>
+        Expires <span style="color:var(--terracotta);font-weight:600">November 20, 2026</span>
+      </div>
+    </div>
+    <div class="patient-block">
+      <div class="patient-avatar">J</div>
+      <div>
+        <div class="patient-name">Juan dela <span>Cruz</span></div>
+        <div class="patient-details">38 years old, Male, DOB: March 15, 1988, Hi-Precision Diagnostics, Quezon City</div>
+        <div class="tags">
+          <span class="tag t-red">GOUT</span>
+          <span class="tag t-amber">HYPERURICEMIA</span>
+          <span class="tag t-green">FHX: HYPERTENSION</span>
+        </div>
+      </div>
+      <div class="consent-pill">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1.5" y="4" width="7" height="5" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3 4V2.5C3 1.672 3.672 1 4.5 1H5.5C6.328 1 7 1.672 7 2.5V4" stroke="currentColor" stroke-width="1"/></svg>
+        Shared with consent
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW TOGGLE -->
+  <div class="view-toggle">
+    <button class="vt-btn active" onclick="showView('summary')">30-second Summary</button>
+    <button class="vt-btn" onclick="showView('full')">Full Record, 2026 to Present</button>
+  </div>
+
+  <!-- ============ SUMMARY VIEW ============ -->
+  <div id="summary-view">
+
+    <!-- Specialty Tabs -->
+    <div class="spec-tabs">
+      <button class="spec-tab active" onclick="setSpec(this,'general')">General</button>
+      <button class="spec-tab" onclick="setSpec(this,'rheumatology')">Rheumatology</button>
+      <button class="spec-tab" onclick="setSpec(this,'nephrology')">Nephrology</button>
+      <button class="spec-tab" onclick="setSpec(this,'nutrition')">Nutrition</button>
+    </div>
+
+    <!-- Flags -->
+    <div class="flags">
+      <div class="flag flag-good">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Uric acid at target (5.4 mg/dL)
+      </div>
+      <div class="flag flag-good">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Zero flares in 4 months
+      </div>
+      <div class="flag flag-warn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 4V7.5M7 9.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Holiday season: flare risk counseling due
+      </div>
+      <div class="flag flag-good">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Kidney function stable (eGFR 92)
+      </div>
+    </div>
+
+    <!-- AI Summary -->
+    <div class="ai-card">
+      <div class="ai-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L6 4H9L6.5 6L7.5 9L5 7L2.5 9L3.5 6L1 4H4L5 1Z" stroke="currentColor" stroke-width="0.8" stroke-linejoin="round"/></svg>
+        AI Summary, Updated Sep 2, 2026
+      </div>
+      <div class="ai-text" id="ai-summary-text">
+        Juan's gout is well-controlled on allopurinol 200mg. His uric acid dropped 44.9% over 4 months (9.8 to 5.4), now below the 6.0 target. CRP normalized from 28 to 3 mg/L, confirming inflammation resolution. Zero flares since the initial episode. He eliminated beer, reduced organ meats and lechon, and started a walking routine (3x/week, 30 min). He lost 3kg (BMI 27.8 to 26.1). Kidney function remains stable (creatinine 0.9, eGFR 92). <strong style="color:var(--amber)">Key risk: holiday season. Proactive counseling about pulutan and alcohol before November gatherings would be valuable.</strong> Next labs due December 2026.
+      </div>
+    </div>
+
+    <!-- Key Labs -->
+    <div class="card">
+      <div class="card-title">Key Lab Results (Most Recent: Sep 2, 2026)</div>
+      <div class="lab-grid">
+        <div class="lab-item">
+          <div class="lab-label">Uric Acid</div>
+          <div class="lab-value good">5.4</div>
+          <div class="lab-ref">mg/dL (ref: 3.5 to 7.2)</div>
+          <div class="lab-trend" style="color:var(--forest)">44.9% improvement</div>
+        </div>
+        <div class="lab-item">
+          <div class="lab-label">CRP</div>
+          <div class="lab-value good">3.0</div>
+          <div class="lab-ref">mg/L (ref: below 10)</div>
+          <div class="lab-trend" style="color:var(--forest)">Normalized</div>
+        </div>
+        <div class="lab-item">
+          <div class="lab-label">Creatinine</div>
+          <div class="lab-value good">0.9</div>
+          <div class="lab-ref">mg/dL (ref: 0.7 to 1.3)</div>
+          <div class="lab-trend" style="color:var(--forest)">Stable</div>
+        </div>
+        <div class="lab-item">
+          <div class="lab-label">eGFR</div>
+          <div class="lab-value good">92</div>
+          <div class="lab-ref">mL/min (ref: above 90)</div>
+          <div class="lab-trend" style="color:var(--forest)">Normal</div>
+        </div>
+        <div class="lab-item improving">
+          <div class="lab-label">BMI</div>
+          <div class="lab-value warn">26.1</div>
+          <div class="lab-ref">kg/m2 (target: below 25)</div>
+          <div class="lab-trend" style="color:var(--amber)">Down from 27.8</div>
+        </div>
+        <div class="lab-item">
+          <div class="lab-label">HbA1c</div>
+          <div class="lab-value good">5.6%</div>
+          <div class="lab-ref">(ref: below 5.7)</div>
+          <div class="lab-trend" style="color:var(--forest)">Normal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="action-btn ab-primary">Start Scribe Hub Consultation</button>
+      <button class="action-btn ab-secondary" onclick="showView('full')">View full record</button>
+    </div>
+  </div>
+
+  <!-- ============ FULL RECORD VIEW ============ -->
+  <div id="full-view" class="hidden">
+
+    <!-- Time Range -->
+    <div class="time-tabs">
+      <button class="time-tab active" onclick="setTime(this,'6mo')">6 months</button>
+      <button class="time-tab" onclick="setTime(this,'3mo')">3 months</button>
+      <button class="time-tab" onclick="setTime(this,'all')">All time</button>
+    </div>
+
+    <!-- Uric Acid Chart -->
+    <div class="card">
+      <div class="card-title">Uric Acid Trend <span id="time-banner" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--sec)">6-Month View</span></div>
+      <div style="font-size:13px;color:var(--sec);margin-bottom:12px">Target: below 6.0 mg/dL</div>
+      <svg width="100%" height="140" viewBox="0 0 600 140" fill="none">
+        <rect x="0" y="0" width="600" height="140" fill="none"/>
+        <line x1="40" y1="20" x2="580" y2="20" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+        <text x="0" y="24" fill="#6B6560" font-size="10" font-family="sans-serif">10.0</text>
+        <line x1="40" y1="60" x2="580" y2="60" stroke="var(--terracotta)" stroke-width="0.8" stroke-dasharray="4"/>
+        <text x="0" y="64" fill="#C47D4E" font-size="10" font-family="sans-serif">6.0</text>
+        <line x1="40" y1="100" x2="580" y2="100" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+        <text x="0" y="104" fill="#6B6560" font-size="10" font-family="sans-serif">3.0</text>
+        <polyline points="100,18 310,48 520,76" stroke="var(--forest)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="100" cy="18" r="6" fill="var(--burnt)"/>
+        <circle cx="310" cy="48" r="6" fill="var(--amber)"/>
+        <circle cx="520" cy="76" r="6" fill="var(--forest)"/>
+        <text x="82" y="12" fill="var(--burnt)" font-size="14" font-family="sans-serif" font-weight="700">9.8</text>
+        <text x="292" y="42" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">7.8</text>
+        <text x="502" y="70" fill="var(--forest)" font-size="14" font-family="sans-serif" font-weight="700">5.4</text>
+        <text x="80" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">May 2026</text>
+        <text x="280" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Jul 2026</text>
+        <text x="490" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Sep 2026</text>
+        <!-- target zone -->
+        <rect x="40" y="60" width="540" height="40" fill="rgba(92,115,64,0.06)"/>
+        <text x="545" y="78" fill="var(--forest)" font-size="9" font-family="sans-serif">Target zone</text>
+      </svg>
+      <div style="background:rgba(92,115,64,0.15);border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 11V3M7 3L4 6M7 3L10 6" stroke="var(--forest)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span style="font-size:13px;font-weight:600;color:var(--forest)">44.9% improvement. Target reached at Visit 3.</span>
+      </div>
+    </div>
+
+    <!-- Supporting Labs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="card">
+        <div class="card-title">CRP (Inflammation)</div>
+        <svg width="100%" height="60" viewBox="0 0 300 60" fill="none">
+          <polyline points="30,5 150,28 270,48" stroke="var(--olive)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="30" cy="5" r="4" fill="var(--burnt)"/><circle cx="150" cy="28" r="4" fill="var(--amber)"/><circle cx="270" cy="48" r="4" fill="var(--forest)"/>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px">
+          <span style="color:var(--burnt);font-weight:600">28</span><span style="color:var(--amber);font-weight:600">8</span><span style="color:var(--forest);font-weight:600">3 mg/L</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Creatinine (Kidney)</div>
+        <svg width="100%" height="60" viewBox="0 0 300 60" fill="none">
+          <polyline points="30,28 150,28 270,30" stroke="var(--olive)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="30" cy="28" r="4" fill="var(--forest)"/><circle cx="150" cy="28" r="4" fill="var(--forest)"/><circle cx="270" cy="30" r="4" fill="var(--forest)"/>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px">
+          <span style="color:var(--forest);font-weight:600">1.0</span><span style="color:var(--forest);font-weight:600">1.0</span><span style="color:var(--forest);font-weight:600">0.9 mg/dL</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clinical Timeline -->
+    <div class="card">
+      <div class="card-title">Clinical Timeline</div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--burnt)"></div>
+        <div style="flex:1">
+          <div class="tl-date">May 20, 2026</div>
+          <div class="tl-type">Initial Consult, Dr. Reyes (Rheumatology), The Medical City QC</div>
+          <div class="tl-soap">
+            <strong>S:</strong> Acute left big toe pain x 3 days. Ate lechon + beer last weekend. FHx: gout (father).<br/>
+            <strong>O:</strong> UA 9.8, CRP 28, Cr 1.0, eGFR 92. Podagra left 1st MTP.<br/>
+            <strong>A:</strong> Acute gouty arthritis, hyperuricemia.<br/>
+            <strong>P:</strong> Colchicine 0.6mg BID x 7d. Start allopurinol 100mg after flare. Diet counseling. Recheck 6 wks.
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--amber)"></div>
+        <div style="flex:1">
+          <div class="tl-date">July 1, 2026</div>
+          <div class="tl-type">Follow-up, Dr. Reyes (Rheumatology)</div>
+          <div class="tl-soap">
+            <strong>S:</strong> No flare. Tolerated meds. "Tinanggal ko na 'yung beer."<br/>
+            <strong>O:</strong> UA 7.8 (down from 9.8), CRP 8, Cr 1.0. No joint swelling.<br/>
+            <strong>A:</strong> Hyperuricemia improving.<br/>
+            <strong>P:</strong> Increase allopurinol to 200mg. Continue hydration. Recheck 8 wks. Target: below 6.0.
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--forest)"></div>
+        <div style="flex:1">
+          <div class="tl-date">September 2, 2026</div>
+          <div class="tl-type">Follow-up, Dr. Reyes (Rheumatology)</div>
+          <div class="tl-soap">
+            <strong>S:</strong> Zero flares in 4 mos. Lost 3kg. "Nawala na 'yung takot ko sa gout, Doc."<br/>
+            <strong>O:</strong> UA 5.4 (TARGET MET), CRP 3, Cr 0.9. BMI 26.1 (prev 27.8).<br/>
+            <strong>A:</strong> Gout well-controlled. UA at goal. Inflammation resolved.<br/>
+            <strong>P:</strong> Maintain allopurinol 200mg. Continue lifestyle changes. Recheck 3 mos. Excellent progress.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medications -->
+    <div class="card">
+      <div class="card-title">Current Medications</div>
+      <div class="med-row">
+        <div class="med-pill">&#x1F48A;</div>
+        <div><div class="med-name">Allopurinol 200mg</div><div class="med-dose">Once daily, Started June 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row">
+        <div class="med-pill" style="background:rgba(196,146,42,0.15)">&#x1F48A;</div>
+        <div><div class="med-name">Colchicine 0.6mg</div><div class="med-dose">As needed for flares, Started May 2026</div></div>
+        <div class="med-status ms-prn">PRN</div>
+      </div>
+    </div>
+
+    <!-- Past Medications -->
+    <div class="card">
+      <div class="card-title">Past Medications</div>
+      <div class="med-row" style="opacity:0.7">
+        <div class="med-pill" style="background:rgba(107,101,96,0.1)">&#x1F48A;</div>
+        <div><div class="med-name">Allopurinol 100mg</div><div class="med-dose">Once daily, May 2026 to June 2026</div></div>
+        <div class="med-status" style="background:rgba(107,101,96,0.1);color:var(--sec)">Titrated up</div>
+      </div>
+      <div class="med-row" style="opacity:0.7">
+        <div class="med-pill" style="background:rgba(107,101,96,0.1)">&#x1F48A;</div>
+        <div><div class="med-name">Colchicine 0.6mg BID</div><div class="med-dose">Twice daily x 7 days, May 2026 (acute flare)</div></div>
+        <div class="med-status" style="background:rgba(107,101,96,0.1);color:var(--sec)">Completed</div>
+      </div>
+      <div class="med-row" style="opacity:0.7">
+        <div class="med-pill" style="background:rgba(107,101,96,0.1)">&#x1F48A;</div>
+        <div><div class="med-name">Naproxen 500mg</div><div class="med-dose">As needed, May 2026 (pain during flare)</div></div>
+        <div class="med-status" style="background:rgba(107,101,96,0.1);color:var(--sec)">Discontinued</div>
+      </div>
+    </div>
+
+    <!-- Supplements -->
+    <div class="card">
+      <div class="card-title">Current Supplements</div>
+      <div class="med-row">
+        <div class="med-pill" style="background:rgba(139,154,110,0.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="med-name">Vitamin C 500mg</div><div class="med-dose">Once daily, Started June 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row">
+        <div class="med-pill" style="background:rgba(139,154,110,0.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="med-name">Fish Oil (Omega-3) 1000mg</div><div class="med-dose">Once daily, Started July 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row">
+        <div class="med-pill" style="background:rgba(139,154,110,0.15)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="med-name">Cherry Extract 500mg</div><div class="med-dose">Twice daily, Started June 2026, for uric acid support</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+    </div>
+
+    <!-- Lifestyle -->
+    <div class="card">
+      <div class="card-title">Lifestyle Summary (Last 30 Days)</div>
+      <div class="ls-grid">
+        <div class="ls-card">
+          <div class="ls-label">Avg. Daily Calories</div>
+          <div class="ls-val" style="color:var(--forest)">1,820</div>
+          <div class="ls-unit">kcal/day</div>
+          <div class="ls-trend" style="color:var(--forest)">-320 from baseline</div>
+        </div>
+        <div class="ls-card">
+          <div class="ls-label">Avg. Sleep</div>
+          <div class="ls-val" style="color:var(--plum)">6.8</div>
+          <div class="ls-unit">hours/night</div>
+          <div class="ls-trend" style="color:var(--plum)">+0.5 hrs from baseline</div>
+        </div>
+        <div class="ls-card">
+          <div class="ls-label">Weekly Activity</div>
+          <div class="ls-val" style="color:var(--terracotta)">3.2</div>
+          <div class="ls-unit">sessions/week</div>
+          <div class="ls-trend" style="color:var(--terracotta)">30-min walks, new habit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Food Log -->
+    <div class="card">
+      <div class="card-title">Recent Food Log (Purine Tracking)</div>
+      <div class="food-row"><span class="food-date">Sep 1</span> Tinolang manok, brown rice, kangkong <span class="food-tag ft-low">Low purine</span></div>
+      <div class="food-row"><span class="food-date">Aug 30</span> Grilled chicken breast, salad, water <span class="food-tag ft-low">Low purine</span></div>
+      <div class="food-row"><span class="food-date">Aug 28</span> Sinigang na hipon, white rice, calamansi <span class="food-tag ft-mod">Moderate</span></div>
+      <div class="food-row"><span class="food-date">Aug 25</span> Adobong manok, brown rice, sitaw <span class="food-tag ft-low">Low purine</span></div>
+      <div class="food-row"><span class="food-date">Aug 22</span> Kare-kare, bagoong (small), white rice <span class="food-tag ft-mod">Moderate</span></div>
+      <div class="food-row"><span class="food-date">Aug 18</span> Lechon kawali (small portion), pinakbet <span class="food-tag ft-high">High purine</span></div>
+      <div style="background:rgba(196,146,42,0.12);border-radius:8px;padding:10px 14px;margin-top:12px;display:flex;align-items:flex-start;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:2px"><path d="M7 4V7.5M7 9.5V10" stroke="#C4922A" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="7" r="6" stroke="#C4922A" stroke-width="1.2"/></svg>
+        <span style="font-size:12px;color:#8A6B1A;line-height:1.5"><strong>Note:</strong> Purine levels are AI-analyzed based on logged meals. These are estimates, not clinical measurements. Please discuss dietary patterns with the patient during consultation for personalized guidance.</span>
+      </div>
+    </div>
+
+    <!-- Overall Health Trends -->
+    <div class="card">
+      <div class="card-title">Overall Health Trends (6-Month Overview)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:var(--bg);border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">Uric Acid (mg/dL)</span>
+            <span style="font-size:11px;font-weight:600;color:var(--forest)">-44.9%</span>
+          </div>
+          <svg width="100%" height="60" viewBox="0 0 200 60" fill="none">
+            <line x1="0" y1="30" x2="200" y2="30" stroke="var(--terracotta)" stroke-width="0.5" stroke-dasharray="3"/>
+            <text x="170" y="28" fill="var(--terracotta)" font-size="7" font-family="sans-serif">6.0</text>
+            <polyline points="10,8 65,22 130,32 195,44" stroke="var(--forest)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="8" r="3" fill="var(--burnt)"/><circle cx="65" cy="22" r="3" fill="var(--amber)"/><circle cx="195" cy="44" r="3" fill="var(--forest)"/>
+            <text x="2" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">May</text>
+            <text x="55" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Jul</text>
+            <text x="180" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Sep</text>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px"><span style="color:var(--burnt);font-weight:600">9.8</span><span style="color:var(--amber);font-weight:600">7.8</span><span style="color:var(--forest);font-weight:600">5.4</span></div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">CRP / Inflammation (mg/L)</span>
+            <span style="font-size:11px;font-weight:600;color:var(--forest)">-89.3%</span>
+          </div>
+          <svg width="100%" height="60" viewBox="0 0 200 60" fill="none">
+            <line x1="0" y1="40" x2="200" y2="40" stroke="var(--olive)" stroke-width="0.5" stroke-dasharray="3"/>
+            <text x="170" y="38" fill="var(--olive)" font-size="7" font-family="sans-serif">10.0</text>
+            <polyline points="10,5 65,28 195,48" stroke="var(--olive)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="5" r="3" fill="var(--burnt)"/><circle cx="65" cy="28" r="3" fill="var(--amber)"/><circle cx="195" cy="48" r="3" fill="var(--forest)"/>
+            <text x="2" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">May</text>
+            <text x="55" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Jul</text>
+            <text x="180" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Sep</text>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px"><span style="color:var(--burnt);font-weight:600">28</span><span style="color:var(--amber);font-weight:600">8</span><span style="color:var(--forest);font-weight:600">3.0</span></div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">Weight (kg)</span>
+            <span style="font-size:11px;font-weight:600;color:var(--forest)">-3 kg</span>
+          </div>
+          <svg width="100%" height="60" viewBox="0 0 200 60" fill="none">
+            <polyline points="10,12 65,20 130,28 195,38" stroke="var(--plum)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="12" r="3" fill="var(--plum)"/><circle cx="195" cy="38" r="3" fill="var(--forest)"/>
+            <text x="2" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">May</text>
+            <text x="180" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Sep</text>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px"><span style="color:var(--plum);font-weight:600">79 kg</span><span style="color:var(--forest);font-weight:600">76 kg</span></div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">Gout Flares</span>
+            <span style="font-size:11px;font-weight:600;color:var(--forest)">Controlled</span>
+          </div>
+          <svg width="100%" height="60" viewBox="0 0 200 60" fill="none">
+            <!-- bar chart: 1 flare in May, 0 rest -->
+            <rect x="10" y="10" width="28" height="40" rx="4" fill="var(--burnt)" opacity="0.8"/>
+            <text x="18" y="6" fill="var(--burnt)" font-size="9" font-family="sans-serif" font-weight="700">1</text>
+            <rect x="48" y="46" width="28" height="4" rx="2" fill="var(--forest)" opacity="0.3"/>
+            <rect x="86" y="46" width="28" height="4" rx="2" fill="var(--forest)" opacity="0.3"/>
+            <rect x="124" y="46" width="28" height="4" rx="2" fill="var(--forest)" opacity="0.3"/>
+            <rect x="162" y="46" width="28" height="4" rx="2" fill="var(--forest)" opacity="0.3"/>
+            <text x="55" y="6" fill="var(--forest)" font-size="9" font-family="sans-serif" font-weight="700">0</text>
+            <text x="93" y="6" fill="var(--forest)" font-size="9" font-family="sans-serif" font-weight="700">0</text>
+            <text x="131" y="6" fill="var(--forest)" font-size="9" font-family="sans-serif" font-weight="700">0</text>
+            <text x="169" y="6" fill="var(--forest)" font-size="9" font-family="sans-serif" font-weight="700">0</text>
+            <text x="10" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">May</text>
+            <text x="50" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Jun</text>
+            <text x="88" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Jul</text>
+            <text x="126" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Aug</text>
+            <text x="164" y="56" fill="var(--sec)" font-size="7" font-family="sans-serif">Sep</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="action-btn ab-primary">Start Scribe Hub Consultation</button>
+      <button class="action-btn ab-secondary" onclick="showView('summary')">Back to summary</button>
+    </div>
+  </div>
+
+  <!-- DEMO FOOTER -->
+  <div class="demo-bar">
+    <p style="font-size:12px;color:var(--sec);margin-bottom:14px">This is a sample demo. In the real app, data is controlled by the patient.</p>
+    <a href="/" class="demo-cta">Get Bridgette for free</a>
+    <div class="demo-note">Free during beta. No credit card required.</div>
+  </div>
+
+</div>
+
+<script>
+function showView(view) {
+  document.getElementById('summary-view').classList.toggle('hidden', view !== 'summary');
+  document.getElementById('full-view').classList.toggle('hidden', view !== 'full');
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (!event.target.classList.contains('vt-btn')) {
+    document.querySelectorAll('.vt-btn').forEach(b => {
+      if ((view === 'summary' && b.textContent.includes('30')) || (view === 'full' && b.textContent.includes('Full'))) b.classList.add('active');
+    });
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setTime(el, range) {
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  const labels = {
+    '6mo': { t1: 'May 2026', t2: 'Jul 2026', t3: 'Sep 2026', title: '6-Month View' },
+    '3mo': { t1: 'Jul 2026', t2: 'Aug 2026', t3: 'Sep 2026', title: '3-Month View' },
+    'all': { t1: 'May 2026', t2: 'Jul 2026', t3: 'Sep 2026', title: 'All Time (Since May 2026)' }
+  };
+
+  const info = labels[range];
+  const banner = document.getElementById('time-banner');
+  if (banner) banner.textContent = info.title;
+}
+
+function setSpec(el, spec) {
+  document.querySelectorAll('.spec-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const summaries = {
+    general: `Juan's gout is well-controlled on allopurinol 200mg. His uric acid dropped 44.9% over 4 months (9.8 to 5.4), now below the 6.0 target. CRP normalized from 28 to 3 mg/L, confirming inflammation resolution. Zero flares since the initial episode. He eliminated beer, reduced organ meats and lechon, and started a walking routine (3x/week, 30 min). He lost 3kg (BMI 27.8 to 26.1). Kidney function remains stable (creatinine 0.9, eGFR 92). <strong style="color:var(--amber)">Key risk: holiday season. Proactive counseling about pulutan and alcohol before November gatherings would be valuable.</strong> Next labs due December 2026.`,
+    rheumatology: `Acute gouty arthritis diagnosed May 2026 (podagra, left 1st MTP). Initial UA 9.8 mg/dL, now 5.4 (below 6.0 target). Allopurinol titrated from 100mg to 200mg with good tolerance. No flares in 4 months since initiation. Colchicine kept as PRN. CRP normalized (28 to 3). No tophi detected. Joint exam unremarkable at last visit. <strong style="color:var(--amber)">Consider prophylactic colchicine during holiday period given dietary risk.</strong> Long-term goal: maintain UA below 6.0 for tophus prevention. Recheck December 2026.`,
+    nephrology: `Kidney function is reassuring. Creatinine stable at 0.9 to 1.0 over 3 checks. eGFR 92 (normal). No proteinuria. Allopurinol 200mg well-tolerated with no renal concerns. Uric acid control (5.4 mg/dL) is protective against urate nephropathy. <strong style="color:var(--forest)">No nephrology-specific action needed.</strong> Continue monitoring creatinine at routine follow-ups. Adequate hydration maintained per lifestyle logs.`,
+    nutrition: `Significant dietary changes since diagnosis. Eliminated beer and reduced lechon/organ meats. Food logs show shift toward low-purine Filipino meals: tinola, grilled proteins, vegetables. Brown rice replacing white rice in ~60% of meals. Average daily calories 1,820 (down 320 from baseline). Lost 3kg in 4 months. <strong style="color:var(--amber)">Moderate-purine meals still appear 2x/week (sinigang na hipon, kare-kare). Holiday season poses the biggest risk: pulutan, beer, lechon at gatherings.</strong> Walking routine (3x/week, 30 min) is new and positive. Recommend: prep low-purine pulutan alternatives before December.`
+  };
+  document.getElementById('ai-summary-text').innerHTML = summaries[spec];
+}
+</script>
+
+</body>
+</html>
