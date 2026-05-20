@@ -819,8 +819,13 @@
           <select id="role" required>
             <option value="" disabled selected>Select your role</option>
             <option value="patient">Patient</option>
-            <option value="provider">Healthcare Provider</option>
+            <option value="provider-md">Medical Doctor (MD)</option>
+            <option value="provider-nonmd">Non-MD Provider</option>
           </select>
+        </div>
+        <div class="form-field" id="specialty-field" style="display:none">
+          <label>What is your specialty?</label>
+          <input type="text" id="specialty" placeholder="e.g. Nutritionist, Psychologist, Physical Trainer" />
         </div>
         <button type="submit" class="form-submit" id="submit-btn">
           Join the waitlist
@@ -1068,51 +1073,51 @@
           </div>
         </div>
 
-        <!-- Sleep Tracking -->
+        <!-- OFW Family Connection -->
         <div class="showcase-card fade-in">
-          <div class="showcase-visual">
-            <div class="mock-phone">
-              <div class="mock-header">
-                <span class="mock-header-title">Sleep Log</span>
-                <span style="font-size:9px;color:rgba(255,255,255,0.5)">This week</span>
-              </div>
-              <div class="mock-content">
-                <div style="display:flex;align-items:flex-end;gap:6px;height:70px;margin-bottom:8px;padding:0 4px">
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-                    <div style="width:100%;background:var(--teal);border-radius:4px 4px 0 0;height:52px;opacity:0.7"></div>
-                    <span style="font-size:7px;color:var(--gray)">Mon</span>
-                  </div>
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-                    <div style="width:100%;background:var(--teal);border-radius:4px 4px 0 0;height:38px;opacity:0.5"></div>
-                    <span style="font-size:7px;color:var(--gray)">Tue</span>
-                  </div>
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-                    <div style="width:100%;background:var(--teal);border-radius:4px 4px 0 0;height:60px;opacity:0.8"></div>
-                    <span style="font-size:7px;color:var(--gray)">Wed</span>
-                  </div>
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-                    <div style="width:100%;background:var(--teal);border-radius:4px 4px 0 0;height:45px;opacity:0.6"></div>
-                    <span style="font-size:7px;color:var(--gray)">Thu</span>
-                  </div>
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-                    <div style="width:100%;background:var(--sage);border-radius:4px 4px 0 0;height:56px"></div>
-                    <span style="font-size:7px;color:var(--sage);font-weight:600">Fri</span>
-                  </div>
+          <div class="showcase-visual" style="background:var(--ink)">
+            <div style="width:100%;max-width:260px">
+              <!-- Location badge -->
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:9px;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:4px">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1C2.895 1 2 1.895 2 3C2 4.5 4 7 4 7C4 7 6 4.5 6 3C6 1.895 5.105 1 4 1Z" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/></svg>
+                  Mama in Manila
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;background:var(--cream);border-radius:6px;padding:6px 8px">
-                  <div>
-                    <div style="font-size:8px;color:var(--gray)">Weekly average</div>
-                    <div style="font-size:12px;font-weight:700;color:var(--teal)">6.8 hrs</div>
-                  </div>
-                  <div style="font-size:8px;color:var(--sage);font-weight:600">Target: 7.5 hrs</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:4px">
+                  Anak in Dubai
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1C2.895 1 2 1.895 2 3C2 4.5 4 7 4 7C4 7 6 4.5 6 3C6 1.895 5.105 1 4 1Z" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/></svg>
+                </div>
+              </div>
+              <!-- Daughter message (right side) -->
+              <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+                <div style="background:var(--sage);color:white;border-radius:14px 14px 4px 14px;padding:11px 14px;font-size:12.5px;line-height:1.5;max-width:85%">
+                  Mama, nalimutan mo na naman 'yung gamot mo. 😅
+                  <div style="font-size:8px;color:rgba(255,255,255,0.5);text-align:right;margin-top:4px">9:42 PM Dubai</div>
+                </div>
+              </div>
+              <!-- Mama message (left side) -->
+              <div style="display:flex;justify-content:flex-start;margin-bottom:8px">
+                <div style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.9);border-radius:14px 14px 14px 4px;padding:11px 14px;font-size:12.5px;line-height:1.5;max-width:85%">
+                  Ay, oo nga anak. Inumin ko na. Ingat ka riyan. 💛
+                  <div style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:4px">5:42 PM Manila</div>
+                </div>
+              </div>
+              <!-- Bridgette notification -->
+              <div style="background:rgba(61,122,94,0.15);border:1px solid rgba(61,122,94,0.25);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+                <div style="width:24px;height:24px;background:var(--sage);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2L7 5H10L7.5 7L8.5 10L6 8L3.5 10L4.5 7L2 5H5L6 2Z" stroke="white" stroke-width="0.8" stroke-linejoin="round"/></svg>
+                </div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.7);line-height:1.4">
+                  <strong style="color:var(--sage);display:block;font-size:8px;text-transform:uppercase;letter-spacing:0.3px">Bridgette</strong>
+                  Medication reminder sent to Mama
                 </div>
               </div>
             </div>
           </div>
           <div class="showcase-body">
-            <span class="showcase-badge badge-live">Live</span>
-            <h3>Sleep tracking</h3>
-            <p>Log your sleep daily and see your patterns week over week. Bridgette connects your sleep to how the rest of your health is doing.</p>
+            <span class="showcase-badge badge-live">OFW Add-on</span>
+            <h3>Stay connected, kahit malayo</h3>
+            <p>Your family abroad can see activity indicators and send gentle reminders. With your permission, always. Distance doesn't mean disconnection.</p>
           </div>
         </div>
 
@@ -1121,7 +1126,7 @@
           <div class="showcase-visual" style="background:var(--ink)">
             <div class="mock-message">
               <div class="msg-bubble">
-                Hi Doc, ito po ang buong health story ko sa Bridgette. Lahat po nandyan: labs, lifestyle, at trends. Para hindi na po tayo mag-ulit bukas. Salamat po!
+                Hi Doc, ito po ang buong health story ko sa Bridgette. See you tomorrow, Doc. Salamat po!
                 <div class="msg-link">
                   <div class="msg-link-icon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1250,8 +1255,8 @@
               <path d="M8 13V10M6 11H10" stroke="#FBC02D" stroke-width="1.3" stroke-linecap="round"/>
             </svg>
           </div>
-          <h4>Scribe Hub for doctors</h4>
-          <p>AI transcription in Filipino and English. SOAP notes generated instantly.</p>
+          <h4>Scribe Hub for providers</h4>
+          <p>AI transcription in Filipino and English. Clinical notes generated instantly. For doctors and allied health professionals.</p>
         </div>
         <div class="solution-card">
           <div class="icon-wrap">
@@ -1295,7 +1300,7 @@
             </svg>
           </div>
           <h3>Healthcare Providers</h3>
-          <p>Get a patient's full story before they sit down. AI transcription in Filipino and English. SOAP notes done in seconds.</p>
+          <p>Get a patient's full story before they sit down. AI transcription in Filipino and English. SOAP notes done in seconds. For MDs, nutritionists, psychologists, physical trainers, and more.</p>
         </div>
         <div class="who-card fade-in">
           <div class="icon-wrap">
@@ -1396,6 +1401,19 @@
     const errorEl = document.getElementById('form-error')
     const submitBtn = document.getElementById('submit-btn')
 
+    // SPECIALTY FIELD TOGGLE
+    const roleSelect = document.getElementById('role')
+    const specialtyField = document.getElementById('specialty-field')
+
+    roleSelect.addEventListener('change', () => {
+      if (roleSelect.value === 'provider-nonmd') {
+        specialtyField.style.display = 'flex'
+      } else {
+        specialtyField.style.display = 'none'
+        document.getElementById('specialty').value = ''
+      }
+    })
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault()
       errorEl.style.display = 'none'
@@ -1403,6 +1421,7 @@
       const name = document.getElementById('name').value.trim()
       const email = document.getElementById('email').value.trim()
       const role = document.getElementById('role').value
+      const specialty = document.getElementById('specialty').value.trim()
 
       if (!role) {
         errorEl.textContent = 'Please select your role.'
@@ -1413,11 +1432,10 @@
       submitBtn.disabled = true
       submitBtn.textContent = 'Joining...'
 
-      const { error } = await db.from('waitlist').insert([{
-        full_name: name,
-        email: email,
-        role: role
-      }])
+      const row = { full_name: name, email: email, role: role }
+      if (specialty) row.specialty = specialty
+
+      const { error } = await db.from('waitlist').insert([row])
 
       if (error) {
         submitBtn.disabled = false
