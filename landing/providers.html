@@ -983,10 +983,16 @@
     // SPECIALTY TOGGLE
     const pRole = document.getElementById('p-role')
     const pSpecField = document.getElementById('p-specialty-field')
+    const pSpecInput = document.getElementById('p-specialty')
 
     pRole.addEventListener('change', () => {
       pSpecField.style.display = (pRole.value === 'provider-nonmd' || pRole.value === 'provider-md') ? 'flex' : 'none'
-      if (!pRole.value.startsWith('provider')) document.getElementById('p-specialty').value = ''
+      if (pRole.value === 'provider-md') {
+        pSpecInput.placeholder = 'e.g. Cardiology, Endocrinology, Rheumatology, Pediatrics'
+      } else if (pRole.value === 'provider-nonmd') {
+        pSpecInput.placeholder = 'e.g. Nutritionist, Psychologist, Physical Trainer'
+      }
+      if (!pRole.value.startsWith('provider')) { pSpecInput.value = ''; }
     })
 
     // FORM SUBMIT

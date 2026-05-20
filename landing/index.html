@@ -1037,11 +1037,17 @@
     // SPECIALTY FIELD TOGGLE + PROVIDER HINT
     const roleSelect = document.getElementById('role')
     const specialtyField = document.getElementById('specialty-field')
+    const specialtyInput = document.getElementById('specialty')
     const providerHint = document.getElementById('provider-hint')
 
     roleSelect.addEventListener('change', () => {
       specialtyField.style.display = (roleSelect.value === 'provider-nonmd' || roleSelect.value === 'provider-md') ? 'flex' : 'none'
-      if (roleSelect.value === 'patient') document.getElementById('specialty').value = ''
+      if (roleSelect.value === 'provider-md') {
+        specialtyInput.placeholder = 'e.g. Cardiology, Endocrinology, Rheumatology, Pediatrics'
+      } else if (roleSelect.value === 'provider-nonmd') {
+        specialtyInput.placeholder = 'e.g. Nutritionist, Psychologist, Physical Trainer'
+      }
+      if (roleSelect.value === 'patient') specialtyInput.value = ''
       providerHint.style.display = (roleSelect.value === 'provider-md' || roleSelect.value === 'provider-nonmd') ? 'block' : 'none'
     })
 
