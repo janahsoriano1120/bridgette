@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
+import Icon from '../../components/Icon'
 
 type LabValue = {
   id: string
@@ -74,14 +76,17 @@ export default function RecordDetail({ recordId, labFacility, recordDate, onBack
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <View style={styles.backRow}>
+            <Icon name="back" size={18} color="#5C7340" />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
         <Text style={styles.facility}>{labFacility}</Text>
         <Text style={styles.date}>{recordDate}</Text>
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} color="#C8524A" />
+        <ActivityIndicator style={{ marginTop: 40 }} color="#5C7340" />
       ) : labValues.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No lab values found for this record.</Text>
@@ -89,22 +94,29 @@ export default function RecordDetail({ recordId, labFacility, recordDate, onBack
       ) : (
         <View style={styles.content}>
           {labValues.filter(v => v.is_flagged).length > 0 && (
-            <View style={styles.flaggedSection}>
-              <Text style={styles.flaggedTitle}>
-                ⚠️ {labValues.filter(v => v.is_flagged).length} values need attention
-              </Text>
+            <Animated.View entering={FadeInDown} style={styles.flaggedSection}>
+              <View style={styles.flaggedTitleRow}>
+                <Icon name="flagged" size={16} color="#B5451B" />
+                <Text style={styles.flaggedTitle}>
+                  {labValues.filter(v => v.is_flagged).length} values outside reference range
+                </Text>
+              </View>
               {labValues.filter(v => v.is_flagged).map(v => (
                 <View key={v.id} style={styles.flaggedItem}>
                   <Text style={styles.flaggedName}>{v.test_name}</Text>
                   <Text style={styles.flaggedValue}>{v.value} {v.unit}</Text>
                 </View>
               ))}
-            </View>
+            </Animated.View>
           )}
 
-          {Object.entries(categories).map(([category, values]) =>
+          {Object.entries(categories).map(([category, values], catIndex) =>
             values.length > 0 ? (
-              <View key={category} style={styles.category}>
+              <Animated.View
+                key={category}
+                entering={FadeInDown.delay(catIndex * 80)}
+                style={styles.category}
+              >
                 <Text style={styles.categoryTitle}>{category}</Text>
                 {values.map((v) => {
                   const flag = getFlag(v.value, v.reference_low, v.reference_high)
@@ -113,7 +125,7 @@ export default function RecordDetail({ recordId, labFacility, recordDate, onBack
                       <View style={styles.labLeft}>
                         <Text style={styles.labName}>{v.test_name}</Text>
                         <Text style={styles.labRef}>
-                          Ref: {v.reference_low ?? '—'} – {v.reference_high ?? '—'} {v.unit}
+                          Ref: {v.reference_low ?? '-'} to {v.reference_high ?? '-'} {v.unit}
                         </Text>
                       </View>
                       <View style={styles.labRight}>
@@ -132,14 +144,16 @@ export default function RecordDetail({ recordId, labFacility, recordDate, onBack
                         flag === 'low' && styles.flagLow,
                         flag === 'normal' && styles.flagNormal,
                       ]}>
-                        <Text style={styles.flagText}>
-                          {flag === 'high' ? '↑' : flag === 'low' ? '↓' : '✓'}
-                        </Text>
+                        <Icon
+                          name={flag === 'high' ? 'up' : flag === 'low' ? 'down' : 'ok'}
+                          size={14}
+                          color={flag === 'high' ? '#B5451B' : flag === 'low' ? '#7B4B94' : '#5C7340'}
+                        />
                       </View>
                     </View>
                   )
                 })}
-              </View>
+              </Animated.View>
             ) : null
           )}
         </View>
@@ -149,54 +163,61 @@ export default function RecordDetail({ recordId, labFacility, recordDate, onBack
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF8F4' },
+  container: { flex: 1, backgroundColor: '#F5F2EC' },
   header: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 24,
   },
   backBtn: { marginBottom: 12 },
-  backText: { fontSize: 16, color: '#C8524A', fontWeight: '600' },
-  facility: { fontFamily: 'serif', fontSize: 20, color: '#1A1A2E', marginBottom: 4 },
-  date: { fontSize: 13, color: '#7A7A9A' },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backText: { fontSize: 16, color: '#5C7340', fontWeight: '600' },
+  facility: { fontFamily: 'Georgia', fontSize: 20, color: '#3D3229', marginBottom: 4 },
+  date: { fontSize: 13, color: '#8A7E72' },
   empty: { padding: 40, alignItems: 'center' },
-  emptyText: { fontSize: 14, color: '#7A7A9A' },
+  emptyText: { fontSize: 14, color: '#8A7E72' },
   content: { padding: 16 },
   flaggedSection: {
-    backgroundColor: '#FDF3E3',
+    backgroundColor: '#F6EDDA',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E8B96A',
+    borderColor: '#DCC089',
   },
-  flaggedTitle: { fontSize: 13, fontWeight: '700', color: '#B5720A', marginBottom: 10 },
+  flaggedTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  flaggedTitle: { fontSize: 13, fontWeight: '700', color: '#C4922A' },
   flaggedItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 5,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8D5A0',
+    borderBottomColor: '#E3D2A6',
   },
-  flaggedName: { fontSize: 13, color: '#1A1A2E' },
-  flaggedValue: { fontSize: 13, fontWeight: '600', color: '#B5720A' },
+  flaggedName: { fontSize: 13, color: '#3D3229' },
+  flaggedValue: { fontSize: 13, fontWeight: '600', color: '#C4922A' },
   category: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
   categoryTitle: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#7A7A9A',
+    color: '#8A7E72',
     marginBottom: 12,
   },
   labRow: {
@@ -204,16 +225,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0EDE8',
+    borderBottomColor: '#EBE5DA',
   },
   labLeft: { flex: 1 },
-  labName: { fontSize: 13, fontWeight: '500', color: '#1A1A2E', marginBottom: 2 },
-  labRef: { fontSize: 11, color: '#7A7A9A' },
+  labName: { fontSize: 13, fontWeight: '500', color: '#3D3229', marginBottom: 2 },
+  labRef: { fontSize: 11, color: '#8A7E72' },
   labRight: { alignItems: 'flex-end', marginRight: 10 },
-  labValue: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
-  valueHigh: { color: '#C0392B' },
-  valueLow: { color: '#2563EB' },
-  labUnit: { fontSize: 10, color: '#7A7A9A', marginTop: 1 },
+  labValue: { fontSize: 15, fontWeight: '700', color: '#3D3229' },
+  valueHigh: { color: '#B5451B' },
+  valueLow: { color: '#7B4B94' },
+  labUnit: { fontSize: 10, color: '#8A7E72', marginTop: 1 },
   flagBadge: {
     width: 26,
     height: 26,
@@ -221,8 +242,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  flagHigh: { backgroundColor: '#FDECEA' },
-  flagLow: { backgroundColor: '#EBF1FB' },
-  flagNormal: { backgroundColor: '#EAF4EE' },
-  flagText: { fontSize: 12, fontWeight: '700' },
+  flagHigh: { backgroundColor: '#F5E2D8' },
+  flagLow: { backgroundColor: '#EFE7F2' },
+  flagNormal: { backgroundColor: '#EBEFE3' },
 })

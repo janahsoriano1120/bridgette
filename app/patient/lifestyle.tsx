@@ -10,50 +10,43 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
+import Icon from '../../components/Icon'
+import { analyzeMeal, MealAnalysis } from '../../lib/analyzeMeal'
 
 const ACTIVITIES = [
-  { label: 'Pilates', emoji: '🧘' },
-  { label: 'Treadmill', emoji: '🏃' },
-  { label: 'Yoga', emoji: '🌿' },
-  { label: 'Strength Training', emoji: '🏋️' },
-  { label: 'Swimming', emoji: '🏊' },
-  { label: 'Cycling', emoji: '🚴' },
-  { label: 'Walking', emoji: '🚶' },
-  { label: 'HIIT', emoji: '⚡' },
-  { label: 'Dance', emoji: '💃' },
-  { label: 'Sports', emoji: '⚽' },
+  'Pilates',
+  'Treadmill',
+  'Yoga',
+  'Strength Training',
+  'Swimming',
+  'Cycling',
+  'Walking',
+  'HIIT',
+  'Dance',
+  'Sports',
 ]
 
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
 
-const COOKING_METHODS = [
-  { label: 'Fried', emoji: '🍳' },
-  { label: 'Grilled', emoji: '🔥' },
-  { label: 'Roasted', emoji: '♨️' },
-  { label: 'Steamed', emoji: '💨' },
-  { label: 'Boiled', emoji: '🫕' },
-  { label: 'Raw', emoji: '🥗' },
-]
+const COOKING_METHODS = ['Fried', 'Grilled', 'Roasted', 'Steamed', 'Boiled', 'Raw']
 
 const OIL_TYPES = ['Palm oil', 'Coconut oil', 'Olive oil', 'Lard', 'Butter', 'None']
 
-const MEAT_TYPES = [
-  { label: 'Fresh', emoji: '🥩' },
-  { label: 'Frozen', emoji: '🧊' },
-  { label: 'Processed', emoji: '🌭' },
-  { label: 'No meat', emoji: '🥦' },
-]
+const MEAT_TYPES = ['Fresh', 'Frozen', 'Processed', 'No meat']
 
 const QUALITY_LABELS: Record<number, string> = {
-  1: '😴 Very poor',
-  2: '😟 Poor',
-  3: '😐 Okay',
-  4: '😊 Good',
-  5: '😄 Great',
+  1: 'Very poor',
+  2: 'Poor',
+  3: 'Okay',
+  4: 'Good',
+  5: 'Great',
 }
+
+const PREMIUM_PLANS = ['premium', 'couple', 'family']
 
 type Tab = 'food' | 'sleep' | 'workout'
 
@@ -66,8 +59,7 @@ type FoodEntry = {
   meat_type: string
   is_fast_food: boolean
   photo_url: string | null
-  health_flag: string
-  ai_notes: string | null
+  health_flag: string | null
   created_at: string
   log_date: string
 }
@@ -86,12 +78,11 @@ type ActivityEntry = {
   log_date: string
 }
 
-const ANTHROPIC_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_KEY ?? ''
-
 export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
   const session = useAuthStore((state) => state.session)
   const [activeTab, setActiveTab] = useState<Tab>('food')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [plan, setPlan] = useState('free')
 
   // Food state
   const [mealType, setMealType] = useState('Breakfast')
@@ -104,6 +95,7 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
   const [foodLoading, setFoodLoading] = useState(false)
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([])
   const [editingFood, setEditingFood] = useState<FoodEntry | null>(null)
+  const [mealAnalysis, setMealAnalysis] = useState<MealAnalysis | null>(null)
 
   // Sleep state
   const [hoursSlept, setHoursSlept] = useState('7')
@@ -120,8 +112,19 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
   const [editingActivity, setEditingActivity] = useState<ActivityEntry | null>(null)
 
   useEffect(() => {
+    fetchPlan()
+  }, [])
+
+  useEffect(() => {
     fetchEntries()
   }, [selectedDate])
+
+  async function fetchPlan() {
+    const userId = session?.user.id
+    if (!userId) return
+    const { data } = await supabase.from('profiles').select('plan').eq('id', userId).single()
+    if (data?.plan) setPlan(data.plan)
+  }
 
   async function fetchEntries() {
     const userId = session?.user.id
@@ -184,6 +187,8 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
       return
     }
     setFoodLoading(true)
+    const wasEditing = !!editingFood
+    const mealText = foodDescription
     try {
       let photoUrl = null
 
@@ -198,52 +203,6 @@ export default function LifestyleScreen({ onBack }: { onBack: () => void }) {
         if (!uploadError) photoUrl = filePath
       }
 
-      let aiNotes: string | null = null
-      let healthFlag = 'moderate'
-      let analysis: any = null
-
-      try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 300,
-            messages: [{
-              role: 'user',
-              content: `Meal: "${foodDescription}", Cooking: ${cookingMethod || 'unknown'}, Oil: ${oilType || 'unknown'}, Meat: ${meatType || 'unknown'}, Fast food: ${isFastFood}.
-Return ONLY valid JSON with no other text:
-{
-  "health_flag": "healthy/moderate/unhealthy",
-  "ai_notes": "one sentence about lipid or blood sugar impact",
-  "protein_g": estimated protein in grams as a number,
-  "carbs_g": estimated carbs in grams as a number,
-  "fat_g": estimated fat in grams as a number,
-  "fiber_g": estimated fiber in grams as a number
-}`,
-            }],
-          }),
-        })
-        const data = await response.json()
-        console.log('API response:', JSON.stringify(data))
-        if (data.content && data.content[0]) {
-          const text = data.content[0].text.replace(/```json|```/g, '').trim()
-          analysis = JSON.parse(text)
-          aiNotes = analysis.ai_notes
-          healthFlag = analysis.health_flag
-        } else {
-          console.log('No content in response:', data)
-        }
-      } catch (e) {
-        console.log('AI analysis skipped:', e)
-        healthFlag = isFastFood ? 'unhealthy' : 'moderate'
-      }
-
       const insertData = {
         patient_id: session?.user.id,
         log_date: selectedDate,
@@ -254,23 +213,22 @@ Return ONLY valid JSON with no other text:
         meat_type: meatType || null,
         is_fast_food: isFastFood,
         photo_url: photoUrl,
-        health_flag: healthFlag,
-        ai_notes: aiNotes,
-        protein_g: analysis?.protein_g || null,
-        carbs_g: analysis?.carbs_g || null,
-        fat_g: analysis?.fat_g || null,
-        fiber_g: analysis?.fiber_g || null,
+        health_flag: null,
+        quality: null,
       }
 
+      let rowId = editingFood?.id ?? null
       if (editingFood) {
         const { error } = await supabase.from('food_logs').update(insertData).eq('id', editingFood.id)
         if (error) { Alert.alert('Update failed', error.message); return }
         setEditingFood(null)
       } else {
-        const { error } = await supabase.from('food_logs').insert(insertData)
+        const { data, error } = await supabase.from('food_logs').insert(insertData).select().single()
         if (error) { Alert.alert('Save failed', error.message); return }
+        rowId = data.id
       }
 
+      // Clear the form
       setFoodDescription('')
       setCookingMethod('')
       setOilType('')
@@ -278,9 +236,24 @@ Return ONLY valid JSON with no other text:
       setIsFastFood(false)
       setMealPhoto(null)
       await fetchEntries()
+
+      // Per-food AI analysis: Premium plans only, runs server-side
+      const isPremium = PREMIUM_PLANS.includes(plan)
+      if (isPremium && rowId) {
+        try {
+          const analysis = await analyzeMeal(mealText, '') // context: optional doctor note, wired later
+          setMealAnalysis(analysis)
+          const quality = analysis.flag === 'moderate' ? 'okay' : analysis.flag
+          await supabase.from('food_logs').update({ health_flag: analysis.flag, quality }).eq('id', rowId)
+          await fetchEntries()
+        } catch (e) {
+          console.log('Meal analysis skipped:', e)
+        }
+      }
+
       Alert.alert(
-        editingFood ? 'Updated!' : 'Logged!',
-        aiNotes ?? 'Meal saved successfully.'
+        wasEditing ? 'Updated!' : 'Logged!',
+        PREMIUM_PLANS.includes(plan) ? 'Meal saved. Your insight is ready below.' : 'Meal saved.'
       )
     } catch (e) {
       Alert.alert('Error', 'Could not save meal.')
@@ -330,7 +303,7 @@ Return ONLY valid JSON with no other text:
         })
       }
       await fetchEntries()
-      Alert.alert(editingSleep ? 'Updated!' : 'Logged!', `${hours} hours · ${QUALITY_LABELS[sleepQuality]}`)
+      Alert.alert(editingSleep ? 'Updated!' : 'Logged!', `${hours} hours, ${QUALITY_LABELS[sleepQuality]}`)
     } catch (e) {
       Alert.alert('Error', 'Could not save sleep log.')
     } finally {
@@ -374,7 +347,7 @@ Return ONLY valid JSON with no other text:
       setSelectedActivity('')
       setDuration('30')
       await fetchEntries()
-      Alert.alert(editingActivity ? 'Updated!' : 'Logged!', `${selectedActivity} · ${mins} minutes 💪`)
+      Alert.alert(editingActivity ? 'Updated!' : 'Logged!', `${selectedActivity}, ${mins} minutes`)
     } catch (e) {
       Alert.alert('Error', 'Could not save workout.')
     } finally {
@@ -396,16 +369,80 @@ Return ONLY valid JSON with no other text:
     return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   }
 
+  function AnalysisCard({ a }: { a: MealAnalysis }) {
+    return (
+      <Animated.View entering={FadeInDown} style={styles.insightCard}>
+        <View style={styles.insightHead}>
+          <View style={styles.insightHeadLeft}>
+            <Icon name="insight" size={18} color="#C4611A" />
+            <Text style={styles.insightTitle}>Meal Insight</Text>
+          </View>
+          <TouchableOpacity onPress={() => setMealAnalysis(null)}>
+            <Icon name="close" size={18} color="#8A7E72" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.insightMeal}>{a.meal}</Text>
+
+        <View style={styles.insightSection}>
+          <View style={styles.insightLabelRow}>
+            <View style={[styles.insightDot, { backgroundColor: '#5C7340' }]} />
+            <Text style={styles.insightLabel}>What's working</Text>
+          </View>
+          <View style={[styles.insightBox, { backgroundColor: '#EBEFE3' }]}>
+            {a.working.map((w, i) => <Text key={i} style={[styles.insightText, { color: '#3F4A30' }]}>{w}</Text>)}
+          </View>
+        </View>
+
+        <View style={styles.insightSection}>
+          <View style={styles.insightLabelRow}>
+            <View style={[styles.insightDot, { backgroundColor: '#C4922A' }]} />
+            <Text style={styles.insightLabel}>Worth noting</Text>
+          </View>
+          <View style={[styles.insightBox, { backgroundColor: '#F6EDDA' }]}>
+            {a.noting.map((n, i) => <Text key={i} style={[styles.insightText, { color: '#5A4A22' }]}>{n}</Text>)}
+          </View>
+        </View>
+
+        <View style={styles.insightSection}>
+          <View style={styles.insightLabelRow}>
+            <View style={[styles.insightDot, { backgroundColor: '#C4611A' }]} />
+            <Text style={styles.insightLabel}>A small swap</Text>
+          </View>
+          <View style={[styles.insightBox, { backgroundColor: '#F6E8DD' }]}>
+            <Text style={[styles.insightText, { color: '#5A3418' }]}>{a.swap}</Text>
+          </View>
+        </View>
+
+        <View style={styles.insightSection}>
+          <View style={styles.insightLabelRow}>
+            <View style={[styles.insightDot, { backgroundColor: '#7B4B94' }]} />
+            <Text style={styles.insightLabel}>Worth asking your doctor</Text>
+          </View>
+          <View style={[styles.insightBox, { backgroundColor: '#EFE7F2' }]}>
+            <Text style={[styles.insightText, { color: '#4A2E58' }]}>{a.askDoctor}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.insightFooter}>
+          General wellness information, not medical advice. Your doctor knows your full picture.
+        </Text>
+      </Animated.View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <View style={styles.backRow}>
+            <Icon name="back" size={18} color="#5C7340" />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
         <Text style={styles.title}>Lifestyle Log</Text>
         <View style={styles.datePicker}>
           <TouchableOpacity onPress={() => changeDate(-1)} style={styles.dateArrow}>
-            <Text style={styles.dateArrowText}>‹</Text>
+            <Icon name="back" size={22} color="#5C7340" />
           </TouchableOpacity>
           <Text style={styles.dateLabel}>{formatDisplayDate(selectedDate)}</Text>
           <TouchableOpacity
@@ -413,7 +450,9 @@ Return ONLY valid JSON with no other text:
             style={styles.dateArrow}
             disabled={selectedDate >= new Date().toISOString().split('T')[0]}
           >
-            <Text style={[styles.dateArrowText, selectedDate >= new Date().toISOString().split('T')[0] && { opacity: 0.3 }]}>›</Text>
+            <View style={selectedDate >= new Date().toISOString().split('T')[0] ? { opacity: 0.3 } : undefined}>
+              <Icon name="forward" size={22} color="#5C7340" />
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -425,9 +464,16 @@ Return ONLY valid JSON with no other text:
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
           >
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab === 'food' ? '🍽 Food' : tab === 'sleep' ? '😴 Sleep' : '🏋️ Workout'}
-            </Text>
+            <View style={styles.tabInner}>
+              <Icon
+                name={tab === 'food' ? 'diet' : tab === 'sleep' ? 'sleep' : 'trainer'}
+                size={15}
+                color={activeTab === tab ? '#5C7340' : '#8A7E72'}
+              />
+              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                {tab === 'food' ? 'Food' : tab === 'sleep' ? 'Sleep' : 'Workout'}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -436,14 +482,23 @@ Return ONLY valid JSON with no other text:
 
         {activeTab === 'food' && (
           <View>
+            {mealAnalysis && (
+              <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+                <AnalysisCard a={mealAnalysis} />
+              </View>
+            )}
+
             {foodEntries.length > 0 && (
               <View style={styles.entriesSection}>
                 <Text style={styles.entriesLabel}>{formatDisplayDate(selectedDate)}'s Meals</Text>
-                {foodEntries.map((entry) => (
-                  <View key={entry.id} style={styles.entryCard}>
+                {foodEntries.map((entry, index) => (
+                  <Animated.View key={entry.id} entering={FadeInDown.delay(index * 50)} style={styles.entryCard}>
                     {entry.photo_url && (
                       <View style={styles.entryPhotoBar}>
-                        <Text style={styles.entryPhotoText}>📷 Photo attached</Text>
+                        <View style={styles.photoBarLeft}>
+                          <Icon name="photo" size={14} color="#8A7E72" />
+                          <Text style={styles.entryPhotoText}>Photo attached</Text>
+                        </View>
                         <Text style={styles.entryTimestamp}>{formatTime(entry.created_at)}</Text>
                       </View>
                     )}
@@ -451,43 +506,46 @@ Return ONLY valid JSON with no other text:
                       <View style={styles.entryInfo}>
                         <View style={styles.entryTopRow}>
                           <Text style={styles.entryMealType}>{entry.meal_type}</Text>
-                          <View style={[
-                            styles.healthFlag,
-                            entry.health_flag === 'healthy' ? styles.flagHealthy :
-                            entry.health_flag === 'unhealthy' ? styles.flagUnhealthy :
-                            styles.flagModerate
-                          ]}>
-                            <Text style={styles.healthFlagText}>
-                              {entry.health_flag === 'healthy' ? '✅' : entry.health_flag === 'unhealthy' ? '⚠️' : '📝'}
-                            </Text>
-                          </View>
+                          {entry.health_flag && (
+                            <View style={[
+                              styles.healthFlag,
+                              entry.health_flag === 'healthy' ? styles.flagHealthy :
+                              entry.health_flag === 'unhealthy' ? styles.flagUnhealthy :
+                              styles.flagModerate
+                            ]}>
+                              <Icon
+                                name={entry.health_flag === 'healthy' ? 'ok' : entry.health_flag === 'unhealthy' ? 'flagged' : 'notes'}
+                                size={12}
+                                color={entry.health_flag === 'healthy' ? '#5C7340' : entry.health_flag === 'unhealthy' ? '#B5451B' : '#C4922A'}
+                              />
+                            </View>
+                          )}
                         </View>
                         <Text style={styles.entryDesc}>{entry.description}</Text>
                         <View style={styles.entryTags}>
-                          {entry.is_fast_food && <Text style={styles.entryTag}>🍔 Fast food</Text>}
+                          {entry.is_fast_food && <Text style={styles.entryTag}>Fast food</Text>}
                           {entry.cooking_method ? <Text style={styles.entryTag}>{entry.cooking_method}</Text> : null}
                           {entry.oil_type ? <Text style={styles.entryTag}>{entry.oil_type}</Text> : null}
                           {entry.meat_type ? <Text style={styles.entryTag}>{entry.meat_type}</Text> : null}
                         </View>
-                        {entry.ai_notes && <Text style={styles.aiNote}>{entry.ai_notes}</Text>}
                         <Text style={styles.entryTime}>{formatTime(entry.created_at)}</Text>
                       </View>
                       <View style={styles.entryActions}>
                         <TouchableOpacity onPress={() => startEditFood(entry)} style={styles.actionBtn}>
-                          <Text>✏️</Text>
+                          <Icon name="edit" size={16} color="#8A7E72" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => deleteFood(entry.id)} style={styles.actionBtn}>
-                          <Text>🗑</Text>
+                          <Icon name="delete" size={16} color="#B5451B" />
                         </TouchableOpacity>
                       </View>
                     </View>
-                  </View>
+                  </Animated.View>
                 ))}
               </View>
             )}
 
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{editingFood ? '✏️ Edit Meal' : '+ Log a Meal'}</Text>
+              <Text style={styles.sectionLabel}>{editingFood ? 'Edit Meal' : 'Log a Meal'}</Text>
 
               <TouchableOpacity
                 style={[styles.fastFoodBtn, isFastFood && styles.fastFoodBtnActive]}
@@ -502,9 +560,12 @@ Return ONLY valid JSON with no other text:
                   }
                 }}
               >
-                <Text style={[styles.fastFoodBtnText, isFastFood && { color: '#fff' }]}>
-                  {isFastFood ? '✓ Fast Food Selected' : '🍔 I ate fast food'}
-                </Text>
+                <View style={styles.fastFoodInner}>
+                  {isFastFood && <Icon name="ok" size={16} color="#fff" />}
+                  <Text style={[styles.fastFoodBtnText, isFastFood && { color: '#fff' }]}>
+                    {isFastFood ? 'Fast Food Selected' : 'I ate fast food'}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               <Text style={styles.fieldLabel}>Meal Type</Text>
@@ -520,7 +581,7 @@ Return ONLY valid JSON with no other text:
               <TextInput
                 style={styles.textArea}
                 placeholder="e.g. Sinangag, fried egg, hotdog..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#A89E90"
                 value={foodDescription}
                 onChangeText={setFoodDescription}
                 multiline
@@ -530,8 +591,8 @@ Return ONLY valid JSON with no other text:
               <Text style={styles.fieldLabel}>Cooking Method</Text>
               <View style={styles.chipRow}>
                 {COOKING_METHODS.map((m) => (
-                  <TouchableOpacity key={m.label} style={[styles.chip, cookingMethod === m.label && styles.chipActive]} onPress={() => setCookingMethod(m.label)}>
-                    <Text style={[styles.chipText, cookingMethod === m.label && styles.chipTextActive]}>{m.emoji} {m.label}</Text>
+                  <TouchableOpacity key={m} style={[styles.chip, cookingMethod === m && styles.chipActive]} onPress={() => setCookingMethod(m)}>
+                    <Text style={[styles.chipText, cookingMethod === m && styles.chipTextActive]}>{m}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -548,8 +609,8 @@ Return ONLY valid JSON with no other text:
               <Text style={styles.fieldLabel}>Meat / Protein</Text>
               <View style={styles.chipRow}>
                 {MEAT_TYPES.map((m) => (
-                  <TouchableOpacity key={m.label} style={[styles.chip, meatType === m.label && styles.chipActive]} onPress={() => setMeatType(m.label)}>
-                    <Text style={[styles.chipText, meatType === m.label && styles.chipTextActive]}>{m.emoji} {m.label}</Text>
+                  <TouchableOpacity key={m} style={[styles.chip, meatType === m && styles.chipActive]} onPress={() => setMeatType(m)}>
+                    <Text style={[styles.chipText, meatType === m && styles.chipTextActive]}>{m}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -557,18 +618,27 @@ Return ONLY valid JSON with no other text:
               <Text style={styles.fieldLabel}>Meal Photo (optional)</Text>
               <View style={styles.photoRow}>
                 <TouchableOpacity style={styles.photoBtn} onPress={takeMealPhoto}>
-                  <Text style={styles.photoBtnText}>📷 Camera</Text>
+                  <View style={styles.photoBtnInner}>
+                    <Icon name="camera" size={16} color="#5C7340" />
+                    <Text style={styles.photoBtnText}>Camera</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.photoBtn} onPress={pickMealPhoto}>
-                  <Text style={styles.photoBtnText}>🖼 Library</Text>
+                  <View style={styles.photoBtnInner}>
+                    <Icon name="photo" size={16} color="#5C7340" />
+                    <Text style={styles.photoBtnText}>Library</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
               {mealPhoto && (
                 <View style={styles.photoPreview}>
                   <Image source={{ uri: mealPhoto }} style={styles.previewImage} />
-                  <Text style={styles.photoTimestamp}>📍 {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</Text>
+                  <Text style={styles.photoTimestamp}>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</Text>
                   <TouchableOpacity onPress={() => setMealPhoto(null)} style={styles.removePhoto}>
-                    <Text style={styles.removePhotoText}>✕ Remove</Text>
+                    <View style={styles.removeInner}>
+                      <Icon name="close" size={14} color="#B5451B" />
+                      <Text style={styles.removePhotoText}>Remove</Text>
+                    </View>
                   </TouchableOpacity>
                 </View>
               )}
@@ -591,7 +661,7 @@ Return ONLY valid JSON with no other text:
                 {foodLoading ? (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <ActivityIndicator color="#fff" size="small" />
-                    <Text style={styles.logBtnText}>Analyzing...</Text>
+                    <Text style={styles.logBtnText}>{PREMIUM_PLANS.includes(plan) ? 'Analyzing...' : 'Saving...'}</Text>
                   </View>
                 ) : (
                   <Text style={styles.logBtnText}>{editingFood ? 'Save Changes' : 'Log This Meal'}</Text>
@@ -606,15 +676,15 @@ Return ONLY valid JSON with no other text:
             {sleepEntries.length > 0 && (
               <View style={styles.entriesSection}>
                 <Text style={styles.entriesLabel}>{formatDisplayDate(selectedDate)}'s Sleep</Text>
-                {sleepEntries.map((entry) => (
-                  <View key={entry.id} style={styles.entryCard}>
+                {sleepEntries.map((entry, index) => (
+                  <Animated.View key={entry.id} entering={FadeInDown.delay(index * 50)} style={styles.entryCard}>
                     <View style={styles.entryMain}>
                       <View style={styles.entryInfo}>
-                        <Text style={styles.entryDesc}>{entry.hours_slept} hours · {QUALITY_LABELS[entry.quality_rating]}</Text>
+                        <Text style={styles.entryDesc}>{entry.hours_slept} hours, {QUALITY_LABELS[entry.quality_rating]}</Text>
                         <View style={styles.sleepBarSmall}>
                           <View style={[styles.sleepBarFillSmall, {
                             width: `${Math.min((entry.hours_slept / 9) * 100, 100)}%`,
-                            backgroundColor: entry.hours_slept >= 7 ? '#3D7A5E' : '#B5720A',
+                            backgroundColor: entry.hours_slept >= 7 ? '#5C7340' : '#C4922A',
                           }]} />
                         </View>
                       </View>
@@ -624,20 +694,20 @@ Return ONLY valid JSON with no other text:
                           setHoursSlept(String(entry.hours_slept))
                           setSleepQuality(entry.quality_rating)
                         }} style={styles.actionBtn}>
-                          <Text>✏️</Text>
+                          <Icon name="edit" size={16} color="#8A7E72" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => deleteSleep(entry.id)} style={styles.actionBtn}>
-                          <Text>🗑</Text>
+                          <Icon name="delete" size={16} color="#B5451B" />
                         </TouchableOpacity>
                       </View>
                     </View>
-                  </View>
+                  </Animated.View>
                 ))}
               </View>
             )}
 
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{editingSleep ? '✏️ Edit Sleep' : '+ Log Sleep'}</Text>
+              <Text style={styles.sectionLabel}>{editingSleep ? 'Edit Sleep' : 'Log Sleep'}</Text>
 
               <Text style={styles.fieldLabel}>Hours slept</Text>
               <TextInput
@@ -646,7 +716,7 @@ Return ONLY valid JSON with no other text:
                 onChangeText={setHoursSlept}
                 keyboardType="decimal-pad"
                 placeholder="e.g. 7.5"
-                placeholderTextColor="#999"
+                placeholderTextColor="#A89E90"
               />
 
               <Text style={styles.fieldLabel}>Sleep quality</Text>
@@ -662,12 +732,12 @@ Return ONLY valid JSON with no other text:
               <View style={styles.sleepBar}>
                 <View style={[styles.sleepBarFill, {
                   width: `${Math.min((parseFloat(hoursSlept) / 9) * 100, 100)}%`,
-                  backgroundColor: parseFloat(hoursSlept) >= 7 ? '#3D7A5E' : parseFloat(hoursSlept) >= 5 ? '#B5720A' : '#C8524A',
+                  backgroundColor: parseFloat(hoursSlept) >= 7 ? '#5C7340' : parseFloat(hoursSlept) >= 5 ? '#C4922A' : '#B5451B',
                 }]} />
                 <View style={styles.sleepBarTarget} />
               </View>
               <Text style={styles.sleepBarLabel}>
-                Target: 7–9 hours · {parseFloat(hoursSlept) >= 7 ? '✅ On track' : '⚠️ Below target'}
+                Target: 7 to 9 hours, {parseFloat(hoursSlept) >= 7 ? 'on track' : 'below target'}
               </Text>
 
               {editingSleep && (
@@ -694,13 +764,14 @@ Return ONLY valid JSON with no other text:
             {activityEntries.length > 0 && (
               <View style={styles.entriesSection}>
                 <Text style={styles.entriesLabel}>{formatDisplayDate(selectedDate)}'s Workouts</Text>
-                {activityEntries.map((entry) => (
-                  <View key={entry.id} style={styles.entryCard}>
+                {activityEntries.map((entry, index) => (
+                  <Animated.View key={entry.id} entering={FadeInDown.delay(index * 50)} style={styles.entryCard}>
                     <View style={styles.entryMain}>
                       <View style={styles.entryInfo}>
-                        <Text style={styles.entryDesc}>
-                          {ACTIVITIES.find(a => a.label === entry.activity_type)?.emoji} {entry.activity_type} · {entry.duration_minutes} mins
-                        </Text>
+                        <View style={styles.workoutRow}>
+                          <Icon name="trainer" size={15} color="#B5451B" />
+                          <Text style={styles.entryDesc}>{entry.activity_type}, {entry.duration_minutes} mins</Text>
+                        </View>
                       </View>
                       <View style={styles.entryActions}>
                         <TouchableOpacity onPress={() => {
@@ -708,27 +779,26 @@ Return ONLY valid JSON with no other text:
                           setSelectedActivity(entry.activity_type)
                           setDuration(String(entry.duration_minutes))
                         }} style={styles.actionBtn}>
-                          <Text>✏️</Text>
+                          <Icon name="edit" size={16} color="#8A7E72" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => deleteActivity(entry.id)} style={styles.actionBtn}>
-                          <Text>🗑</Text>
+                          <Icon name="delete" size={16} color="#B5451B" />
                         </TouchableOpacity>
                       </View>
                     </View>
-                  </View>
+                  </Animated.View>
                 ))}
               </View>
             )}
 
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{editingActivity ? '✏️ Edit Workout' : '+ Log Workout'}</Text>
+              <Text style={styles.sectionLabel}>{editingActivity ? 'Edit Workout' : 'Log Workout'}</Text>
 
               <Text style={styles.fieldLabel}>Activity type</Text>
               <View style={styles.activityGrid}>
                 {ACTIVITIES.map((a) => (
-                  <TouchableOpacity key={a.label} style={[styles.activityBtn, selectedActivity === a.label && styles.activityBtnActive]} onPress={() => setSelectedActivity(a.label)}>
-                    <Text style={styles.activityEmoji}>{a.emoji}</Text>
-                    <Text style={[styles.activityLabel, selectedActivity === a.label && styles.activityLabelActive]}>{a.label}</Text>
+                  <TouchableOpacity key={a} style={[styles.activityBtn, selectedActivity === a && styles.activityBtnActive]} onPress={() => setSelectedActivity(a)}>
+                    <Text style={[styles.activityLabel, selectedActivity === a && styles.activityLabelActive]}>{a}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -740,7 +810,7 @@ Return ONLY valid JSON with no other text:
                 onChangeText={setDuration}
                 keyboardType="number-pad"
                 placeholder="e.g. 45"
-                placeholderTextColor="#999"
+                placeholderTextColor="#A89E90"
               />
 
               {editingActivity && (
@@ -769,96 +839,113 @@ Return ONLY valid JSON with no other text:
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF8F4' },
+  container: { flex: 1, backgroundColor: '#F5F2EC' },
   header: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
     paddingTop: 60,
     paddingBottom: 12,
     paddingHorizontal: 24,
   },
   backBtn: { marginBottom: 8 },
-  backText: { fontSize: 16, color: '#C8524A', fontWeight: '600' },
-  title: { fontFamily: 'serif', fontSize: 22, color: '#1A1A2E', marginBottom: 10 },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backText: { fontSize: 16, color: '#5C7340', fontWeight: '600' },
+  title: { fontFamily: 'Georgia', fontSize: 22, color: '#3D3229', marginBottom: 10 },
   datePicker: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dateArrow: { padding: 4 },
-  dateArrowText: { fontSize: 24, color: '#C8524A', fontWeight: '300' },
-  dateLabel: { fontSize: 14, fontWeight: '600', color: '#1A1A2E' },
+  dateLabel: { fontSize: 14, fontWeight: '600', color: '#3D3229' },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
   },
   tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: '#C8524A' },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#7A7A9A' },
-  tabTextActive: { color: '#C8524A' },
+  tabActive: { borderBottomColor: '#5C7340' },
+  tabInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tabText: { fontSize: 13, fontWeight: '600', color: '#8A7E72' },
+  tabTextActive: { color: '#5C7340' },
   content: { flex: 1 },
+
+  insightCard: { backgroundColor: '#fff', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#E5DFD3' },
+  insightHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  insightHeadLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  insightTitle: { fontFamily: 'Georgia', fontSize: 18, color: '#3D3229' },
+  insightMeal: { fontSize: 13, color: '#5A4A38', marginBottom: 14, lineHeight: 19 },
+  insightSection: { marginBottom: 12 },
+  insightLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  insightDot: { width: 8, height: 8, borderRadius: 4 },
+  insightLabel: { fontFamily: 'Georgia', fontSize: 14, color: '#3D3229' },
+  insightBox: { borderRadius: 10, padding: 11 },
+  insightText: { fontSize: 13, lineHeight: 19, marginBottom: 3 },
+  insightFooter: { fontSize: 11, color: '#8A7E72', fontStyle: 'italic', lineHeight: 16, borderTopWidth: 1, borderTopColor: '#E5DFD3', paddingTop: 10, marginTop: 2 },
+
   entriesSection: { padding: 16, paddingBottom: 0 },
-  entriesLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: '#7A7A9A', marginBottom: 10 },
-  entryCard: { backgroundColor: '#fff', borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#E8E4DC', overflow: 'hidden' },
-  entryPhotoBar: { backgroundColor: '#F4F2EE', padding: 10, flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#E8E4DC' },
-  entryPhotoText: { fontSize: 12, color: '#7A7A9A' },
-  entryTimestamp: { fontSize: 11, color: '#7A7A9A' },
+  entriesLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: '#8A7E72', marginBottom: 10 },
+  entryCard: { backgroundColor: '#fff', borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#E5DFD3', overflow: 'hidden' },
+  entryPhotoBar: { backgroundColor: '#F0EBE1', padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#E5DFD3' },
+  photoBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  entryPhotoText: { fontSize: 12, color: '#8A7E72' },
+  entryTimestamp: { fontSize: 11, color: '#8A7E72' },
   entryMain: { flexDirection: 'row', alignItems: 'flex-start', padding: 13, gap: 8 },
   entryInfo: { flex: 1 },
   entryTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  entryMealType: { fontSize: 11, fontWeight: '700', color: '#7A7A9A', textTransform: 'uppercase', letterSpacing: 0.5 },
-  healthFlag: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  flagHealthy: { backgroundColor: '#EAF4EE' },
-  flagModerate: { backgroundColor: '#FDF3E3' },
-  flagUnhealthy: { backgroundColor: '#FCEEED' },
-  healthFlagText: { fontSize: 11 },
-  entryDesc: { fontSize: 13, color: '#1A1A2E', marginBottom: 5, lineHeight: 18 },
+  entryMealType: { fontSize: 11, fontWeight: '700', color: '#8A7E72', textTransform: 'uppercase', letterSpacing: 0.5 },
+  healthFlag: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+  flagHealthy: { backgroundColor: '#EBEFE3' },
+  flagModerate: { backgroundColor: '#F6EDDA' },
+  flagUnhealthy: { backgroundColor: '#F5E2D8' },
+  entryDesc: { fontSize: 13, color: '#3D3229', marginBottom: 5, lineHeight: 18 },
+  workoutRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   entryTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 5 },
-  entryTag: { fontSize: 11, color: '#7A7A9A', backgroundColor: '#F4F2EE', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 },
-  aiNote: { fontSize: 12, color: '#3D7A5E', fontStyle: 'italic', marginBottom: 4, lineHeight: 17 },
-  entryTime: { fontSize: 10, color: '#9A9AAA' },
+  entryTag: { fontSize: 11, color: '#8A7E72', backgroundColor: '#F0EBE1', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 },
+  entryTime: { fontSize: 10, color: '#A89E90' },
   entryActions: { flexDirection: 'column', gap: 6 },
   actionBtn: { padding: 6 },
   section: { padding: 20 },
-  sectionLabel: { fontFamily: 'serif', fontSize: 18, color: '#1A1A2E', marginBottom: 14 },
-  fieldLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: '#7A7A9A', marginBottom: 8, marginTop: 14 },
-  fastFoodBtn: { backgroundColor: '#fff', borderWidth: 2, borderColor: '#E8E4DC', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 4 },
-  fastFoodBtnActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  fastFoodBtnText: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
+  sectionLabel: { fontFamily: 'Georgia', fontSize: 18, color: '#3D3229', marginBottom: 14 },
+  fieldLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', color: '#8A7E72', marginBottom: 8, marginTop: 14 },
+  fastFoodBtn: { backgroundColor: '#fff', borderWidth: 2, borderColor: '#E5DFD3', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 4 },
+  fastFoodBtnActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  fastFoodInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  fastFoodBtnText: { fontSize: 15, fontWeight: '700', color: '#3D3229' },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E4DC' },
-  chipActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  chipText: { fontSize: 12, fontWeight: '600', color: '#7A7A9A' },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5DFD3' },
+  chipActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  chipText: { fontSize: 12, fontWeight: '600', color: '#8A7E72' },
   chipTextActive: { color: '#fff' },
-  textArea: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E4DC', borderRadius: 12, padding: 13, fontSize: 14, color: '#1A1A2E', minHeight: 80, textAlignVertical: 'top' },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E4DC', borderRadius: 10, padding: 13, fontSize: 15, color: '#1A1A2E' },
+  textArea: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5DFD3', borderRadius: 12, padding: 13, fontSize: 14, color: '#3D3229', minHeight: 80, textAlignVertical: 'top' },
+  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5DFD3', borderRadius: 10, padding: 13, fontSize: 15, color: '#3D3229' },
   photoRow: { flexDirection: 'row', gap: 10 },
-  photoBtn: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E4DC', borderRadius: 10, padding: 12, alignItems: 'center' },
-  photoBtnText: { fontSize: 13, fontWeight: '600', color: '#7A7A9A' },
-  photoPreview: { marginTop: 10, borderRadius: 10, overflow: 'hidden', borderWidth: 1, borderColor: '#E8E4DC' },
+  photoBtn: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5DFD3', borderRadius: 10, padding: 12, alignItems: 'center' },
+  photoBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  photoBtnText: { fontSize: 13, fontWeight: '600', color: '#5C7340' },
+  photoPreview: { marginTop: 10, borderRadius: 10, overflow: 'hidden', borderWidth: 1, borderColor: '#E5DFD3' },
   previewImage: { width: '100%', height: 180 },
-  photoTimestamp: { fontSize: 11, color: '#7A7A9A', padding: 8, backgroundColor: '#F4F2EE' },
-  removePhoto: { padding: 8, alignItems: 'center', backgroundColor: '#FCEEED' },
-  removePhotoText: { fontSize: 12, color: '#C8524A', fontWeight: '600' },
-  cancelBtn: { marginTop: 10, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E8E4DC', alignItems: 'center' },
-  cancelBtnText: { fontSize: 13, color: '#7A7A9A', fontWeight: '600' },
-  logBtn: { backgroundColor: '#C8524A', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 14 },
+  photoTimestamp: { fontSize: 11, color: '#8A7E72', padding: 8, backgroundColor: '#F0EBE1' },
+  removePhoto: { padding: 8, alignItems: 'center', backgroundColor: '#F5E2D8' },
+  removeInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  removePhotoText: { fontSize: 12, color: '#B5451B', fontWeight: '600' },
+  cancelBtn: { marginTop: 10, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E5DFD3', alignItems: 'center' },
+  cancelBtnText: { fontSize: 13, color: '#8A7E72', fontWeight: '600' },
+  logBtn: { backgroundColor: '#5C7340', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 14 },
   logBtnDisabled: { opacity: 0.6 },
   logBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   qualityRow: { flexDirection: 'row', gap: 10, marginBottom: 8 },
-  qualityBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E8E4DC', alignItems: 'center', justifyContent: 'center' },
-  qualityBtnActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  qualityNum: { fontSize: 16, fontWeight: '700', color: '#1A1A2E' },
-  qualityLabel: { fontSize: 13, color: '#7A7A9A', marginBottom: 12 },
-  sleepBar: { height: 8, backgroundColor: '#E8E4DC', borderRadius: 4, marginBottom: 6, position: 'relative', overflow: 'hidden' },
+  qualityBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E5DFD3', alignItems: 'center', justifyContent: 'center' },
+  qualityBtnActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  qualityNum: { fontSize: 16, fontWeight: '700', color: '#3D3229' },
+  qualityLabel: { fontSize: 13, color: '#8A7E72', marginBottom: 12 },
+  sleepBar: { height: 8, backgroundColor: '#E5DFD3', borderRadius: 4, marginBottom: 6, position: 'relative', overflow: 'hidden' },
   sleepBarFill: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 4 },
-  sleepBarTarget: { position: 'absolute', left: '77.8%', top: -2, bottom: -2, width: 2, backgroundColor: '#3D7A5E', opacity: 0.6 },
-  sleepBarLabel: { fontSize: 12, color: '#7A7A9A', marginBottom: 14 },
-  sleepBarSmall: { height: 5, backgroundColor: '#E8E4DC', borderRadius: 3, marginTop: 6, overflow: 'hidden' },
+  sleepBarTarget: { position: 'absolute', left: '77.8%', top: -2, bottom: -2, width: 2, backgroundColor: '#5C7340', opacity: 0.6 },
+  sleepBarLabel: { fontSize: 12, color: '#8A7E72', marginBottom: 14 },
+  sleepBarSmall: { height: 5, backgroundColor: '#E5DFD3', borderRadius: 3, marginTop: 6, overflow: 'hidden' },
   sleepBarFillSmall: { height: '100%', borderRadius: 3 },
   activityGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
-  activityBtn: { width: '30%', backgroundColor: '#fff', borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#E8E4DC' },
-  activityBtnActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  activityEmoji: { fontSize: 22, marginBottom: 4 },
-  activityLabel: { fontSize: 11, fontWeight: '600', color: '#7A7A9A', textAlign: 'center' },
+  activityBtn: { width: '30%', backgroundColor: '#fff', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: '#E5DFD3' },
+  activityBtnActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  activityLabel: { fontSize: 12, fontWeight: '600', color: '#8A7E72', textAlign: 'center' },
   activityLabelActive: { color: '#fff' },
 })

@@ -11,8 +11,10 @@ import {
   Switch,
   Modal,
 } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
+import Icon from '../../components/Icon'
 import ConsultationScreen from './consultation'
 
 type ShareLink = {
@@ -35,13 +37,15 @@ type Consultation = {
   referredTo: string[]
 }
 
+type IconKey = 'doctor' | 'eye' | 'diet' | 'trainer' | 'careteam'
+
 type Doctor = {
   role: string
   name: string
   isMD: boolean
   recentConsult: string
   nextConsult: string
-  emoji: string
+  icon: IconKey
   color: string
   bg: string
   consultations: Consultation[]
@@ -54,9 +58,9 @@ const CARE_TEAM: Doctor[] = [
     isMD: true,
     recentConsult: 'January 12, 2026',
     nextConsult: 'July 12, 2026',
-    emoji: '🩺',
-    color: '#3D7A5E',
-    bg: '#EAF4EE',
+    icon: 'doctor',
+    color: '#5C7340',
+    bg: '#EBEFE3',
     consultations: [
       {
         date: 'January 12, 2026',
@@ -107,9 +111,9 @@ const CARE_TEAM: Doctor[] = [
     isMD: false,
     recentConsult: 'April 21, 2026',
     nextConsult: 'July 21, 2026',
-    emoji: '🥗',
-    color: '#B5720A',
-    bg: '#FDF3E3',
+    icon: 'diet',
+    color: '#C4922A',
+    bg: '#F6EDDA',
     consultations: [
       {
         date: 'April 21, 2026',
@@ -138,9 +142,9 @@ const CARE_TEAM: Doctor[] = [
     isMD: true,
     recentConsult: 'December 6, 2025',
     nextConsult: 'June 6, 2026',
-    emoji: '👁',
-    color: '#2C5FAB',
-    bg: '#EBF1FB',
+    icon: 'eye',
+    color: '#7B4B94',
+    bg: '#EFE7F2',
     consultations: [
       {
         date: 'December 6, 2025',
@@ -343,7 +347,10 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <View style={styles.backRow}>
+            <Icon name="back" size={18} color="#5C7340" />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
         <Text style={styles.title}>Care Team</Text>
         <Text style={styles.subtitle}>Your doctors and health providers</Text>
@@ -352,7 +359,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
       <ScrollView style={styles.content}>
 
         <View style={styles.infoBanner}>
-          <Text style={styles.infoIcon}>🔒</Text>
+          <Icon name="lock" size={20} color="#5C7340" />
           <View style={styles.infoText}>
             <Text style={styles.infoTitle}>Secure read-only access</Text>
             <Text style={styles.infoDesc}>
@@ -388,21 +395,21 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
           {' '}· {filteredTeam.length}
         </Text>
 
-        {filteredTeam.map((doctor) => {
+        {filteredTeam.map((doctor, index) => {
           const activeLink = getLinkForDoctor(doctor.name)
           const isCreating = creating === doctor.name
 
           return (
-            <View key={doctor.name} style={styles.doctorCard}>
+            <Animated.View key={doctor.name} entering={FadeInDown.delay(index * 60)} style={styles.doctorCard}>
               <View style={styles.doctorHeader}>
                 <View style={[styles.doctorIconBg, { backgroundColor: doctor.bg }]}>
-                  <Text style={styles.doctorEmoji}>{doctor.emoji}</Text>
+                  <Icon name={doctor.icon} size={22} color={doctor.color} />
                 </View>
                 <View style={styles.doctorInfo}>
                   <View style={styles.doctorRoleRow}>
                     <Text style={styles.doctorRole}>{doctor.role}</Text>
                     <View style={[styles.mdBadge, doctor.isMD ? styles.mdBadgeMD : styles.mdBadgeNonMD]}>
-                      <Text style={styles.mdBadgeText}>{doctor.isMD ? 'MD' : 'Non-MD'}</Text>
+                      <Text style={[styles.mdBadgeText, doctor.isMD ? styles.mdBadgeTextMD : styles.mdBadgeTextNonMD]}>{doctor.isMD ? 'MD' : 'Non-MD'}</Text>
                     </View>
                   </View>
                   <Text style={styles.doctorName}>{doctor.name}</Text>
@@ -423,7 +430,10 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
 
               {activeLink && (
                 <View style={styles.activeLinkBanner}>
-                  <Text style={styles.activeLinkText}>🔗 Active · {formatExpiry(activeLink.expires_at)}</Text>
+                  <View style={styles.activeLinkRow}>
+                    <Icon name="share" size={13} color="#5C7340" />
+                    <Text style={styles.activeLinkText}>Active · {formatExpiry(activeLink.expires_at)}</Text>
+                  </View>
                   <TouchableOpacity onPress={() => deactivateLink(activeLink.id)}>
                     <Text style={styles.revokeText}>Revoke</Text>
                   </TouchableOpacity>
@@ -435,7 +445,8 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
                   style={styles.viewBtn}
                   onPress={() => openConsultation(doctor)}
                 >
-                  <Text style={styles.viewBtnText}>📋 View</Text>
+                  <Icon name="notes" size={15} color="#3D3229" />
+                  <Text style={styles.viewBtnText}>View</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -446,13 +457,16 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
                   {isCreating ? (
                     <ActivityIndicator color="#fff" size="small" />
                   ) : (
-                    <Text style={styles.shareBtnText}>
-                      {activeLink ? '📤 Share Again' : '📤 Share via App'}
-                    </Text>
+                    <>
+                      <Icon name="share" size={15} color="#FFFFFF" />
+                      <Text style={styles.shareBtnText}>
+                        {activeLink ? 'Share Again' : 'Share via App'}
+                      </Text>
+                    </>
                   )}
                 </TouchableOpacity>
               </View>
-            </View>
+            </Animated.View>
           )
         })}
 
@@ -492,7 +506,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
               <Switch
                 value={includeLifestyle}
                 onValueChange={setIncludeLifestyle}
-                trackColor={{ false: '#E8E4DC', true: '#3D7A5E' }}
+                trackColor={{ false: '#E5DFD3', true: '#5C7340' }}
                 thumbColor="#fff"
               />
             </View>
@@ -522,7 +536,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
             </View>
             <TouchableOpacity style={styles.checkboxRow} onPress={() => setConsentChecked(!consentChecked)}>
               <View style={[styles.checkbox, consentChecked && styles.checkboxChecked]}>
-                {consentChecked && <Text style={styles.checkboxTick}>✓</Text>}
+                {consentChecked && <Icon name="ok" size={13} color="#FFFFFF" />}
               </View>
               <Text style={styles.checkboxLabel}>I understand and consent to the above</Text>
             </TouchableOpacity>
@@ -555,7 +569,7 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
               <Switch
                 value={includeLifestyleExternal}
                 onValueChange={setIncludeLifestyleExternal}
-                trackColor={{ false: '#E8E4DC', true: '#3D7A5E' }}
+                trackColor={{ false: '#E5DFD3', true: '#5C7340' }}
                 thumbColor="#fff"
               />
             </View>
@@ -579,38 +593,39 @@ export default function ShareLinkScreen({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF8F4' },
+  container: { flex: 1, backgroundColor: '#F5F2EC' },
   header: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 24,
   },
   backBtn: { marginBottom: 12 },
-  backText: { fontSize: 16, color: '#C8524A', fontWeight: '600' },
-  title: { fontFamily: 'serif', fontSize: 22, color: '#1A1A2E', marginBottom: 4 },
-  subtitle: { fontSize: 13, color: '#7A7A9A' },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backText: { fontSize: 16, color: '#5C7340', fontWeight: '600' },
+  title: { fontFamily: 'Georgia', fontSize: 22, color: '#3D3229', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: '#8A7E72' },
   content: { flex: 1, padding: 16 },
   infoBanner: {
-    backgroundColor: '#EAF4EE',
+    backgroundColor: '#EBEFE3',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     gap: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#C5E0D0',
+    borderColor: '#CFD9BD',
+    alignItems: 'flex-start',
   },
-  infoIcon: { fontSize: 22 },
   infoText: { flex: 1 },
-  infoTitle: { fontSize: 13, fontWeight: '700', color: '#3D7A5E', marginBottom: 4 },
-  infoDesc: { fontSize: 12, color: '#4A7A5E', lineHeight: 18 },
+  infoTitle: { fontSize: 13, fontWeight: '700', color: '#5C7340', marginBottom: 4 },
+  infoDesc: { fontSize: 12, color: '#5A6A48', lineHeight: 18 },
   externalSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#3D3229',
     borderRadius: 14,
     padding: 16,
     marginBottom: 16,
@@ -618,8 +633,8 @@ const styles = StyleSheet.create({
   },
   externalSectionLeft: { flex: 1 },
   externalSectionTitle: { fontSize: 14, fontWeight: '700', color: '#fff', marginBottom: 4 },
-  externalSectionSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
-  externalShareBtn: { backgroundColor: '#C8524A', paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10 },
+  externalSectionSub: { fontSize: 12, color: 'rgba(255,255,255,0.55)' },
+  externalShareBtn: { backgroundColor: '#5C7340', paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10 },
   externalShareBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
   filterRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   filterChip: {
@@ -628,17 +643,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
-  filterChipActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  filterChipText: { fontSize: 12, fontWeight: '600', color: '#7A7A9A' },
+  filterChipActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  filterChipText: { fontSize: 12, fontWeight: '600', color: '#8A7E72' },
   filterChipTextActive: { color: '#fff' },
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#7A7A9A',
+    color: '#8A7E72',
     marginBottom: 12,
   },
   doctorCard: {
@@ -647,53 +662,58 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
   doctorHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   doctorIconBg: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  doctorEmoji: { fontSize: 22 },
   doctorInfo: { flex: 1 },
   doctorRoleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
-  doctorRole: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', color: '#7A7A9A' },
+  doctorRole: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', color: '#8A7E72' },
   mdBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 },
-  mdBadgeMD: { backgroundColor: '#EAF4EE' },
-  mdBadgeNonMD: { backgroundColor: '#FDF3E3' },
-  mdBadgeText: { fontSize: 10, fontWeight: '700', color: '#3D7A5E' },
-  doctorName: { fontSize: 15, fontWeight: '600', color: '#1A1A2E' },
+  mdBadgeMD: { backgroundColor: '#EBEFE3' },
+  mdBadgeNonMD: { backgroundColor: '#F6EDDA' },
+  mdBadgeText: { fontSize: 10, fontWeight: '700' },
+  mdBadgeTextMD: { color: '#5C7340' },
+  mdBadgeTextNonMD: { color: '#C4922A' },
+  doctorName: { fontSize: 15, fontWeight: '600', color: '#3D3229' },
   consultRow: {
     flexDirection: 'row',
-    backgroundColor: '#F4F2EE',
+    backgroundColor: '#F0EBE1',
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
   },
   consultItem: { flex: 1, alignItems: 'center' },
-  consultLabel: { fontSize: 10, color: '#7A7A9A', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-  consultDate: { fontSize: 12, fontWeight: '600', color: '#1A1A2E', textAlign: 'center' },
-  consultDivider: { width: 1, backgroundColor: '#E8E4DC', marginHorizontal: 8 },
+  consultLabel: { fontSize: 10, color: '#8A7E72', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  consultDate: { fontSize: 12, fontWeight: '600', color: '#3D3229', textAlign: 'center' },
+  consultDivider: { width: 1, backgroundColor: '#E5DFD3', marginHorizontal: 8 },
   activeLinkBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#EAF4EE',
+    backgroundColor: '#EBEFE3',
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
   },
-  activeLinkText: { fontSize: 12, color: '#3D7A5E', fontWeight: '600' },
-  revokeText: { fontSize: 12, color: '#C8524A', fontWeight: '600' },
+  activeLinkRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  activeLinkText: { fontSize: 12, color: '#5C7340', fontWeight: '600' },
+  revokeText: { fontSize: 12, color: '#B5451B', fontWeight: '600' },
   btnRow: { flexDirection: 'row', gap: 10 },
   viewBtn: {
     flex: 1,
+    flexDirection: 'row',
+    gap: 6,
     borderRadius: 10,
     padding: 13,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
     backgroundColor: '#fff',
   },
-  viewBtnText: { fontSize: 13, fontWeight: '600', color: '#1A1A2E' },
-  shareBtn: { flex: 2, borderRadius: 10, padding: 13, alignItems: 'center' },
+  viewBtnText: { fontSize: 13, fontWeight: '600', color: '#3D3229' },
+  shareBtn: { flex: 2, flexDirection: 'row', gap: 6, borderRadius: 10, padding: 13, alignItems: 'center', justifyContent: 'center' },
   shareBtnDisabled: { opacity: 0.6 },
   shareBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
   linksSection: { marginTop: 4 },
@@ -705,41 +725,40 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
   linkRowInfo: { flex: 1 },
-  linkRowLabel: { fontSize: 13, fontWeight: '600', color: '#1A1A2E', marginBottom: 2 },
-  linkRowExpiry: { fontSize: 11, color: '#7A7A9A' },
-  revokePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E8E4DC' },
-  revokePillText: { fontSize: 12, color: '#C8524A', fontWeight: '600' },
+  linkRowLabel: { fontSize: 13, fontWeight: '600', color: '#3D3229', marginBottom: 2 },
+  linkRowExpiry: { fontSize: 11, color: '#8A7E72' },
+  revokePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E5DFD3' },
+  revokePillText: { fontSize: 12, color: '#B5451B', fontWeight: '600' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 },
-  modalTitle: { fontFamily: 'serif', fontSize: 20, color: '#1A1A2E', marginBottom: 8 },
-  modalSub: { fontSize: 13, color: '#7A7A9A', lineHeight: 19, marginBottom: 20 },
+  modalTitle: { fontFamily: 'Georgia', fontSize: 20, color: '#3D3229', marginBottom: 8 },
+  modalSub: { fontSize: 13, color: '#8A7E72', lineHeight: 19, marginBottom: 20 },
   modalToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F4F2EE',
+    backgroundColor: '#F0EBE1',
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
   },
   toggleInfo: { flex: 1 },
-  toggleLabel: { fontSize: 14, fontWeight: '600', color: '#1A1A2E', marginBottom: 2 },
-  toggleDesc: { fontSize: 12, color: '#7A7A9A' },
+  toggleLabel: { fontSize: 14, fontWeight: '600', color: '#3D3229', marginBottom: 2 },
+  toggleDesc: { fontSize: 12, color: '#8A7E72' },
   modalActions: { flexDirection: 'row', gap: 10 },
-  modalCancelBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#E8E4DC', alignItems: 'center' },
-  modalCancelText: { fontSize: 14, fontWeight: '600', color: '#7A7A9A' },
-  modalConfirmBtn: { flex: 2, backgroundColor: '#C8524A', padding: 14, borderRadius: 10, alignItems: 'center' },
+  modalCancelBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#E5DFD3', alignItems: 'center' },
+  modalCancelText: { fontSize: 14, fontWeight: '600', color: '#8A7E72' },
+  modalConfirmBtn: { flex: 2, backgroundColor: '#5C7340', padding: 14, borderRadius: 10, alignItems: 'center' },
   modalConfirmDisabled: { opacity: 0.4 },
   modalConfirmText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  disclaimerBox: { backgroundColor: '#F4F2EE', borderRadius: 12, padding: 16, marginBottom: 16 },
-  disclaimerText: { fontSize: 13, fontWeight: '600', color: '#1A1A2E', marginBottom: 10 },
-  disclaimerPoint: { fontSize: 12, color: '#7A7A9A', lineHeight: 20, marginBottom: 6 },
+  disclaimerBox: { backgroundColor: '#F0EBE1', borderRadius: 12, padding: 16, marginBottom: 16 },
+  disclaimerText: { fontSize: 13, fontWeight: '600', color: '#3D3229', marginBottom: 10 },
+  disclaimerPoint: { fontSize: 12, color: '#8A7E72', lineHeight: 20, marginBottom: 6 },
   checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#E8E4DC', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-  checkboxChecked: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  checkboxTick: { fontSize: 13, color: '#fff', fontWeight: '700' },
-  checkboxLabel: { fontSize: 13, color: '#1A1A2E', flex: 1, lineHeight: 18 },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#E5DFD3', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  checkboxChecked: { backgroundColor: '#5C7340', borderColor: '#5C7340' },
+  checkboxLabel: { fontSize: 13, color: '#3D3229', flex: 1, lineHeight: 18 },
 })

@@ -8,12 +8,14 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import * as ImagePicker from 'expo-image-picker'
 import * as DocumentPicker from 'expo-document-picker'
 import { useAuthStore } from '../../store/authStore'
 import { supabase } from '../../lib/supabase'
 import { extractLabValues } from '../../lib/ocr'
 import RecordDetail from './record'
+import Icon from '../../components/Icon'
 
 type MedicalRecord = {
   id: string
@@ -88,7 +90,7 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
       return
     }
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 1 })
-    if (!result.canceled) await uploadFile(result.assets[0].uri, 'image/jpeg')
+    if (!result.canceled) await uploadImages([result.assets[0].uri])
   }
 
   async function openLibrary() {
@@ -98,11 +100,15 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
       return
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: false,
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
+      orderedSelection: true,
       quality: 1,
     })
-    if (!result.canceled) await uploadFile(result.assets[0].uri, 'image/jpeg')
+    if (!result.canceled && result.assets.length > 0) {
+      await uploadImages(result.assets.map((a) => a.uri))
+    }
   }
 
   async function openFilePicker() {
@@ -112,42 +118,57 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
     })
     if (result.canceled) return
     const file = result.assets[0]
-    await uploadFile(file.uri, file.mimeType ?? 'application/pdf')
+    if (file.mimeType?.startsWith('image/')) {
+      await uploadImages([file.uri])
+    } else {
+      await uploadPdf(file.uri)
+    }
   }
 
-  async function uploadFile(uri: string, contentType: string) {
+  async function uploadImages(uris: string[]) {
     setUploading(true)
-    setProcessingText('Uploading...')
     try {
       const userId = session?.user.id!
-      const extension = contentType === 'application/pdf' ? 'pdf' : 'jpg'
-      const filePath = `${userId}/${Date.now()}.${extension}`
-      const response = await fetch(uri)
-      const blob = await response.blob()
+      const batchStamp = Date.now()
+      const pagePaths: string[] = []
 
-      const { error: uploadError } = await supabase.storage
-        .from('medical-records')
-        .upload(filePath, blob, { contentType })
+      for (let i = 0; i < uris.length; i++) {
+        setProcessingText(
+          uris.length > 1
+            ? `Uploading page ${i + 1} of ${uris.length}...`
+            : 'Uploading...'
+        )
+        const filePath = `${userId}/${batchStamp}_p${i + 1}.jpg`
+        const response = await fetch(uris[i])
+        const blob = await response.blob()
 
-      if (uploadError) {
-        Alert.alert('Upload failed', uploadError.message)
-        return
+        const { error: uploadError } = await supabase.storage
+          .from('medical-records')
+          .upload(filePath, blob, { contentType: 'image/jpeg' })
+
+        if (uploadError) {
+          Alert.alert('Upload failed', uploadError.message)
+          return
+        }
+        pagePaths.push(filePath)
       }
 
       let labFacility = 'Unknown'
       let recordDate = new Date().toISOString().split('T')[0]
       let extractedValues: any[] = []
 
-      if (contentType === 'image/jpeg') {
-        setProcessingText('Reading your lab results...')
-        try {
-          const ocrResult = await extractLabValues(uri)
-          labFacility = ocrResult.lab_facility
-          recordDate = ocrResult.record_date
-          extractedValues = ocrResult.values
-        } catch (ocrError) {
-          console.log('OCR failed:', ocrError)
-        }
+      setProcessingText(
+        uris.length > 1
+          ? `Reading ${uris.length} pages...`
+          : 'Reading your lab results...'
+      )
+      try {
+        const ocrResult = await extractLabValues(uris)
+        labFacility = ocrResult.lab_facility
+        recordDate = ocrResult.record_date
+        extractedValues = ocrResult.values
+      } catch (ocrError) {
+        console.log('OCR failed:', ocrError)
       }
 
       setProcessingText('Saving...')
@@ -155,7 +176,8 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
         .from('medical_records')
         .insert({
           patient_id: userId,
-          photo_url: filePath,
+          photo_url: pagePaths[0],
+          page_urls: pagePaths,
           status: extractedValues.length > 0 ? 'verified' : 'processing',
           lab_facility: labFacility,
           record_date: recordDate,
@@ -173,22 +195,74 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
           record_id: recordData.id,
           patient_id: userId,
           test_name: v.test_name,
-          value: v.unit,
+          value: v.value,
           unit: v.unit,
           reference_low: v.reference_low,
           reference_high: v.reference_high,
           is_flagged: v.is_flagged,
           record_date: recordDate,
         }))
-        await supabase.from('lab_values').insert(labValueRows)
+        const { error: lvError } = await supabase.from('lab_values').insert(labValueRows)
+        if (lvError) {
+          console.log('lab_values insert failed:', lvError.message)
+          Alert.alert('Heads up', 'Record saved, but the lab values could not be stored.')
+        }
       }
 
       await fetchRecords(userId)
       Alert.alert(
         'Done!',
         extractedValues.length > 0
-          ? `Found ${extractedValues.length} lab values from ${labFacility}`
+          ? `Found ${extractedValues.length} lab values from ${labFacility}${uris.length > 1 ? ` across ${uris.length} pages` : ''}`
           : 'Lab result uploaded.'
+      )
+    } catch (e) {
+      Alert.alert('Error', 'Something went wrong.')
+      console.log(e)
+    } finally {
+      setUploading(false)
+      setProcessingText('')
+    }
+  }
+
+  async function uploadPdf(uri: string) {
+    setUploading(true)
+    setProcessingText('Uploading...')
+    try {
+      const userId = session?.user.id!
+      const filePath = `${userId}/${Date.now()}.pdf`
+      const response = await fetch(uri)
+      const blob = await response.blob()
+
+      const { error: uploadError } = await supabase.storage
+        .from('medical-records')
+        .upload(filePath, blob, { contentType: 'application/pdf' })
+
+      if (uploadError) {
+        Alert.alert('Upload failed', uploadError.message)
+        return
+      }
+
+      const { error: dbError } = await supabase
+        .from('medical_records')
+        .insert({
+          patient_id: userId,
+          photo_url: filePath,
+          page_urls: [filePath],
+          status: 'processing',
+          lab_facility: 'Unknown',
+          record_date: new Date().toISOString().split('T')[0],
+        })
+
+      if (dbError) {
+        Alert.alert('Save failed', dbError.message)
+        return
+      }
+
+      await fetchRecords(userId)
+      Alert.alert(
+        'Uploaded',
+        'PDF saved. Tip: PDFs are not read automatically yet. For automatic reading, screenshot the PDF pages and upload them as photos.'
       )
     } catch (e) {
       Alert.alert('Error', 'Something went wrong.')
@@ -214,7 +288,10 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <View style={styles.backRow}>
+            <Icon name="back" size={18} color="#5C7340" />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
         <Text style={styles.title}>Medical Records</Text>
         <Text style={styles.subtitle}>
@@ -224,28 +301,28 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
 
       {uploading && (
         <View style={styles.processingBanner}>
-          <ActivityIndicator color="#C8524A" size="small" />
+          <ActivityIndicator color="#5C7340" size="small" />
           <Text style={styles.processingText}>{processingText}</Text>
         </View>
       )}
 
       {loadingRecords ? (
-        <ActivityIndicator style={{ marginTop: 40 }} color="#C8524A" />
+        <ActivityIndicator style={{ marginTop: 40 }} color="#5C7340" />
       ) : records.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>🧪</Text>
+          <Icon name="lab" size={40} color="#8A7E72" />
           <Text style={styles.emptyTitle}>No records yet</Text>
           <Text style={styles.emptyText}>Upload your first lab result to get started</Text>
         </View>
       ) : (
         <View style={styles.recordsList}>
-          {records.map((record) => (
-            <View key={record.id} style={styles.recordCard}>
+          {records.map((record, index) => (
+            <Animated.View key={record.id} entering={FadeInDown.delay(index * 60)} style={styles.recordCard}>
               <TouchableOpacity
                 style={styles.recordMain}
                 onPress={() => setSelectedRecord(record)}
               >
-                <Text style={styles.recordIcon}>📄</Text>
+                <Icon name="record" size={24} color="#5C7340" />
                 <View style={styles.recordInfo}>
                   <Text style={styles.recordFacility}>{record.lab_facility}</Text>
                   <Text style={styles.recordDate}>{record.record_date}</Text>
@@ -261,9 +338,9 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
                 style={styles.deleteBtn}
                 onPress={() => handleDelete(record.id)}
               >
-                <Text style={styles.deleteBtnText}>🗑</Text>
+                <Icon name="delete" size={20} color="#B5451B" />
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           ))}
         </View>
       )}
@@ -284,19 +361,20 @@ export default function MedicalRecordsScreen({ onBack }: { onBack: () => void })
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF8F4' },
+  container: { flex: 1, backgroundColor: '#F5F2EC' },
   header: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 24,
   },
   backBtn: { marginBottom: 12 },
-  backText: { fontSize: 16, color: '#C8524A', fontWeight: '600' },
-  title: { fontFamily: 'serif', fontSize: 22, color: '#1A1A2E', marginBottom: 3 },
-  subtitle: { fontSize: 13, color: '#7A7A9A' },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backText: { fontSize: 16, color: '#5C7340', fontWeight: '600' },
+  title: { fontFamily: 'Georgia', fontSize: 22, color: '#3D3229', marginBottom: 3 },
+  subtitle: { fontSize: 13, color: '#8A7E72' },
   processingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,13 +384,12 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
-  processingText: { fontSize: 14, color: '#1A1A2E' },
-  emptyState: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: 40 },
-  emptyIcon: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontFamily: 'serif', fontSize: 20, color: '#1A1A2E', marginBottom: 8 },
-  emptyText: { fontSize: 14, color: '#7A7A9A', textAlign: 'center', lineHeight: 20 },
+  processingText: { fontSize: 14, color: '#3D3229' },
+  emptyState: { alignItems: 'center', paddingVertical: 60, paddingHorizontal: 40, gap: 4 },
+  emptyTitle: { fontFamily: 'Georgia', fontSize: 20, color: '#3D3229', marginTop: 12, marginBottom: 8 },
+  emptyText: { fontSize: 14, color: '#8A7E72', textAlign: 'center', lineHeight: 20 },
   recordsList: { padding: 16 },
   recordCard: {
     backgroundColor: '#fff',
@@ -321,7 +398,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
     overflow: 'hidden',
   },
   recordMain: {
@@ -331,22 +408,20 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 12,
   },
-  recordIcon: { fontSize: 26 },
   recordInfo: { flex: 1 },
-  recordFacility: { fontSize: 14, fontWeight: '600', color: '#1A1A2E', marginBottom: 3 },
-  recordDate: { fontSize: 12, color: '#7A7A9A' },
+  recordFacility: { fontSize: 14, fontWeight: '600', color: '#3D3229', marginBottom: 3 },
+  recordDate: { fontSize: 12, color: '#8A7E72' },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusProcessing: { backgroundColor: '#FDF3E3' },
-  statusDone: { backgroundColor: '#EAF4EE' },
-  statusText: { fontSize: 11, fontWeight: '600', color: '#B5720A' },
+  statusProcessing: { backgroundColor: '#F6EDDA' },
+  statusDone: { backgroundColor: '#EBEFE3' },
+  statusText: { fontSize: 11, fontWeight: '600', color: '#C4922A' },
   deleteBtn: {
     padding: 16,
     borderLeftWidth: 1,
-    borderLeftColor: '#E8E4DC',
+    borderLeftColor: '#E5DFD3',
   },
-  deleteBtnText: { fontSize: 18 },
   uploadBtn: {
-    backgroundColor: '#C8524A',
+    backgroundColor: '#5C7340',
     marginHorizontal: 16,
     marginBottom: 40,
     borderRadius: 12,

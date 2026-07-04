@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native'
-import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop, Rect } from 'react-native-svg'
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated'
+import Svg, { Path, Circle, Line, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
+import Icon from '../../components/Icon'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -26,21 +28,41 @@ type TrendSeries = {
   points: DataPoint[]
 }
 
-const TRACKED_TESTS = [
-  'LDL Cholesterol',
-  'Total Cholesterol',
-  'HDL Cholesterol',
-  'Triglycerides',
-  'Glucose (Fasting)',
-  'MCH',
-  'Hemoglobin',
-  'Testosterone (Total)',
-]
+function getRangeStatus(
+  value: number,
+  low: number | null,
+  high: number | null
+): 'in_range' | 'out_of_range' | 'no_range' {
+  if (high !== null && value > high) return 'out_of_range'
+  if (low !== null && value < low) return 'out_of_range'
+  if (high === null && low === null) return 'no_range'
+  return 'in_range'
+}
+
+function baselineCaption(
+  value: number,
+  low: number | null,
+  high: number | null,
+  unit: string
+): { text: string; color: string } {
+  if (high !== null && value > high) {
+    const over = +(value - high).toFixed(2)
+    return { text: `Above the reference range (${over} ${unit} over ${high})`, color: '#B5451B' }
+  }
+  if (low !== null && value < low) {
+    const under = +(low - value).toFixed(2)
+    return { text: `Below the reference range (${under} ${unit} under ${low})`, color: '#B5451B' }
+  }
+  if (low !== null || high !== null) {
+    return { text: 'Within the reference range', color: '#5C7340' }
+  }
+  return { text: 'No reference range on file for this test', color: '#8A7E72' }
+}
 
 export default function TrendsScreen({ onBack }: { onBack: () => void }) {
   const session = useAuthStore((state) => state.session)
   const [trends, setTrends] = useState<TrendSeries[]>([])
-  const [selected, setSelected] = useState('LDL Cholesterol')
+  const [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -52,7 +74,6 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
       .from('lab_values')
       .select('test_name, value, unit, reference_high, reference_low, record_date')
       .eq('patient_id', session?.user.id)
-      .in('test_name', TRACKED_TESTS)
       .order('record_date', { ascending: true })
 
     if (!error && data) {
@@ -76,7 +97,18 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
           })
         }
       })
-      setTrends(Object.values(grouped))
+
+      // Tests with the most history first, then alphabetical
+      const sorted = Object.values(grouped).sort(
+        (a, b) =>
+          b.points.length - a.points.length ||
+          a.test_name.localeCompare(b.test_name)
+      )
+      setTrends(sorted)
+
+      // Pick a sensible default: LDL if present, otherwise the first test
+      const ldl = sorted.find((t) => t.test_name === 'LDL Cholesterol')
+      setSelected(ldl ? ldl.test_name : sorted[0]?.test_name ?? null)
     }
     setLoading(false)
   }
@@ -86,8 +118,99 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
     return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
   }
 
+  function shortName(name: string) {
+    return name
+      .replace(' Cholesterol', '')
+      .replace(' (Fasting)', '')
+      .replace(' (Total)', '')
+      .replace(' Count', '')
+  }
+
+  function renderBaseline(series: TrendSeries) {
+    const chartWidth = SCREEN_WIDTH - 64
+    const chartHeight = 180
+    const padTop = 30
+    const padBottom = 35
+    const innerH = chartHeight - padTop - padBottom
+
+    const point = series.points[0]
+    const low = series.reference_low
+    const high = series.reference_high
+
+    const candidates = [point.value]
+    if (low !== null) candidates.push(low)
+    if (high !== null) candidates.push(high)
+    let minVal = Math.min(...candidates)
+    let maxVal = Math.max(...candidates)
+    const span = (maxVal - minVal) || Math.abs(point.value) || 1
+    minVal = minVal - span * 0.25
+    maxVal = maxVal + span * 0.25
+
+    const toY = (val: number) => padTop + ((maxVal - val) / (maxVal - minVal)) * innerH
+
+    const cx = chartWidth / 2
+    const status = getRangeStatus(point.value, low, high)
+    const dotColor = status === 'out_of_range' ? '#B5451B' : '#5C7340'
+
+    const bandTopVal = high !== null ? high : maxVal
+    const bandBottomVal = low !== null ? low : minVal
+    const bandY = toY(bandTopVal)
+    const bandH = toY(bandBottomVal) - toY(bandTopVal)
+
+    const caption = baselineCaption(point.value, low, high, series.unit)
+
+    return (
+      <View style={{ marginTop: 8 }}>
+        <Svg width={chartWidth} height={chartHeight}>
+          {/* Normal-range band */}
+          {(low !== null || high !== null) && (
+            <Rect x={0} y={bandY} width={chartWidth} height={bandH} fill="#5C7340" opacity={0.1} />
+          )}
+          {/* Upper edge + its value */}
+          {high !== null && (
+            <>
+              <Line x1={0} y1={toY(high)} x2={chartWidth} y2={toY(high)} stroke="#5C7340" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+              <SvgText x={chartWidth - 4} y={toY(high) - 4} textAnchor="end" fontSize="9" fill="#5C7340">
+                {`High ${high}`}
+              </SvgText>
+            </>
+          )}
+          {/* Lower edge + its value */}
+          {low !== null && (
+            <>
+              <Line x1={0} y1={toY(low)} x2={chartWidth} y2={toY(low)} stroke="#5C7340" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+              <SvgText x={chartWidth - 4} y={toY(low) + 12} textAnchor="end" fontSize="9" fill="#5C7340">
+                {`Low ${low}`}
+              </SvgText>
+            </>
+          )}
+          {/* The single reading */}
+          <Circle cx={cx} cy={toY(point.value)} r={7} fill="#fff" stroke={dotColor} strokeWidth="3" />
+          <SvgText x={cx} y={toY(point.value) - 14} textAnchor="middle" fontSize="13" fontWeight="bold" fill={dotColor}>
+            {point.value}
+          </SvgText>
+          <SvgText x={cx} y={chartHeight - 6} textAnchor="middle" fontSize="9" fill="#8A7E72">
+            {formatDate(point.date)}
+          </SvgText>
+        </Svg>
+        <Text style={styles.rangeLabel}>
+          {low !== null && high !== null
+            ? `Reference range: ${low} to ${high} ${series.unit}`
+            : high !== null
+            ? `Reference: below ${high} ${series.unit}`
+            : low !== null
+            ? `Reference: above ${low} ${series.unit}`
+            : 'No reference range on file'}
+        </Text>
+        <Text style={[styles.refNote, { color: caption.color }]}>{caption.text}</Text>
+      </View>
+    )
+  } 
+
   function renderChart(series: TrendSeries) {
-    if (series.points.length < 2) return null
+    if (series.points.length < 2) {
+      return renderBaseline(series)
+    }
 
     const chartWidth = SCREEN_WIDTH - 64
     const chartHeight = 180
@@ -98,9 +221,19 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
     const innerW = chartWidth - padLeft - padRight
     const innerH = chartHeight - padTop - padBottom
 
+    const low = series.reference_low
+    const high = series.reference_high
+
+    // Y-axis must include the data AND the reference lines so the band is visible
     const values = series.points.map((p) => p.value)
-    const minVal = Math.min(...values) * 0.88
-    const maxVal = Math.max(...values) * 1.08
+    const candidates = [...values]
+    if (low !== null) candidates.push(low)
+    if (high !== null) candidates.push(high)
+    const rawMin = Math.min(...candidates)
+    const rawMax = Math.max(...candidates)
+    const span = (rawMax - rawMin) || Math.abs(values[0]) || 1
+    const minVal = rawMin - span * 0.15
+    const maxVal = rawMax + span * 0.15
 
     const toX = (i: number) =>
       padLeft + (i / (series.points.length - 1)) * innerW
@@ -118,10 +251,13 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
       ` L${toX(0).toFixed(1)},${(chartHeight - padBottom).toFixed(1)} Z`
 
     const latest = series.points[series.points.length - 1]
-    const prev = series.points[series.points.length - 2]
-    const isImproving = latest.value <= prev.value
-    const lineColor = isImproving ? '#3D7A5E' : '#C8524A'
-    const refY = series.reference_high ? toY(series.reference_high) : null
+    const rangeStatus = getRangeStatus(latest.value, low, high)
+    const lineColor = rangeStatus === 'out_of_range' ? '#B5451B' : '#5C7340'
+
+    const bandTopVal = high !== null ? high : maxVal
+    const bandBottomVal = low !== null ? low : minVal
+    const bandY = toY(bandTopVal)
+    const bandH = toY(bandBottomVal) - toY(bandTopVal)
 
     return (
       <View style={{ marginTop: 8 }}>
@@ -133,18 +269,27 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
             </LinearGradient>
           </Defs>
 
-          {/* Reference line */}
-          {refY && (
-            <Line
-              x1={padLeft}
-              y1={refY}
-              x2={chartWidth - padRight}
-              y2={refY}
-              stroke="#3D7A5E"
-              strokeWidth="1"
-              strokeDasharray="4,3"
-              opacity="0.5"
-            />
+          {/* Normal-range band */}
+          {(low !== null || high !== null) && (
+            <Rect x={0} y={bandY} width={chartWidth} height={bandH} fill="#5C7340" opacity={0.08} />
+          )}
+          {/* Upper edge + value */}
+          {high !== null && (
+            <>
+              <Line x1={padLeft} y1={toY(high)} x2={chartWidth - padRight} y2={toY(high)} stroke="#5C7340" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+              <SvgText x={chartWidth - padRight} y={toY(high) - 4} textAnchor="end" fontSize="9" fill="#5C7340">
+                {`High ${high}`}
+              </SvgText>
+            </>
+          )}
+          {/* Lower edge + value */}
+          {low !== null && (
+            <>
+              <Line x1={padLeft} y1={toY(low)} x2={chartWidth - padRight} y2={toY(low)} stroke="#5C7340" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+              <SvgText x={chartWidth - padRight} y={toY(low) + 12} textAnchor="end" fontSize="9" fill="#5C7340">
+                {`Low ${low}`}
+              </SvgText>
+            </>
           )}
 
           {/* Area */}
@@ -186,19 +331,22 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
                 y={chartHeight - 6}
                 textAnchor="middle"
                 fontSize="9"
-                fill="#7A7A9A"
+                fill="#8A7E72"
               >
                 {formatDate(p.date)}
               </SvgText>
             </View>
           ))}
         </Svg>
-
-        {series.reference_high && (
-          <Text style={styles.refNote}>
-            - - - Target: &lt;{series.reference_high} {series.unit}
-          </Text>
-        )}
+        <Text style={styles.rangeLabel}>
+          {low !== null && high !== null
+            ? `Reference range: ${low} to ${high} ${series.unit}`
+            : high !== null
+            ? `Reference: below ${high} ${series.unit}`
+            : low !== null
+            ? `Reference: above ${low} ${series.unit}`
+            : 'No reference range on file'}
+        </Text>
       </View>
     )
   }
@@ -209,30 +357,17 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <View style={styles.backRow}>
+            <Icon name="back" size={18} color="#5C7340" />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
         <Text style={styles.title}>Lab Trends</Text>
-        <Text style={styles.subtitle}>Apr 2025 – Apr 2026</Text>
-      </View>
-
-      {/* Clinical story */}
-      <View style={styles.storyBanner}>
-        <Text style={styles.storyTitle}>📖 Janah's Health Story</Text>
-        <Text style={styles.storyText}>
-          Started Diane-35 in April 2025 for hormonal acne. Lipids worsened over 9 months on the pill. Stopped + changed diet in January 2026. Cholesterol improving but still above target.
+        <Text style={styles.subtitle}>
+          {trends.length > 0
+            ? `Tracking ${trends.length} markers from your records`
+            : 'Your lab results over time'}
         </Text>
-      </View>
-
-      {/* Milestones */}
-      <View style={styles.milestoneRow}>
-        <View style={styles.milestone}>
-          <View style={[styles.milestoneDot, { backgroundColor: '#9B59B6' }]} />
-          <Text style={styles.milestoneText}>💊 Diane-35 started Apr 2025</Text>
-        </View>
-        <View style={styles.milestone}>
-          <View style={[styles.milestoneDot, { backgroundColor: '#3D7A5E' }]} />
-          <Text style={styles.milestoneText}>🥗 Off pill + diet Jan 2026</Text>
-        </View>
       </View>
 
       {/* Test selector */}
@@ -241,12 +376,13 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.selectorContent}
       >
-        {TRACKED_TESTS.map((test) => {
-          const series = trends.find((t) => t.test_name === test)
-          if (!series) return null
+        {trends.map((series) => {
+          const test = series.test_name
           const latest = series.points[series.points.length - 1]
           const prev = series.points[series.points.length - 2]
-          const trending = latest && prev ? (latest.value < prev.value ? '↓' : '↑') : ''
+          const direction = latest && prev
+            ? (latest.value < prev.value ? 'down' : latest.value > prev.value ? 'up' : 'steady')
+            : null
           const isFlagged =
             (series.reference_high !== null && latest?.value > series.reference_high) ||
             (series.reference_low !== null && latest?.value < series.reference_low)
@@ -265,15 +401,14 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
                 styles.selectorChipText,
                 selected === test && styles.selectorChipTextActive,
               ]}>
-                {test.replace(' Cholesterol', '').replace(' (Fasting)', '')}
+                {shortName(test)}
               </Text>
-              {trending ? (
-                <Text style={[
-                  styles.selectorTrend,
-                  trending === '↓' ? styles.trendGood : styles.trendBad,
-                ]}>
-                  {trending}
-                </Text>
+              {direction ? (
+                <Icon
+                  name={direction}
+                  size={13}
+                  color={selected === test ? '#FFFFFF' : '#3D3229'}
+                />
               ) : null}
             </TouchableOpacity>
           )
@@ -286,7 +421,7 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
           <Text style={styles.loadingText}>Loading trends...</Text>
         </View>
       ) : activeSeries ? (
-        <View style={styles.chartCard}>
+        <Animated.View key={selected} entering={FadeIn.duration(350)} style={styles.chartCard}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>{activeSeries.test_name}</Text>
             <View style={styles.chartLatest}>
@@ -297,14 +432,16 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
             </View>
           </View>
           <Text style={styles.chartSub}>
-            {activeSeries.points.length} readings · latest {formatDate(activeSeries.points[activeSeries.points.length - 1]?.date)}
+            {activeSeries.points.length > 1
+              ? `${activeSeries.points.length} readings · latest ${formatDate(activeSeries.points[activeSeries.points.length - 1]?.date)}`
+              : `Baseline reading · ${formatDate(activeSeries.points[0]?.date)}`}
           </Text>
           {renderChart(activeSeries)}
-        </View>
+        </Animated.View>
       ) : null}
 
       {/* Summary table */}
-      <View style={styles.summaryCard}>
+      <Animated.View entering={FadeInDown.delay(150)} style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>All Tracked Values</Text>
         {trends.map((series) => {
           const latest = series.points[series.points.length - 1]
@@ -323,7 +460,9 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
               <View style={styles.summaryLeft}>
                 <Text style={styles.summaryName}>{series.test_name}</Text>
                 <Text style={styles.summaryChange}>
-                  {diff > 0 ? '+' : ''}{diff} {series.unit} since Apr 2025
+                  {series.points.length > 1
+                    ? `${diff > 0 ? '+' : ''}${diff} ${series.unit} since ${formatDate(first?.date)}`
+                    : `Baseline · ${formatDate(first?.date)}`}
                 </Text>
               </View>
               <View style={styles.summaryRight}>
@@ -333,12 +472,16 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
                 <Text style={styles.summaryUnit}>{series.unit}</Text>
               </View>
               <View style={[styles.summaryFlag, isFlagged ? styles.summaryFlagBad : styles.summaryFlagGood]}>
-                <Text style={styles.summaryFlagText}>{isFlagged ? '⚠' : '✓'}</Text>
+                <Icon
+                  name={isFlagged ? 'flagged' : 'ok'}
+                  size={14}
+                  color={isFlagged ? '#B5451B' : '#5C7340'}
+                />
               </View>
             </TouchableOpacity>
           )
         })}
-      </View>
+      </Animated.View>
 
       <View style={{ height: 40 }} />
     </ScrollView>
@@ -346,40 +489,21 @@ export default function TrendsScreen({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF8F4' },
+  container: { flex: 1, backgroundColor: '#F5F2EC' },
   header: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DC',
+    borderBottomColor: '#E5DFD3',
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 24,
   },
   backBtn: { marginBottom: 12 },
-  backText: { fontSize: 16, color: '#C8524A', fontWeight: '600' },
-  title: { fontFamily: 'serif', fontSize: 22, color: '#1A1A2E', marginBottom: 3 },
-  subtitle: { fontSize: 13, color: '#7A7A9A' },
-  storyBanner: {
-    margin: 16,
-    backgroundColor: '#F3EFFA',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: '#9B59B6',
-  },
-  storyTitle: { fontSize: 13, fontWeight: '700', color: '#6B4FA0', marginBottom: 6 },
-  storyText: { fontSize: 13, color: '#4A3A6A', lineHeight: 19 },
-  milestoneRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  milestone: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  milestoneDot: { width: 8, height: 8, borderRadius: 4 },
-  milestoneText: { fontSize: 11, color: '#7A7A9A' },
-  selectorContent: { paddingHorizontal: 16, gap: 8, paddingVertical: 8 },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backText: { fontSize: 16, color: '#5C7340', fontWeight: '600' },
+  title: { fontFamily: 'Georgia', fontSize: 22, color: '#3D3229', marginBottom: 3 },
+  subtitle: { fontSize: 13, color: '#8A7E72' },
+  selectorContent: { paddingHorizontal: 16, gap: 8, paddingVertical: 12 },
   selectorChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -389,24 +513,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
-  selectorChipActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
-  selectorChipFlagged: { borderColor: '#E8B96A', backgroundColor: '#FDF3E3' },
-  selectorChipText: { fontSize: 12, fontWeight: '600', color: '#7A7A9A' },
+  selectorChipActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
+  selectorChipFlagged: { borderColor: '#DCC089', backgroundColor: '#F6EDDA' },
+  selectorChipText: { fontSize: 12, fontWeight: '600', color: '#8A7E72' },
   selectorChipTextActive: { color: '#fff' },
-  selectorTrend: { fontSize: 13, fontWeight: '700' },
-  trendGood: { color: '#3D7A5E' },
-  trendBad: { color: '#C8524A' },
   loadingBox: { padding: 40, alignItems: 'center' },
-  loadingText: { fontSize: 14, color: '#7A7A9A' },
+  loadingText: { fontSize: 14, color: '#8A7E72' },
   chartCard: {
     margin: 16,
     backgroundColor: '#fff',
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
   chartHeader: {
     flexDirection: 'row',
@@ -414,26 +535,27 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 4,
   },
-  chartTitle: { fontFamily: 'serif', fontSize: 17, color: '#1A1A2E', flex: 1 },
+  chartTitle: { fontFamily: 'Georgia', fontSize: 17, color: '#3D3229', flex: 1 },
   chartLatest: { flexDirection: 'row', alignItems: 'baseline' },
-  chartLatestVal: { fontSize: 22, fontWeight: '700', color: '#C8524A' },
-  chartLatestUnit: { fontSize: 12, color: '#7A7A9A' },
-  chartSub: { fontSize: 12, color: '#7A7A9A', marginBottom: 4 },
-  refNote: { fontSize: 11, color: '#3D7A5E', marginTop: 6 },
+  chartLatestVal: { fontSize: 22, fontWeight: '700', color: '#3D3229' },
+  chartLatestUnit: { fontSize: 12, color: '#8A7E72' },
+  chartSub: { fontSize: 12, color: '#8A7E72', marginBottom: 4 },
+  rangeLabel: { fontSize: 12, fontWeight: '600', color: '#3D3229', marginTop: 8 },
+  refNote: { fontSize: 11, color: '#5C7340', marginTop: 6 },
   summaryCard: {
     marginHorizontal: 16,
     backgroundColor: '#fff',
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E8E4DC',
+    borderColor: '#E5DFD3',
   },
   summaryTitle: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#7A7A9A',
+    color: '#8A7E72',
     marginBottom: 12,
   },
   summaryRow: {
@@ -441,15 +563,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0EDE8',
+    borderBottomColor: '#EBE5DA',
   },
   summaryLeft: { flex: 1 },
-  summaryName: { fontSize: 13, fontWeight: '500', color: '#1A1A2E', marginBottom: 2 },
-  summaryChange: { fontSize: 11, color: '#7A7A9A' },
+  summaryName: { fontSize: 13, fontWeight: '500', color: '#3D3229', marginBottom: 2 },
+  summaryChange: { fontSize: 11, color: '#8A7E72' },
   summaryRight: { alignItems: 'flex-end', marginRight: 10 },
-  summaryVal: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
-  summaryValFlagged: { color: '#C8524A' },
-  summaryUnit: { fontSize: 10, color: '#7A7A9A' },
+  summaryVal: { fontSize: 15, fontWeight: '700', color: '#3D3229' },
+  summaryValFlagged: { color: '#B5451B' },
+  summaryUnit: { fontSize: 10, color: '#8A7E72' },
   summaryFlag: {
     width: 26,
     height: 26,
@@ -457,7 +579,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  summaryFlagBad: { backgroundColor: '#FDF3E3' },
-  summaryFlagGood: { backgroundColor: '#EAF4EE' },
-  summaryFlagText: { fontSize: 12 },
+  summaryFlagBad: { backgroundColor: '#F6EDDA' },
+  summaryFlagGood: { backgroundColor: '#EBEFE3' },
 })

@@ -15,6 +15,7 @@ import CareTeamScreen from './careteam'
 import PatientLifestyleScreen from './patientlifestyle'
 import ScribeHubScreen from './scribehub'
 import ProviderNotificationsScreen from './notifications'
+import ChatThread from '../../components/ChatThread'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SIDEBAR_WIDTH = 90
@@ -96,6 +97,7 @@ export default function ProviderDashboard() {
   const [showLifestyle, setShowLifestyle] = useState(false)
   const [showScribeHub, setShowScribeHub] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showMessages, setShowMessages] = useState(false)
   const [unreadCount, setUnreadCount] = useState(2)
   const [activeSection, setActiveSection] = useState('Overview')
   const [patientLabs, setPatientLabs] = useState<LabValue[]>([])
@@ -217,6 +219,20 @@ export default function ProviderDashboard() {
           const patient = patients.find(p => p.id === patientId)
           if (patient) { setSelectedPatient(patient); fetchPatientLabs(patient.id) }
         }}
+      />
+    )
+  }
+  if (showMessages && selectedPatient) {
+    return (
+      <ChatThread
+        patientId={selectedPatient.id}
+        providerId={session?.user.id || ''}
+        myId={session?.user.id || ''}
+        myRole="provider"
+        myName={'Dr. ' + (profile?.full_name || '')}
+        accent="#C8524A"
+        title={selectedPatient.full_name}
+        onBack={() => setShowMessages(false)}
       />
     )
   }
@@ -350,7 +366,9 @@ export default function ProviderDashboard() {
                 setActiveSection(current)
               }}
               scrollEventThrottle={16}
-            >
+            ><TouchableOpacity style={styles.messagesBar} onPress={() => setShowMessages(true)}>
+            <Text style={styles.messagesBarText}>Message {selectedPatient.full_name.split(' ')[0]} and caregivers</Text>
+          </TouchableOpacity>
               {/* OVERVIEW */}
               <View onLayout={(e) => { sectionOffsets.current['Overview'] = e.nativeEvent.layout.y }}>
                 <Text style={styles.sectionHeading}>Overview</Text>
@@ -515,6 +533,8 @@ export default function ProviderDashboard() {
 }
 
 const styles = StyleSheet.create({
+  messagesBar: { backgroundColor: '#C8524A', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 12, marginBottom: 4 },
+  messagesBarText: { fontSize: 13, fontWeight: '700', color: '#fff' },
   container: { flex: 1, backgroundColor: '#FAF8F4' },
   flex: { flex: 1 },
   header: {
