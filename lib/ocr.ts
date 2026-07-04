@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy'
 
-const ANTHROPIC_API_KEY = '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'
+const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY
 
 export type ExtractedLabValue = {
   test_name: string
