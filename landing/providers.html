@@ -400,9 +400,9 @@
         </div>
         <h1>Your patient's full story,<br /><em>before they walk in.</em></h1>
         <p class="hero-sub">
-          Bridgette gives you your patient's complete health picture: labs, lifestyle trends, and medical history. Plus AI-powered consultation transcription that writes your notes for you.
+          Bridgette gives you your patient's complete health picture before they sit down: labs, lifestyle trends, medical history, and the notes from every other provider on their care team. Patients stay with the doctor who already holds their story.
         </p>
-        <a href="#provider-waitlist" class="hero-cta">Join the Provider Waitlist</a>
+        <a href="#provider-waitlist" class="hero-cta">Become a founding provider</a>
         <div style="margin-top:14px"><a href="/demo.html" style="font-size:14px;font-weight:600;color:#C4611A;text-decoration:none;border-bottom:1.5px solid #C4611A;padding-bottom:2px;display:inline-flex;align-items:center;gap:6px">See a sample patient share link <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L7 3M10 6L7 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
         <p class="hero-roles">For MDs, nutritionists, psychologists, physical trainers, and allied health professionals.</p>
       </div>
@@ -410,8 +410,8 @@
       <!-- HERO VISUAL: Provider Dashboard Preview -->
       <div class="hero-visual">
         <div class="hv-header">
-          <span class="hv-header-title">Scribe Hub</span>
-          <span class="hv-header-sub">Patient view</span>
+          <span class="hv-header-title">Health story</span>
+          <span class="hv-header-sub">Shared with you</span>
         </div>
         <div class="hv-content">
           <div class="hv-patient-bar">
@@ -570,6 +570,127 @@
     </div>
   </section>
 
+  <!-- PATIENT MANAGEMENT (ongoing care between visits) -->
+  <style>.pm-grid,.tr-grid,.care-team-grid{transition:transform .2s,box-shadow .2s}.pm-grid:hover,.tr-grid:hover,.care-team-grid:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,0.15)}@media (max-width:768px){.pm-grid{grid-template-columns:1fr !important}}</style>
+  <section style="background:#EDF1E7;padding:96px 24px;border-bottom:1px solid #E5DACB">
+    <div style="max-width:1080px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:32px" class="fade-in">
+        <span class="section-label" style="color:#5C7340">Patient management</span>
+        <h2 class="section-title">The visit ends.<br />Your care doesn't.</h2>
+        <p class="section-desc" style="margin:0 auto">Keep your whole panel in one place and stay in the loop between appointments, with your patient's consent.</p>
+      </div>
+
+      <div class="fade-in" style="max-width:800px;margin:0 auto 44px;text-align:center;padding:30px 26px;background:#FFFFFF;border:1px solid #DCE6D3;border-radius:18px">
+        <div style="font-family:Georgia,serif;font-size:24px;line-height:1.4;color:#5C7340">How many patients have you seen once, and never again?</div>
+        <div style="font-size:15px;color:#6B6560;line-height:1.7;margin-top:12px">Not because of your care. Because once they walked out, nothing kept the relationship going. That is the patient Bridgette helps you keep.</div>
+      </div>
+
+      <div class="fade-in pm-grid" style="background:#FFFFFF;border:2px solid #E5DACB;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:920px;margin:0 auto">
+        <div style="padding:40px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:15px;color:#6B6560;line-height:1.7;margin-bottom:22px">You tell a patient to come back in three months. Most never do, not because they don't want to, but because nothing reminds them. Bridgette reminds the patient when their follow-up or next labs are due, and reminds you too. So the people who should come back, do.</div>
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5"><b style="font-weight:700">Follow-up reminders you set.</b> Say &ldquo;recheck in 3 months,&rdquo; and your patient is reminded to book and redo their labs.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5"><b style="font-weight:700">You are reminded too,</b> the moment a patient is due for a return visit or new labs.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">New results the instant they are shared, with patient consent.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">Care triggers you define, plus adherence visibility between visits.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">The patient controls every share and can revoke anytime.</span></div>
+          </div>
+        </div>
+        <div style="background:#F5F2EC;padding:32px;display:flex;align-items:center;justify-content:center;border-left:1px solid #E5DACB">
+          <div style="width:100%;max-width:300px;background:#FFFFFF;border:1px solid #E5DACB;border-radius:16px;padding:16px;box-shadow:0 2px 14px rgba(0,0,0,0.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:11px;font-weight:700;color:#3D3229;text-transform:uppercase;letter-spacing:0.5px">Your patients</div>
+              <div style="font-size:10px;color:#6B6560">3 active</div>
+            </div>
+            <div style="background:#F5F2EC;border:1px solid #E5DACB;border-radius:12px;padding:12px;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div style="width:32px;height:32px;background:#5C7340;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#fff">MS</div>
+                <div style="flex:1"><div style="font-size:12px;font-weight:600;color:#3D3229">Maria Santos</div><div style="font-size:10px;color:#6B6560">Type 2 Diabetes</div></div>
+                <div style="background:#F8E3D5;color:#B5451B;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:4px 8px;border-radius:100px">Due</div>
+              </div>
+              <div style="background:#FAEAE0;border-radius:8px;padding:9px 10px">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7.5" r="5" stroke="#B5451B" stroke-width="1.1"/><path d="M7 4.8V7.5L8.8 8.7" stroke="#B5451B" stroke-width="1.1" stroke-linecap="round"/></svg>
+                  <span style="font-size:10px;color:#B5451B;font-weight:700">Follow-up you set &middot; recheck labs in 3 months</span>
+                </div>
+                <div style="font-size:9.5px;color:#8A6B5A;line-height:1.45;padding-left:20px">Due now. Maria was reminded to book and redo her labs.</div>
+              </div>
+            </div>
+            <div style="background:#F5F2EC;border:1px solid #E5DACB;border-radius:12px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="3" y="6.3" width="8" height="5.5" rx="1.2" stroke="#5C7340" stroke-width="1.1"/><path d="M4.6 6.3V5a2.4 2.4 0 0 1 4.8 0v1.3" stroke="#5C7340" stroke-width="1.1"/></svg>
+              <span style="font-size:10px;color:#5C7340;font-weight:600;line-height:1.4">New bloodwork shared with you &middot; 2 days ago</span>
+            </div>
+            <div style="background:#F5F2EC;border:1px solid #E5DACB;border-radius:12px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+                <span style="font-size:10px;font-weight:600;color:#3D3229">Plan adherence</span>
+                <span style="font-size:10px;color:#5C7340;font-weight:600">Metformin &middot; 12 of 14 days</span>
+              </div>
+              <div style="height:6px;background:#E5DACB;border-radius:3px;overflow:hidden"><div style="width:86%;height:100%;background:#5C7340;border-radius:3px"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAB TRENDS -->
+  <style>@media (max-width:768px){.tr-grid{grid-template-columns:1fr !important}}</style>
+  <section style="background:var(--warm-bg,#F5F2EC);padding:96px 24px;border-bottom:1px solid #E5DACB">
+    <div style="max-width:1080px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:48px" class="fade-in">
+        <span class="section-label" style="color:#5C7340">Lab trends</span>
+        <h2 class="section-title">Not a snapshot.<br />The whole trajectory.</h2>
+        <p class="section-desc" style="margin:0 auto">Your patient's labs from every clinic, plotted over time, with their food logs alongside. You see where things are heading, and what they actually eat.</p>
+      </div>
+      <div class="fade-in tr-grid" style="background:#FFFFFF;border:2px solid #E5DACB;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:920px;margin:0 auto">
+        <div style="padding:40px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:15px;color:#6B6560;line-height:1.7;margin-bottom:22px">Their cholesterol was high last visit. Is it better now, or worse? With Bridgette you do not guess. You see the line, pulled from every clinic they have visited.</div>
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">Labs from every clinic, gathered into one timeline</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">See the direction, not just one reading</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">Glucose, HbA1c, lipids, and weight, tracked side by side</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5"><b style="font-weight:700">Track their foods.</b> See what they actually eat, logged meal by meal.</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">Walk into the visit already knowing the trajectory</span></div>
+            <div style="display:flex;align-items:flex-start;gap:10px"><div style="width:24px;height:24px;background:rgba(92,115,64,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#5C7340" stroke-width="1.5" stroke-linecap="round"/></svg></div><span style="font-size:14px;color:#3A3530;line-height:1.5">Only the trends your patient shares with you</span></div>
+          </div>
+        </div>
+        <div style="background:#F5F2EC;padding:32px;display:flex;align-items:center;justify-content:center;border-left:1px solid #E5DACB">
+          <div style="width:100%;max-width:320px;background:#FFFFFF;border:1px solid #E5DACB;border-radius:16px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.07)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <div style="width:30px;height:30px;background:#5C7340;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;color:#fff">MS</div>
+              <div style="flex:1"><div style="font-size:12px;font-weight:600;color:#3D3229">Maria Santos</div><div style="font-size:9px;color:#6B6560">Shared with you</div></div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:#3D3229;margin:12px 0 6px">LDL Cholesterol &middot; 6 months</div>
+            <svg width="100%" height="84" viewBox="0 0 240 84" fill="none">
+              <line x1="0" y1="74" x2="240" y2="74" stroke="#EFE8DB" stroke-width="1"/>
+              <polyline points="8,16 48,24 88,30 128,40 168,50 212,56" stroke="#5C7340" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="8" cy="16" r="3.5" fill="#B5451B"/>
+              <circle cx="48" cy="24" r="3" fill="#C4611A"/>
+              <circle cx="88" cy="30" r="3" fill="#C4922A"/>
+              <circle cx="128" cy="40" r="3" fill="#8B9A6E"/>
+              <circle cx="168" cy="50" r="3" fill="#5C7340"/>
+              <circle cx="212" cy="56" r="4.5" fill="#5C7340"/>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:4px"><span style="color:#B5451B">188 mg/dL</span><span style="color:#5C7340;font-weight:600">142 mg/dL now</span></div>
+            <div style="display:flex;gap:6px;margin-top:14px">
+              <div style="flex:1;background:#EDF1E7;border-radius:8px;padding:7px;text-align:center"><div style="font-size:8px;color:#6B6560">FBS</div><div style="font-size:11px;font-weight:700;color:#5C7340">92</div></div>
+              <div style="flex:1;background:#FAF3E3;border-radius:8px;padding:7px;text-align:center"><div style="font-size:8px;color:#6B6560">HbA1c</div><div style="font-size:11px;font-weight:700;color:#C4922A">6.8%</div></div>
+              <div style="flex:1;background:#F2EBF6;border-radius:8px;padding:7px;text-align:center"><div style="font-size:8px;color:#6B6560">Weight</div><div style="font-size:11px;font-weight:700;color:#7B4B94">-3kg</div></div>
+            </div>
+            <div style="margin-top:14px;border-top:1px solid #EFE8DB;padding-top:12px">
+              <div style="font-size:9px;font-weight:700;color:#6B6560;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Recent meals</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px"><div style="width:7px;height:7px;border-radius:50%;background:#5C7340;flex-shrink:0"></div><span style="font-size:10px;color:#3D3229">Grilled bangus, brown rice, kangkong</span></div>
+                <div style="display:flex;align-items:center;gap:8px"><div style="width:7px;height:7px;border-radius:50%;background:#5C7340;flex-shrink:0"></div><span style="font-size:10px;color:#3D3229">Oatmeal with banana and chia</span></div>
+                <div style="display:flex;align-items:center;gap:8px"><div style="width:7px;height:7px;border-radius:50%;background:#C4922A;flex-shrink:0"></div><span style="font-size:10px;color:#3D3229">Fried chicken, white rice</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FEATURES SHOWCASE -->
   <style>
     .showcase { background: var(--warm-bg, #F5F2EC); padding: 96px 24px; }
@@ -586,6 +707,7 @@
     .badge-live { background: #EBF0E4; color: #5C7340; }
     .badge-core { background: #F8F0DC; color: #8A6B1A; }
     .badge-new { background: #F0E8F5; color: #7B4B94; }
+    .badge-addon { background: #FAEAE0; color: #B5451B; }
     .mock-phone { width: 100%; max-width: 240px; background: #FFFFFF; border-radius: 16px; border: 1.5px solid #E5DACB; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
     .mock-hdr { padding: 10px 14px; background: #C4611A; display: flex; align-items: center; justify-content: space-between; }
     .mock-hdr-t { font-size: 11px; font-weight: 600; color: white; }
@@ -597,8 +719,8 @@
     <div class="showcase-inner">
       <div class="showcase-header fade-in">
         <span class="section-label">See it in action</span>
-        <h2 class="section-title">Built to save you time<br />and improve patient care.</h2>
-        <p class="section-desc" style="margin:0 auto">Every feature designed around how Filipino providers actually work.</p>
+        <h2 class="section-title">See the whole patient.<br />Keep them coming back.</h2>
+        <p class="section-desc" style="margin:0 auto">The full picture, shared care, and care between visits come standard. Scribe Hub is an optional add-on for the doctors who want it.</p>
       </div>
 
       <div class="showcase-grid">
@@ -624,7 +746,7 @@
             </div>
           </div>
           <div class="showcase-body">
-            <span class="showcase-badge badge-core">Core Feature</span>
+            <span class="showcase-badge badge-addon">Scribe Hub add-on</span>
             <h3>AI transcription in Taglish</h3>
             <p>Record the consultation. Bridgette transcribes Filipino, English, and mixed-language conversations in real-time.</p>
           </div>
@@ -656,7 +778,7 @@
             </div>
           </div>
           <div class="showcase-body">
-            <span class="showcase-badge badge-core">Core Feature</span>
+            <span class="showcase-badge badge-addon">Scribe Hub add-on</span>
             <h3>SOAP notes in seconds</h3>
             <p>AI generates structured clinical notes from your conversation. Review, edit if needed, and save. Minutes, not hours.</p>
           </div>
@@ -694,7 +816,7 @@
             </div>
           </div>
           <div class="showcase-body">
-            <span class="showcase-badge badge-new">New</span>
+            <span class="showcase-badge badge-addon">Scribe Hub add-on</span>
             <h3>Auto-generated action items</h3>
             <p>Bridgette extracts action items from your consultation. Medications, follow-ups, lifestyle changes. Ready to send to your patient.</p>
           </div>
@@ -839,8 +961,8 @@
         </div>
         <div class="how-step fade-in">
           <div class="how-step-num">3</div>
-          <h4>Record the consultation</h4>
-          <p>Scribe Hub transcribes your conversation in Filipino and English. Hands-free.</p>
+          <h4>Record the consultation (optional)</h4>
+          <p>With the Scribe Hub add-on, transcribe your conversation in Filipino and English and auto-draft the SOAP note. Hands-free.</p>
         </div>
         <div class="how-step fade-in">
           <div class="how-step-num">4</div>
@@ -857,50 +979,51 @@
       <div class="pricing-header fade-in">
         <span class="section-label">Provider plans</span>
         <h2 class="section-title">Built for solo practitioners<br />and growing clinics.</h2>
-        <p class="section-desc" style="margin:0 auto">Free during beta. All plans include a free Bridgette Premium patient account for you.</p>
+        <p class="section-desc" style="margin:0 auto">Simple per-doctor pricing. The full platform on every plan, with Scribe Hub as an optional add-on. Founding providers get three months free and a rate locked in for life.</p>
       </div>
 
       <div class="pricing-grid">
         <div class="price-card fade-in">
-          <h3>Starter</h3>
-          <div class="price">&#8369;500<span>/mo</span></div>
-          <div class="price-desc">For solo providers just getting started</div>
+          <h3>Solo</h3>
+          <div class="price">&#8369;199<span>/doctor/mo</span></div>
+          <div class="price-desc">For solo practitioners</div>
           <ul class="price-features">
-            <li><span class="check-icon">&#10003;</span> 10 Scribe Hub uses/month</li>
-            <li><span class="check-icon">&#10003;</span> Patient history viewer</li>
-            <li><span class="check-icon">&#10003;</span> AI SOAP note generation</li>
-            <li><span class="check-icon">&#10003;</span> 1 free Premium patient account</li>
+            <li><span class="check-icon">&#10003;</span> Full patient health story: labs, trends, history</li>
+            <li><span class="check-icon">&#10003;</span> Shared care with their other providers</li>
+            <li><span class="check-icon">&#10003;</span> Care between visits and adherence visibility</li>
+            <li><span class="check-icon">&#10003;</span> 1 free Bridgette Premium account for you</li>
+            <li><span class="check-icon">&#10003;</span> Scribe Hub available as an add-on</li>
           </ul>
           <a href="#provider-waitlist" class="price-cta price-cta-outline">Join waitlist</a>
         </div>
 
         <div class="price-card featured fade-in">
-          <div class="price-popular">Most popular</div>
-          <h3>Pro</h3>
-          <div class="price">&#8369;1,500<span>/mo</span></div>
-          <div class="price-desc">Unlimited for busy practitioners</div>
+          <div class="price-popular">Best value</div>
+          <h3>Group</h3>
+          <div class="price">&#8369;149<span>/doctor/mo</span></div>
+          <div class="price-desc">For practices with 3 to 10 doctors</div>
           <ul class="price-features">
-            <li><span class="check-icon">&#10003;</span> Unlimited Scribe Hub uses</li>
-            <li><span class="check-icon">&#10003;</span> Full patient history viewer</li>
-            <li><span class="check-icon">&#10003;</span> AI SOAP note generation</li>
-            <li><span class="check-icon">&#10003;</span> 1 free Premium patient account</li>
-            <li><span class="check-icon">&#10003;</span> Priority support</li>
+            <li><span class="check-icon">&#10003;</span> Everything in Solo</li>
+            <li><span class="check-icon">&#10003;</span> Shared practice panel, all your patients in one place</li>
+            <li><span class="check-icon">&#10003;</span> Consolidated billing and team management</li>
+            <li><span class="check-icon">&#10003;</span> 1 free Premium account per doctor</li>
+            <li><span class="check-icon">&#10003;</span> 2 months free on annual prepay</li>
           </ul>
           <a href="#provider-waitlist" class="price-cta price-cta-primary">Join waitlist</a>
         </div>
 
         <div class="price-card fade-in">
-          <h3>Group</h3>
-          <div class="price">&#8369;899<span>/doctor/mo</span></div>
-          <div class="price-desc">For clinics with 3 to 10 providers</div>
+          <h3>Clinic</h3>
+          <div class="price">Custom</div>
+          <div class="price-desc">11+ doctors &middot; from &#8369;99 per doctor / mo</div>
           <ul class="price-features">
-            <li><span class="check-icon">&#10003;</span> Unlimited Scribe Hub per doctor</li>
-            <li><span class="check-icon">&#10003;</span> Shared clinic dashboard</li>
-            <li><span class="check-icon">&#10003;</span> 1 free Family Plan per doctor</li>
-            <li><span class="check-icon">&#10003;</span> Team management</li>
-            <li><span class="check-icon">&#10003;</span> 11+ doctors? <a href="mailto:hello@bridgette.com.ph" style="color:var(--olive)">Contact us</a></li>
+            <li><span class="check-icon">&#10003;</span> Everything in Group</li>
+            <li><span class="check-icon">&#10003;</span> Admin dashboard and team controls</li>
+            <li><span class="check-icon">&#10003;</span> Negotiated Scribe Hub seats</li>
+            <li><span class="check-icon">&#10003;</span> Dedicated onboarding and optional SSO</li>
+            <li><span class="check-icon">&#10003;</span> <a href="mailto:hello@bridgette.com.ph" style="color:var(--olive)">Talk to us</a></li>
           </ul>
-          <a href="#provider-waitlist" class="price-cta price-cta-outline">Join waitlist</a>
+          <a href="#provider-waitlist" class="price-cta price-cta-outline">Contact sales</a>
         </div>
       </div>
     </div>
@@ -909,9 +1032,9 @@
   <!-- PROVIDER WAITLIST -->
   <section class="provider-waitlist" id="provider-waitlist">
     <div class="pw-inner">
-      <span class="section-label">Get early access</span>
-      <h2 class="section-title">Join the provider waitlist.</h2>
-      <p class="section-desc" style="margin:0 auto">Free during beta. We'll reach out when your account is ready.</p>
+      <span class="section-label">Founding providers</span>
+      <h2 class="section-title">Join the founding providers.</h2>
+      <p class="section-desc" style="margin:0 auto">The first 10 providers get three months free and a founding rate locked in for life. We'll reach out when your account is ready.</p>
 
       <div class="pw-form">
         <form id="provider-form">
