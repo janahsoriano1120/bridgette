@@ -8,206 +8,45 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --teal: #5C7340;
-      --teal-mid: #6B8548;
-      --sage: #8B9A6E;
-      --mint: #F7F5F0;
-      --cream: #FFFFFF;
-      --ink: #3D3229;
-      --gray: #6B6560;
-      --gray-light: #E5DACB;
-      --gold: #C4922A;
-      --white: #FFFFFF;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--cream);
-      color: var(--ink);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 48px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--gray-light);
-    }
-
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none;
-    }
-
-    .nav-logomark {
-      width: 32px; height: 32px;
-      background: var(--teal);
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .nav-wordmark {
-      font-family: Georgia, serif;
-      font-size: 18px;
-      color: var(--teal);
-      font-weight: 400;
-      letter-spacing: -0.3px;
-    }
-
-    .nav-back {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--teal);
-      text-decoration: none;
-      transition: opacity 0.2s;
-    }
-    .nav-back:hover { opacity: 0.7; }
-
-    .page-header {
-      padding: 140px 24px 48px;
-      text-align: center;
-    }
-
-    .page-header h1 {
-      font-family: Georgia, serif;
-      font-size: clamp(32px, 4vw, 48px);
-      font-weight: 400;
-      color: var(--teal);
-      letter-spacing: -0.5px;
-      margin-bottom: 12px;
-    }
-
-    .page-header .effective-date {
-      font-size: 14px;
-      color: var(--gray);
-    }
-
-    .content {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 24px 96px;
-    }
-
-    .content h2 {
-      font-family: Georgia, serif;
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--teal);
-      margin-top: 48px;
-      margin-bottom: 16px;
-      letter-spacing: -0.3px;
-    }
-
-    .content h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-top: 28px;
-      margin-bottom: 10px;
-    }
-
-    .content p {
-      font-size: 15px;
-      color: var(--gray);
-      line-height: 1.75;
-      margin-bottom: 16px;
-    }
-
-    .content ul, .content ol {
-      font-size: 15px;
-      color: var(--gray);
-      line-height: 1.75;
-      margin-bottom: 16px;
-      padding-left: 24px;
-    }
-
-    .content li {
-      margin-bottom: 6px;
-    }
-
-    .content a {
-      color: var(--sage);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    .content .highlight-box {
-      background: var(--mint);
-      border: 1px solid var(--gray-light);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin: 24px 0;
-    }
-
-    .content .highlight-box p {
-      color: var(--ink);
-      margin: 0;
-      font-weight: 500;
-    }
-
-    footer {
-      background: #3D3229;
-      padding: 32px 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .footer-logo {
-      display: flex; align-items: center; gap: 8px;
-      text-decoration: none;
-    }
-
-    .footer-wordmark {
-      font-family: Georgia, serif;
-      font-size: 16px;
-      color: var(--white);
-    }
-
-    .footer-links {
-      display: flex; align-items: center; gap: 24px;
-    }
-
-    .footer-links a {
-      font-size: 12px;
-      color: rgba(255,255,255,0.45);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .footer-links a:hover { color: rgba(255,255,255,0.8); }
-
-    .footer-copy {
-      font-size: 12px;
-      color: rgba(255,255,255,0.3);
-    }
-
-    @media (max-width: 768px) {
-      nav { padding: 14px 20px; }
-      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#5C7340;--olive:#8B9A6E;--terracotta:#C47D4E;--text:#3A3530;--sec:#4A4540;--warm-bg:#F5F2EC;--border:#E5DACB;--white:#FFFFFF;--espresso:#3D3229}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:#FFFFFF;color:var(--text);-webkit-font-smoothing:antialiased}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logomark{width:32px;height:32px;background:var(--forest);border-radius:9px;display:flex;align-items:center;justify-content:center}
+    .nav-wordmark{font-family:Georgia,serif;font-size:18px;color:var(--forest);letter-spacing:-0.3px}
+    .nav-back{font-size:13px;font-weight:600;color:var(--forest);text-decoration:none;transition:opacity 0.2s}
+    .nav-back:hover{opacity:0.7}
+    .page-header{padding:140px 24px 48px;text-align:center}
+    .page-header h1{font-family:Georgia,serif;font-size:clamp(32px,4vw,48px);font-weight:400;color:var(--forest);letter-spacing:-0.5px;margin-bottom:12px}
+    .page-header .effective-date{font-size:14px;color:var(--sec)}
+    .content{max-width:720px;margin:0 auto;padding:0 24px 96px}
+    .content h2{font-family:Georgia,serif;font-size:22px;font-weight:400;color:var(--forest);margin-top:48px;margin-bottom:16px;letter-spacing:-0.3px}
+    .content h3{font-size:15px;font-weight:600;color:var(--text);margin-top:28px;margin-bottom:10px}
+    .content p{font-size:15px;color:var(--sec);line-height:1.75;margin-bottom:16px}
+    .content ul,.content ol{font-size:15px;color:var(--sec);line-height:1.75;margin-bottom:16px;padding-left:24px}
+    .content li{margin-bottom:6px}
+    .content a{color:var(--forest);text-decoration:underline;text-underline-offset:2px}
+    .content strong{color:var(--text)}
+    .highlight-box{background:var(--warm-bg);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:24px 0}
+    .highlight-box p{color:var(--text);margin:0;font-weight:500}
+    footer{background:var(--espresso);padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .footer-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+    .footer-wordmark{font-family:Georgia,serif;font-size:16px;color:white}
+    .footer-links{display:flex;align-items:center;gap:24px}
+    .footer-links a{font-size:13px;color:rgba(255,255,255,0.55);text-decoration:none;transition:color 0.2s}
+    .footer-links a:hover{color:rgba(255,255,255,0.9)}
+    .footer-copy{font-size:13px;color:rgba(255,255,255,0.35)}
+    @media(max-width:768px){nav{padding:14px 20px}footer{flex-direction:column;align-items:flex-start;gap:16px}}
   </style>
 </head>
 <body>
 
   <nav>
     <a href="/" class="nav-logo">
-      <div class="nav-logomark">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="nav-logomark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="nav-wordmark">bridgette</span>
     </a>
     <a href="/" class="nav-back">Back to home</a>
@@ -215,7 +54,7 @@
 
   <div class="page-header">
     <h1>Terms of Service</h1>
-    <p class="effective-date">Effective date: May 20, 2026</p>
+    <p class="effective-date">Effective date: July 3, 2026</p>
   </div>
 
   <div class="content">
@@ -226,7 +65,7 @@
 
     <h2>1. About Bridgette</h2>
     <p>Bridgette is a health wallet application that allows patients to store, manage, and share their personal health data with healthcare providers. We also provide Scribe Hub, a tool for healthcare providers that transcribes consultations and generates clinical notes using artificial intelligence.</p>
-    <p>Bridgette is operated by Bridgette Health, currently in the process of incorporation as a One Person Corporation (OPC) with the Securities and Exchange Commission (SEC) of the Philippines. All required business registrations are in progress.</p>
+    <p>Bridgette is operated by <strong>Bridgette Health Inc.</strong>, a stock corporation duly organized and existing under the laws of the Republic of the Philippines, with SEC Registration No. 2026060254007-00, incorporated on June 10, 2026, and with principal office at Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower, 32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632. Bridgette Health Inc. is registered with the Bureau of Internal Revenue (BIR) under TIN 807-383-615-00000 and has obtained its Barangay Business Clearance from Barangay Fort Bonifacio, Taguig City. Our Mayor’s Permit is in process and NPC registration is in progress.</p>
 
     <h2>2. Eligibility</h2>
     <p>You must be at least 18 years old to create an account on Bridgette. Users under 18 may only use Bridgette through a dependent profile managed by a parent or legal guardian. When a dependent turns 18, ownership and control of their health data and account transfers to them.</p>
@@ -251,7 +90,10 @@
     <p>Bridgette offers a free tier and multiple paid subscription plans for patients (Basic, Premium, Couple, Family, and OFW Observer add-on). Paid plans are billed monthly through Apple App Store or Google Play in-app billing. Prices are displayed in Philippine Pesos.</p>
 
     <h3>Provider Plans (B2B)</h3>
-    <p>Bridgette offers subscription plans for healthcare providers (Starter, Pro, Duo, Group, and Clinic). Provider subscriptions are billed monthly via web-based payment processing.</p>
+    <p>Bridgette offers subscription plans for healthcare providers, with Scribe Hub available as an optional add-on. Provider subscriptions are billed monthly via web-based payment processing through Xendit or PayMongo.</p>
+
+    <h3>Institutional and LGU Programs (coming soon)</h3>
+    <p>Bridgette is preparing to offer sponsored programs through institutional clients such as local government units and employers. Under these programs, the institutional client pays for enrollees, and separate program terms and consent forms will apply.</p>
 
     <h3>Billing Terms</h3>
     <ul>
@@ -271,7 +113,7 @@
     <p>Important limitations:</p>
     <ul>
       <li>AI-generated summaries and insights are not diagnoses.</li>
-      <li>AI-generated SOAP notes should be reviewed and approved by the provider before becoming part of any medical record.</li>
+      <li>AI-generated SOAP notes must be reviewed and approved by the licensed provider before becoming part of any medical record. No AI-drafted clinical note is finalized or shared with a patient without provider review.</li>
       <li>AI transcription may contain errors, particularly with medical terminology or mixed-language (Filipino and English) conversations.</li>
       <li>Always consult a qualified healthcare professional for medical decisions.</li>
     </ul>
@@ -280,10 +122,11 @@
     <p>Healthcare providers using Scribe Hub are responsible for:</p>
     <ul>
       <li>Obtaining informed consent from patients before recording consultations</li>
-      <li>Reviewing and verifying all AI-generated SOAP notes before using them in clinical practice</li>
+      <li>Reviewing, editing where needed, and approving all AI-generated SOAP notes before using them in clinical practice</li>
       <li>Complying with all applicable medical and data privacy regulations in the Philippines</li>
       <li>Maintaining their own professional liability coverage</li>
     </ul>
+    <p>Consultation audio is deleted immediately after transcription is complete and is never permanently stored. Only the transcribed text and the provider-approved SOAP note become part of the consultation record.</p>
     <p>Bridgette is not responsible for clinical decisions made by healthcare providers based on AI-generated content.</p>
 
     <h2>8. Data Sharing and Provider Access</h2>
@@ -308,7 +151,7 @@
     </ul>
 
     <h2>10. Intellectual Property</h2>
-    <p>Bridgette, including its design, branding, code, and AI models, is the intellectual property of Bridgette Health. You may not copy, modify, or distribute any part of the application without our written consent.</p>
+    <p>Bridgette, including its design, branding, code, and AI models, is the intellectual property of Bridgette Health Inc. You may not copy, modify, or distribute any part of the application without our written consent.</p>
     <p>Your health data remains your property. By using Bridgette, you grant us a limited license to store, process, and display your data solely for the purpose of providing the service to you.</p>
 
     <h2>11. Disclaimers</h2>
@@ -322,12 +165,12 @@
     <p>Bridgette is not a medical device. It is not registered with the Philippine FDA as a medical device and should not be used as a substitute for professional medical care.</p>
 
     <h2>12. Limitation of Liability</h2>
-    <p>To the maximum extent permitted by Philippine law, Bridgette Health shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service, including but not limited to damages for loss of data, medical outcomes, or business interruption.</p>
+    <p>To the maximum extent permitted by Philippine law, Bridgette Health Inc. shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service, including but not limited to damages for loss of data, medical outcomes, or business interruption.</p>
     <p>Our total liability for any claims related to the service shall not exceed the amount you paid to Bridgette in the 12 months preceding the claim.</p>
 
     <h2>13. Account Termination</h2>
     <p>You may delete your account at any time through the app settings. Before your account is deleted, you will be required to provide an email address where a complete export of your health data will be sent. Your health story is yours, and we will never delete it without first giving it back to you.</p>
-    <p>Once your data export has been delivered, your personal and health data will be permanently removed from our systems within 30 days, except where retention is required by law.</p>
+    <p>Once your data export has been delivered, your personal and health data will be permanently removed from our systems within 30 days from production systems and within 90 days from backups, except where retention is required by law.</p>
     <p>We may suspend or terminate your account if you violate these terms, with notice when possible. In the event of termination by Bridgette, you will be given 30 days to export your data before it is deleted.</p>
 
     <h2>14. Changes to These Terms</h2>
@@ -335,12 +178,14 @@
     <p>If you do not agree with updated terms, you may cancel your subscription and delete your account.</p>
 
     <h2>15. Governing Law and Dispute Resolution</h2>
-    <p>These terms are governed by the laws of the Republic of the Philippines. Any disputes arising from these terms or your use of Bridgette shall be resolved through mediation in Metro Manila, Philippines. If mediation is unsuccessful, disputes shall be settled by the appropriate courts of Quezon City, Philippines.</p>
+    <p>These terms are governed by the laws of the Republic of the Philippines. Any disputes arising from these terms or your use of Bridgette shall be resolved through mediation in Metro Manila, Philippines. If mediation is unsuccessful, disputes shall be settled by the appropriate courts of Taguig City, Philippines.</p>
 
     <h2>16. Contact Us</h2>
     <p>If you have questions about these terms:</p>
     <p>
-      Bridgette Health<br />
+      <strong>Bridgette Health Inc.</strong><br />
+      Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower<br />
+      32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632<br />
       Email: <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
     </p>
 
@@ -348,20 +193,16 @@
 
   <footer>
     <a href="/" class="footer-logo">
-      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px;">
-        <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
-          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px"><svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="footer-wordmark">bridgette</span>
     </a>
     <div class="footer-links">
       <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <a href="https://www.instagram.com/bridgette.app/" target="_blank" rel="noopener">Instagram</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
     </div>
-    <span class="footer-copy">&copy; 2026 Bridgette Health. All rights reserved.</span>
+    <span class="footer-copy">&copy; 2026 Bridgette Health Inc. All rights reserved.</span>
   </footer>
 
 </body>

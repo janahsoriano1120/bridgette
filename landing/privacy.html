@@ -8,206 +8,48 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --teal: #5C7340;
-      --teal-mid: #6B8548;
-      --sage: #8B9A6E;
-      --mint: #F7F5F0;
-      --cream: #FFFFFF;
-      --ink: #3D3229;
-      --gray: #6B6560;
-      --gray-light: #E5DACB;
-      --gold: #C4922A;
-      --white: #FFFFFF;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--cream);
-      color: var(--ink);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 48px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--gray-light);
-    }
-
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none;
-    }
-
-    .nav-logomark {
-      width: 32px; height: 32px;
-      background: var(--teal);
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .nav-wordmark {
-      font-family: Georgia, serif;
-      font-size: 18px;
-      color: var(--teal);
-      font-weight: 400;
-      letter-spacing: -0.3px;
-    }
-
-    .nav-back {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--teal);
-      text-decoration: none;
-      transition: opacity 0.2s;
-    }
-    .nav-back:hover { opacity: 0.7; }
-
-    .page-header {
-      padding: 140px 24px 48px;
-      text-align: center;
-    }
-
-    .page-header h1 {
-      font-family: Georgia, serif;
-      font-size: clamp(32px, 4vw, 48px);
-      font-weight: 400;
-      color: var(--teal);
-      letter-spacing: -0.5px;
-      margin-bottom: 12px;
-    }
-
-    .page-header .effective-date {
-      font-size: 14px;
-      color: var(--gray);
-    }
-
-    .content {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 24px 96px;
-    }
-
-    .content h2 {
-      font-family: Georgia, serif;
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--teal);
-      margin-top: 48px;
-      margin-bottom: 16px;
-      letter-spacing: -0.3px;
-    }
-
-    .content h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-top: 28px;
-      margin-bottom: 10px;
-    }
-
-    .content p {
-      font-size: 15px;
-      color: var(--gray);
-      line-height: 1.75;
-      margin-bottom: 16px;
-    }
-
-    .content ul, .content ol {
-      font-size: 15px;
-      color: var(--gray);
-      line-height: 1.75;
-      margin-bottom: 16px;
-      padding-left: 24px;
-    }
-
-    .content li {
-      margin-bottom: 6px;
-    }
-
-    .content a {
-      color: var(--sage);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    .content .highlight-box {
-      background: var(--mint);
-      border: 1px solid var(--gray-light);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin: 24px 0;
-    }
-
-    .content .highlight-box p {
-      color: var(--ink);
-      margin: 0;
-      font-weight: 500;
-    }
-
-    footer {
-      background: #3D3229;
-      padding: 32px 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .footer-logo {
-      display: flex; align-items: center; gap: 8px;
-      text-decoration: none;
-    }
-
-    .footer-wordmark {
-      font-family: Georgia, serif;
-      font-size: 16px;
-      color: var(--white);
-    }
-
-    .footer-links {
-      display: flex; align-items: center; gap: 24px;
-    }
-
-    .footer-links a {
-      font-size: 12px;
-      color: rgba(255,255,255,0.45);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .footer-links a:hover { color: rgba(255,255,255,0.8); }
-
-    .footer-copy {
-      font-size: 12px;
-      color: rgba(255,255,255,0.3);
-    }
-
-    @media (max-width: 768px) {
-      nav { padding: 14px 20px; }
-      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--forest:#5C7340;--olive:#8B9A6E;--terracotta:#C47D4E;--text:#3A3530;--sec:#4A4540;--warm-bg:#F5F2EC;--border:#E5DACB;--white:#FFFFFF;--espresso:#3D3229}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:#FFFFFF;color:var(--text);-webkit-font-smoothing:antialiased}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logomark{width:32px;height:32px;background:var(--forest);border-radius:9px;display:flex;align-items:center;justify-content:center}
+    .nav-wordmark{font-family:Georgia,serif;font-size:18px;color:var(--forest);letter-spacing:-0.3px}
+    .nav-back{font-size:13px;font-weight:600;color:var(--forest);text-decoration:none;transition:opacity 0.2s}
+    .nav-back:hover{opacity:0.7}
+    .page-header{padding:140px 24px 48px;text-align:center}
+    .page-header h1{font-family:Georgia,serif;font-size:clamp(32px,4vw,48px);font-weight:400;color:var(--forest);letter-spacing:-0.5px;margin-bottom:12px}
+    .page-header .effective-date{font-size:14px;color:var(--sec)}
+    .content{max-width:720px;margin:0 auto;padding:0 24px 96px}
+    .content h2{font-family:Georgia,serif;font-size:22px;font-weight:400;color:var(--forest);margin-top:48px;margin-bottom:16px;letter-spacing:-0.3px}
+    .content h3{font-size:15px;font-weight:600;color:var(--text);margin-top:28px;margin-bottom:10px}
+    .content p{font-size:15px;color:var(--sec);line-height:1.75;margin-bottom:16px}
+    .content ul,.content ol{font-size:15px;color:var(--sec);line-height:1.75;margin-bottom:16px;padding-left:24px}
+    .content li{margin-bottom:6px}
+    .content a{color:var(--forest);text-decoration:underline;text-underline-offset:2px}
+    .content strong{color:var(--text)}
+    .highlight-box{background:var(--warm-bg);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:24px 0}
+    .highlight-box p{color:var(--text);margin:0;font-weight:500}
+    .dpo-box{background:var(--warm-bg);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:16px 0}
+    .dpo-box p{margin-bottom:4px}
+    .dpo-box p:last-child{margin-bottom:0}
+    footer{background:var(--espresso);padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .footer-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+    .footer-wordmark{font-family:Georgia,serif;font-size:16px;color:white}
+    .footer-links{display:flex;align-items:center;gap:24px}
+    .footer-links a{font-size:13px;color:rgba(255,255,255,0.55);text-decoration:none;transition:color 0.2s}
+    .footer-links a:hover{color:rgba(255,255,255,0.9)}
+    .footer-copy{font-size:13px;color:rgba(255,255,255,0.35)}
+    @media(max-width:768px){nav{padding:14px 20px}footer{flex-direction:column;align-items:flex-start;gap:16px}}
   </style>
 </head>
 <body>
 
   <nav>
     <a href="/" class="nav-logo">
-      <div class="nav-logomark">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="nav-logomark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="nav-wordmark">bridgette</span>
     </a>
     <a href="/" class="nav-back">Back to home</a>
@@ -215,7 +57,7 @@
 
   <div class="page-header">
     <h1>Privacy Policy</h1>
-    <p class="effective-date">Effective date: May 20, 2026</p>
+    <p class="effective-date">Effective date: July 3, 2026</p>
   </div>
 
   <div class="content">
@@ -225,10 +67,20 @@
     </div>
 
     <h2>1. Who We Are</h2>
-    <p>Bridgette is operated by Bridgette Health, currently in the process of incorporation as a One Person Corporation (OPC) with the Securities and Exchange Commission (SEC) of the Philippines. NPC registration and all required business registrations (BIR, LGU) are in progress. Bridgette is designed from the ground up to comply with Republic Act No. 10173, also known as the Data Privacy Act of 2012 (DPA), its Implementing Rules and Regulations, and all issuances by the National Privacy Commission (NPC).</p>
-    <p>For questions about this policy, contact us at <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>.</p>
+    <p>Bridgette is operated by <strong>Bridgette Health Inc.</strong>, a stock corporation duly organized and existing under the laws of the Republic of the Philippines, with SEC Registration No. 2026060254007-00, incorporated on June 10, 2026. Our principal office is located at Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower, 32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632.</p>
+    <p>Bridgette Health Inc. is registered with the Bureau of Internal Revenue (BIR) under TIN 807-383-615-00000 and has obtained its Barangay Business Clearance from Barangay Fort Bonifacio, Taguig City. Our Mayor’s Permit is in process and NPC (National Privacy Commission) registration is in progress. Bridgette is designed from the ground up to comply with Republic Act No. 10173, also known as the Data Privacy Act of 2012 (DPA), its Implementing Rules and Regulations, and all issuances by the National Privacy Commission.</p>
+    <p>For general inquiries about this policy, contact us at <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>.</p>
 
-    <h2>2. What Data We Collect</h2>
+    <h2>2. Data Protection Officer</h2>
+    <p>Our Data Protection Officer (DPO) is responsible for overseeing compliance with the Data Privacy Act and for handling all privacy-related complaints, requests, and inquiries.</p>
+    <div class="dpo-box">
+      <p><strong>Data Protection Officer:</strong> Janah Rosales Soriano</p>
+      <p><strong>Email:</strong> <a href="mailto:management@bridgette.com.ph">management@bridgette.com.ph</a></p>
+      <p><strong>Address:</strong> Bridgette Health Inc., Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower, 32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632</p>
+    </div>
+    <p>You may contact the DPO directly for any concerns about how your personal or health data is processed, or to exercise your rights under the DPA.</p>
+
+    <h2>3. What Data We Collect</h2>
 
     <h3>Account Information</h3>
     <p>When you create an account, we collect your full name, email address, date of birth, biological sex, and role (patient or healthcare provider). For providers, we may also collect your PRC license number and clinic affiliation.</p>
@@ -240,12 +92,12 @@
     <p>If you choose to use our lifestyle logging features, we collect food logs, sleep logs, workout and activity logs, and data from connected wearable devices such as Apple Watch.</p>
 
     <h3>Consultation Recordings (Scribe Hub)</h3>
-    <p>When healthcare providers use Scribe Hub, audio recordings of consultations are captured with patient consent, transcribed, and used to generate SOAP notes. Audio is processed and not permanently stored after transcription is complete.</p>
+    <p>When healthcare providers use Scribe Hub, audio recordings of consultations are captured with patient consent and transcribed into text. <strong>Audio recordings are deleted immediately after transcription is complete and are never permanently stored.</strong> Only the transcribed text and the provider-approved SOAP note become part of the consultation record.</p>
 
     <h3>Usage Data</h3>
     <p>We collect basic analytics about how you use the app to improve the service, including device type, app version, feature usage patterns, and crash logs. We do not track your browsing activity outside of Bridgette.</p>
 
-    <h2>3. How We Use Your Data</h2>
+    <h2>4. How We Use Your Data</h2>
     <p>We use your data to:</p>
     <ul>
       <li>Provide and maintain the Bridgette health wallet service</li>
@@ -261,34 +113,47 @@
       <p>We never sell your personal or health data to anyone. We never use your health data for advertising. We never share your data without your explicit consent.</p>
     </div>
 
-    <h2>4. AI Processing and De-identification</h2>
-    <p>When Bridgette generates AI-powered summaries, meal analyses, or longevity insights, your health and lifestyle data is de-identified before being sent to our AI processing partners. This means your name, date of birth, and any other personally identifiable information is stripped from the data before it leaves our servers.</p>
-    <p>Our AI processing partners include Anthropic (Claude API) for health insights and Groq for audio transcription and SOAP note generation. These partners process data according to their own privacy policies and do not retain your de-identified data for training purposes.</p>
+    <h2>5. AI Processing and De-identification</h2>
+    <p>When Bridgette generates AI-powered summaries, meal analyses, or longevity insights, your health and lifestyle data is de-identified before being sent to our AI processing partners. De-identification means that your name, email address, date of birth, and any other information that could directly identify you is stripped from the data before it leaves our servers. The AI processing partners see only the health and lifestyle content, not who it belongs to.</p>
+    <p>Our AI processing partners include:</p>
+    <ul>
+      <li><strong>Anthropic (Claude API)</strong> for health insights, summaries, and per-meal food analysis</li>
+      <li><strong>Groq</strong> for audio transcription and SOAP note generation</li>
+    </ul>
+    <p>These partners process data according to their own privacy policies and enterprise data processing agreements. AI calls are configured for zero or minimal data retention where available, meaning your de-identified data is not retained by these partners for training purposes.</p>
 
-    <h2>5. Data Sharing and Your Control</h2>
+    <h2>6. Data Sharing and Your Control</h2>
     <p>You are always in control of who sees your health data.</p>
     <ul>
-      <li>Provider sharing: You choose which providers can access your data by generating a secure share link. You can revoke access at any time.</li>
-      <li>Family plans: Each family member's data is completely private and separate. Billing is shared, but health data is never shared without each individual's explicit consent.</li>
-      <li>OFW Observer access: If you grant an OFW family member observer access, they receive read-only activity indicators, not your raw health data. You control exactly what is visible.</li>
-      <li>Dependent profiles: Parents or guardians manage dependent profiles for minors (under 18). When the dependent reaches 18, full ownership and control of their health data transfers to them.</li>
+      <li><strong>Provider sharing:</strong> You choose which providers can access your data by generating a secure share link. You can revoke access at any time.</li>
+      <li><strong>Family plans:</strong> Each family member's data is completely private and separate. Billing is shared, but health data is never shared without each individual's explicit consent.</li>
+      <li><strong>OFW Observer access:</strong> If you grant an OFW family member observer access, they receive read-only activity indicators, not your raw health data. You control exactly what is visible.</li>
+      <li><strong>Caregiver access:</strong> Caregivers (family members or non-relatives) can be granted permission-tiered access to your health data, from view-only activity indicators to elevated access. You control the level and can revoke at any time.</li>
+      <li><strong>Dependent profiles:</strong> Parents or guardians manage dependent profiles for minors (under 18). When the dependent reaches 18, full ownership and control of their health data transfers to them.</li>
     </ul>
 
-    <h2>6. Data Storage and Security</h2>
-    <p>Your data is stored securely on Supabase infrastructure hosted in the Asia-Pacific region (ap-northeast-1, Tokyo). We implement the following security measures:</p>
+    <h3>Institutional and LGU Programs (coming soon)</h3>
+    <p>Bridgette is preparing to offer sponsored programs through institutional clients such as local government units and employers. Under these programs, individuals enroll voluntarily, each enrollee owns and controls their own health record, and any reporting to the institutional client is limited to de-identified, aggregated group-level data (minimum cohort size of 25 individuals per reporting unit). Individual health data is never disclosed to the institutional client, and aggregate data is never used for employment, HR, disciplinary, or performance evaluation purposes. Separate consent forms will apply to enrollees when these programs launch.</p>
+
+    <h2>7. Data Storage and Security</h2>
+    <p>Your data is stored securely on Supabase infrastructure hosted in the Asia-Pacific region (Singapore). We implement the following security measures:</p>
     <ul>
       <li>Encryption in transit using TLS 1.2 or higher</li>
       <li>Encryption at rest for all stored data</li>
       <li>Row-level security ensuring users can only access their own data</li>
-      <li>Secure authentication with email verification</li>
-      <li>Regular security audits and monitoring</li>
+      <li>Secure authentication with email verification and multi-factor capability</li>
+      <li>Private storage buckets accessed only through signed, time-limited URLs</li>
+      <li>Audit logging and access monitoring</li>
+      <li>Secrets management and key rotation</li>
+      <li>Regular security reviews</li>
     </ul>
 
-    <h2>7. Data Retention</h2>
-    <p>Your health data is retained for as long as your account is active. If you choose to delete your account, you will be required to provide an email address where a complete export of your health data will be sent before deletion. Your health story belongs to you, and we will always return it to you before removing it from our systems. After your export is delivered, all data associated with your account will be permanently deleted within 30 days, except where retention is required by Philippine law.</p>
-    <p>Scribe Hub audio recordings are processed in real-time and are not stored after transcription is complete. Generated SOAP notes are retained as part of the consultation record.</p>
+    <h2>8. Data Retention</h2>
+    <p>Your health data is retained for as long as your account is active. If you choose to delete your account, you will be required to provide an email address where a complete export of your health data will be sent before deletion. Your health story belongs to you, and we will always return it to you before removing it from our systems. After your export is delivered, all data associated with your account will be permanently deleted within 30 days from production systems and within 90 days from backups, except where retention is required by Philippine law.</p>
+    <p>Scribe Hub audio recordings are deleted immediately after transcription is complete. Generated SOAP notes are retained as part of the consultation record once the provider has reviewed and approved them.</p>
+    <p>Waitlist data collected on bridgette.com.ph is retained until you are onboarded to the product or until you withdraw consent, and in any case no longer than 12 months from collection absent onboarding.</p>
 
-    <h2>8. Your Rights Under the Data Privacy Act</h2>
+    <h2>9. Your Rights Under the Data Privacy Act</h2>
     <p>Under the DPA, you have the following rights:</p>
     <ul>
       <li><strong>Right to be informed</strong> about how your data is collected and processed</li>
@@ -300,25 +165,40 @@
       <li><strong>Right to file a complaint</strong> with the National Privacy Commission</li>
       <li><strong>Right to damages</strong> for any violations of your privacy rights</li>
     </ul>
-    <p>To exercise any of these rights, contact us at <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>. We will respond within 15 business days.</p>
+    <p>To exercise any of these rights, contact our Data Protection Officer at <a href="mailto:management@bridgette.com.ph">management@bridgette.com.ph</a>. We will respond within 15 business days.</p>
 
-    <h2>9. Cookies and Tracking</h2>
+    <h2>10. Cookies and Tracking</h2>
     <p>The Bridgette mobile app does not use cookies. Our website (bridgette.com.ph) uses only essential cookies required for basic functionality. We do not use third-party advertising cookies or tracking pixels.</p>
 
-    <h2>10. Children's Privacy</h2>
+    <h2>11. Children's Privacy</h2>
     <p>Bridgette allows dependent profiles for minors managed by a parent or legal guardian. Minors under 18 cannot create their own accounts. When a dependent reaches 18, they gain full control of their own health data and can manage their account independently.</p>
 
-    <h2>11. International Data Transfers</h2>
-    <p>While your primary data is stored in the Asia-Pacific region, de-identified data may be processed by AI partners located in the United States. We ensure appropriate safeguards are in place, including data de-identification and contractual protections, to comply with the DPA's requirements for cross-border data transfers.</p>
+    <h2>12. International Data Transfers</h2>
+    <p>Your primary data is stored in the Asia-Pacific region (Singapore) via Supabase. In addition, de-identified data is processed by AI partners located outside the Philippines (primarily the United States), including Anthropic and Groq, because no Philippine region is currently available for these services. Cross-border transfers are covered by Data Processing Agreements with each partner and by your consent as described in this policy. Bridgette remains accountable for your data throughout the transfer and processing lifecycle in accordance with the DPA and NPC issuances on cross-border data transfers.</p>
 
-    <h2>12. Changes to This Policy</h2>
+    <h2>13. Sub-Processors</h2>
+    <p>We use the following sub-processors to deliver the Bridgette service:</p>
+    <ul>
+      <li><strong>Supabase Inc.</strong> — database, authentication, and storage (Singapore)</li>
+      <li><strong>Anthropic PBC</strong> — AI health insights, summaries, and food analysis (United States)</li>
+      <li><strong>Groq Inc.</strong> — AI transcription and SOAP note generation (United States)</li>
+      <li><strong>Netlify Inc.</strong> — website hosting for bridgette.com.ph (United States)</li>
+      <li><strong>Apple Inc. and Google LLC</strong> — in-app subscription billing for patient plans</li>
+      <li><strong>Xendit</strong> (primary) or <strong>PayMongo</strong> (alternative under evaluation) — web-based subscription billing for provider plans</li>
+    </ul>
+    <p>Each sub-processor is bound by a Data Processing Agreement that requires them to protect your data at the same standard we do.</p>
+
+    <h2>14. Changes to This Policy</h2>
     <p>We may update this Privacy Policy from time to time. When we do, we will notify you through the app and update the effective date at the top of this page. Continued use of Bridgette after changes constitutes acceptance of the updated policy.</p>
 
-    <h2>13. Contact Us</h2>
+    <h2>15. Contact Us</h2>
     <p>If you have questions, concerns, or requests regarding your privacy or this policy:</p>
     <p>
-      Bridgette Health<br />
-      Email: <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <strong>Bridgette Health Inc.</strong><br />
+      Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower<br />
+      32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632<br />
+      General inquiries: <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a><br />
+      Data Protection Officer: <a href="mailto:management@bridgette.com.ph">management@bridgette.com.ph</a>
     </p>
     <p>You may also file a complaint directly with the National Privacy Commission at <a href="https://www.privacy.gov.ph" target="_blank" rel="noopener">privacy.gov.ph</a>.</p>
 
@@ -326,20 +206,16 @@
 
   <footer>
     <a href="/" class="footer-logo">
-      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px;">
-        <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
-          <path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="nav-logomark" style="width:24px;height:24px;border-radius:6px"><svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M5 14V9M5 9V4C5 4 5 3 6.5 3H10C11.657 3 13 4.343 13 6C13 7.657 11.657 9 10 9H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9H9C10.657 9 12 10.343 12 12C12 13.657 10.657 15 9 15H5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="footer-wordmark">bridgette</span>
     </a>
     <div class="footer-links">
       <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a>
+      <a href="https://www.instagram.com/bridgette.app/" target="_blank" rel="noopener">Instagram</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
     </div>
-    <span class="footer-copy">&copy; 2026 Bridgette Health. All rights reserved.</span>
+    <span class="footer-copy">&copy; 2026 Bridgette Health Inc. All rights reserved.</span>
   </footer>
 
 </body>
