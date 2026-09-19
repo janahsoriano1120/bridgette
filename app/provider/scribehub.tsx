@@ -10,6 +10,8 @@ import {
   Alert,
 } from 'react-native'
 import { Audio } from 'expo-av'
+import { useAuthStore } from '../../store/authStore'
+import { supabase } from '../../lib/supabase'
 
 type Patient = {
   id: string
@@ -18,11 +20,10 @@ type Patient = {
   email?: string
 }
 
-type SOAPNotes = {
-  subjective: string
-  objective: string
-  assessment: string
-  plan: string
+type ConsultationNotes = {
+  chief_complaint: string
+  diagnosis: string
+  next_steps: string
 }
 
 type Mode = 'select_patient' | 'select_method' | 'record' | 'manual' | 'review' | 'sent'
@@ -37,6 +38,7 @@ export default function ScribeHubScreen({
   patients: Patient[]
   onBack: () => void
 }) {
+  const session = useAuthStore((state) => state.session)
   const [mode, setMode] = useState<Mode>('select_patient')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [isRecording, setIsRecording] = useState(false)
@@ -45,7 +47,7 @@ export default function ScribeHubScreen({
   const [transcribing, setTranscribing] = useState(false)
   const [recordingUri, setRecordingUri] = useState<string | null>(null)
   const [manualNotes, setManualNotes] = useState('')
-  const [soap, setSoap] = useState<SOAPNotes | null>(null)
+  const [notes, setNotes] = useState<ConsultationNotes | null>(null)
   const [generating, setGenerating] = useState(false)
   const [patientEmail, setPatientEmail] = useState('')
   const [sending, setSending] = useState(false)
@@ -162,7 +164,7 @@ export default function ScribeHubScreen({
     }
   }
 
-  async function generateSOAP(text: string) {
+  async function generateNotes(text: string) {
     setGenerating(true)
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -182,10 +184,10 @@ export default function ScribeHubScreen({
             },
             {
               role: 'user',
-              content: `Convert these consultation notes (may be in Filipino, Tagalog, English, or Taglish) into a SOAP note in professional English. Return a JSON object with exactly these keys: subjective, objective, assessment, plan. Each value is a paragraph string.
-  
-  Notes:
-  ${text}`,
+              content: `Convert these consultation notes (may be in Filipino, Tagalog, English, or Taglish) into a clean visit summary in professional English. Return a JSON object with exactly these keys: chief_complaint, diagnosis, next_steps. Each value is a short paragraph string.
+
+Notes:
+${text}`,
             }
           ],
         }),
@@ -194,11 +196,11 @@ export default function ScribeHubScreen({
       console.log('Groq response:', JSON.stringify(data))
       const raw = data.choices[0].message.content.trim()
       const parsed = JSON.parse(raw)
-      setSoap(parsed)
+      setNotes(parsed)
       setMode('review')
     } catch (e) {
-      console.log('SOAP generation error:', e)
-      Alert.alert('Error', 'Could not generate SOAP notes. Please try again.')
+      console.log('Notes generation error:', e)
+      Alert.alert('Error', 'Could not generate visit notes. Please try again.')
     } finally {
       setGenerating(false)
     }
@@ -209,10 +211,32 @@ export default function ScribeHubScreen({
       Alert.alert('Please enter the patient\'s email address')
       return
     }
+    if (!notes) return
+
     setSending(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setSending(false)
-    setMode('sent')
+    try {
+      const { error } = await supabase.from('consultation_notes').insert({
+        patient_id: selectedPatient?.isBridgette ? selectedPatient.id : null,
+        doctor_id: session?.user.id,
+        chief_complaint: notes.chief_complaint,
+        diagnosis: notes.diagnosis,
+        next_steps: notes.next_steps,
+        visit_date: new Date().toISOString().split('T')[0],
+      })
+
+      if (error) {
+        Alert.alert('Save failed', error.message)
+        setSending(false)
+        return
+      }
+
+      setSending(false)
+      setMode('sent')
+    } catch (e) {
+      console.log('Save error:', e)
+      Alert.alert('Error', 'Could not save visit notes.')
+      setSending(false)
+    }
   }
 
   function formatTime(seconds: number) {
@@ -226,7 +250,7 @@ export default function ScribeHubScreen({
     setSelectedPatient(null)
     setTranscription('')
     setManualNotes('')
-    setSoap(null)
+    setNotes(null)
     setPatientEmail('')
     setRecordingSeconds(0)
     setIsRecording(false)
@@ -341,7 +365,7 @@ export default function ScribeHubScreen({
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>Record & Transcribe</Text>
-              <Text style={styles.methodDesc}>Speak in English, Filipino, or Taglish. Groq Whisper AI transcribes accurately then generates SOAP notes.</Text>
+              <Text style={styles.methodDesc}>Speak in English, Filipino, or Taglish. Groq Whisper AI transcribes accurately then generates your visit notes.</Text>
               <View style={styles.methodBadge}><Text style={styles.methodBadgeText}>✨ Recommended</Text></View>
             </View>
             <Text style={styles.methodArrow}>→</Text>
@@ -353,7 +377,7 @@ export default function ScribeHubScreen({
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>Write Manually</Text>
-              <Text style={styles.methodDesc}>Type your notes in English or Filipino. AI will structure them into SOAP format.</Text>
+              <Text style={styles.methodDesc}>Type your notes in English or Filipino. AI will structure them into Chief Complaint, Diagnosis, and Next Steps.</Text>
             </View>
             <Text style={styles.methodArrow}>→</Text>
           </TouchableOpacity>
@@ -397,7 +421,6 @@ export default function ScribeHubScreen({
 
             {transcribing && <ActivityIndicator color="#C8524A" style={{ marginTop: 8 }} />}
 
-            {/* Record / Stop button */}
             {!transcribing && (
               !isRecording && !transcription ? (
                 <TouchableOpacity style={styles.recordBtn} onPress={startRecording}>
@@ -410,7 +433,6 @@ export default function ScribeHubScreen({
               ) : null
             )}
 
-            {/* Playback controls — show after recording done */}
             {recordingUri && !isRecording && !transcribing && (
               <View style={styles.playbackRow}>
                 <TouchableOpacity
@@ -431,7 +453,7 @@ export default function ScribeHubScreen({
             <>
               <View style={styles.transcriptCard}>
                 <Text style={styles.transcriptTitle}>📄 Transcription</Text>
-                <Text style={styles.transcriptHint}>You can edit this before generating SOAP notes</Text>
+                <Text style={styles.transcriptHint}>You can edit this before generating notes</Text>
                 <TextInput
                   style={styles.transcriptInput}
                   multiline
@@ -444,11 +466,11 @@ export default function ScribeHubScreen({
               {generating ? (
                 <View style={styles.generatingCard}>
                   <ActivityIndicator color="#C8524A" />
-                  <Text style={styles.generatingText}>Generating SOAP notes...</Text>
+                  <Text style={styles.generatingText}>Generating visit notes...</Text>
                 </View>
               ) : (
-                <TouchableOpacity style={styles.generateBtn} onPress={() => generateSOAP(transcription)}>
-                  <Text style={styles.generateBtnText}>✨ Generate SOAP Notes</Text>
+                <TouchableOpacity style={styles.generateBtn} onPress={() => generateNotes(transcription)}>
+                  <Text style={styles.generateBtnText}>✨ Generate Visit Notes</Text>
                 </TouchableOpacity>
               )}
             </>
@@ -476,7 +498,7 @@ export default function ScribeHubScreen({
             <Text style={styles.stepNum}>03</Text>
             <View style={styles.stepInfo}>
               <Text style={styles.stepTitle}>Write your consultation notes</Text>
-              <Text style={styles.stepDesc}>Type in English or Filipino — AI structures into SOAP format</Text>
+              <Text style={styles.stepDesc}>Type in English or Filipino — AI structures into Chief Complaint, Diagnosis, and Next Steps</Text>
             </View>
           </View>
 
@@ -499,11 +521,11 @@ export default function ScribeHubScreen({
               generating ? (
                 <View style={styles.generatingCard}>
                   <ActivityIndicator color="#C8524A" />
-                  <Text style={styles.generatingText}>Generating SOAP notes...</Text>
+                  <Text style={styles.generatingText}>Generating visit notes...</Text>
                 </View>
               ) : (
-                <TouchableOpacity style={styles.generateBtn} onPress={() => generateSOAP(manualNotes)}>
-                  <Text style={styles.generateBtnText}>✨ Generate SOAP Notes</Text>
+                <TouchableOpacity style={styles.generateBtn} onPress={() => generateNotes(manualNotes)}>
+                  <Text style={styles.generateBtnText}>✨ Generate Visit Notes</Text>
                 </TouchableOpacity>
               )
             )}
@@ -515,14 +537,14 @@ export default function ScribeHubScreen({
   }
 
   // ── REVIEW ──
-  if (mode === 'review' && soap) {
+  if (mode === 'review' && notes) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setMode('select_method')} style={styles.backBtn}>
             <Text style={styles.backText}>← Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Review SOAP Notes</Text>
+          <Text style={styles.title}>Review Visit Notes</Text>
           <Text style={styles.subtitle}>{selectedPatient?.full_name}</Text>
         </View>
         <ScrollView style={styles.content}>
@@ -535,18 +557,17 @@ export default function ScribeHubScreen({
           </View>
 
           {[
-            { key: 'subjective', label: 'S — Subjective', color: '#3D7A5E' },
-            { key: 'objective', label: 'O — Objective', color: '#2C5FAB' },
-            { key: 'assessment', label: 'A — Assessment', color: '#B5720A' },
-            { key: 'plan', label: 'P — Plan', color: '#C8524A' },
+            { key: 'chief_complaint', label: 'Chief Complaint', color: '#3D7A5E' },
+            { key: 'diagnosis', label: 'Diagnosis', color: '#B5720A' },
+            { key: 'next_steps', label: 'Next Steps', color: '#C8524A' },
           ].map(section => (
             <View key={section.key} style={[styles.soapCard, { borderLeftColor: section.color }]}>
               <Text style={[styles.soapLabel, { color: section.color }]}>{section.label}</Text>
               <TextInput
                 style={styles.soapInput}
                 multiline
-                value={soap[section.key as keyof SOAPNotes]}
-                onChangeText={(text) => setSoap({ ...soap, [section.key]: text })}
+                value={notes[section.key as keyof ConsultationNotes]}
+                onChangeText={(text) => setNotes({ ...notes, [section.key]: text })}
                 textAlignVertical="top"
               />
             </View>
@@ -595,8 +616,8 @@ export default function ScribeHubScreen({
           <Text style={styles.sentTitle}>Visit summary sent!</Text>
           <Text style={styles.sentDesc}>
             {selectedPatient?.isBridgette
-              ? `${selectedPatient?.full_name} will see their SOAP notes in the Bridgette app.`
-              : `${selectedPatient?.full_name} will receive their SOAP notes at ${selectedPatient?.email || patientEmail}. The email includes an invite to join Bridgette.`
+              ? `${selectedPatient?.full_name} will see their visit notes in the Bridgette app.`
+              : `${selectedPatient?.full_name} will receive their visit notes at ${selectedPatient?.email || patientEmail}. The email includes an invite to join Bridgette.`
             }
           </Text>
           <TouchableOpacity style={styles.sentBtn} onPress={reset}>
