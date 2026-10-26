@@ -424,7 +424,8 @@ function isAdult(dobValue) {
   if (!db) return;
   try {
     const { data, error } = await db.rpc('founding_tester_slots_taken');
-    if (error || data === null) return;
+    if (error) { console.error('Bridgette slot counter failed:', error); return; }
+    if (data === null) return;
     const left = Math.max(TOTAL_SLOTS - data, 0);
     document.getElementById('slotsLeft').textContent = left;
     document.getElementById('slotsText').textContent =
@@ -499,7 +500,9 @@ form.addEventListener('submit', async function (e) {
     if (error.code === '23505') {
       return showError('That email address is already signed up as a Founding Tester. Email hello@bridgette.com.ph if you think this is a mistake.', document.getElementById('email'));
     }
-    return showError('We could not sign you up just now, so nothing was saved. Please try again, or email hello@bridgette.com.ph and we will sort it out.');
+    console.error('Bridgette signup failed:', error);
+    var detail = (error && (error.message || error.hint || error.code)) ? ' (' + (error.code ? error.code + ': ' : '') + (error.message || error.hint) + ')' : '';
+    return showError('We could not sign you up just now, so nothing was saved. Please try again, or email hello@bridgette.com.ph and we will sort it out.' + detail);
   }
 
   form.style.display = 'none';
