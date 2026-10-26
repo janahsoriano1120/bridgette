@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Become a Founding Tester | Bridgette</title>
+<meta name="description" content="Three months of Premium free, then 33% off any plan for life. The first 50 Bridgette Founding Testers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--green:#5C7340;--green-dk:#4A5E34;--terra:#C4611A;--ink:#1A1C1E;--muted:#5f625c;--bg:#FAF8F4;--card:#ffffff;--line:#e4dfd3;--tint:#F1F4EC;--err:#B5451B}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+header{border-bottom:1px solid var(--line);background:var(--card)}
+.bar{max-width:760px;margin:0 auto;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--green);text-decoration:none}
+.back{font-size:15px;color:var(--green);text-decoration:none}
+.back:hover{text-decoration:underline}
+main{max-width:760px;margin:0 auto;padding:32px 20px 56px}
+h1{font-family:Georgia,serif;font-size:38px;line-height:1.15;margin:0 0 10px;color:var(--green)}
+h2{font-family:Georgia,serif;font-size:24px;line-height:1.3;margin:40px 0 12px;color:var(--green)}
+p,li{margin:0 0 14px}
+a{color:var(--green)}
+.sub{font-size:19px;line-height:1.55;color:var(--ink);margin:0 0 22px}
+
+.slots{display:inline-flex;align-items:baseline;gap:9px;background:var(--tint);border:1px solid #DCE4D0;
+  border-radius:100px;padding:8px 18px;margin:0 0 22px;font-size:15px;color:var(--muted)}
+.slots b{font-family:Georgia,serif;font-size:21px;color:var(--green);font-weight:700;line-height:1}
+
+/* Perks, the first thing on the page */
+.perks{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--green);
+  border-radius:16px;padding:28px 30px;margin:0 0 16px}
+.perks h2{margin:0 0 18px;font-size:23px}
+.perks ol{list-style:none;padding:0;margin:0;counter-reset:p}
+.perks li{display:flex;gap:14px;align-items:flex-start;margin:0 0 18px}
+.perks li:last-child{margin-bottom:0}
+.perks .n{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--tint);color:var(--green);
+  font-family:Georgia,serif;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.perks .big{display:block;font-size:18px;font-weight:700;margin-bottom:3px;line-height:1.35}
+.perks .small{display:block;font-size:15.5px;color:var(--muted);line-height:1.55}
+
+.keep{background:var(--tint);border:1px solid #DCE4D0;border-radius:14px;padding:22px 24px;margin:0 0 26px}
+.keep h3{margin:0 0 12px;font-family:Georgia,serif;font-size:19px;color:var(--green)}
+.keep ul{list-style:none;padding:0;margin:0}
+.keep li{display:flex;gap:11px;align-items:flex-start;margin:0 0 11px;font-size:16px;line-height:1.55}
+.keep li:last-child{margin-bottom:0}
+.keep svg{flex:0 0 auto;margin-top:5px}
+
+form{margin-top:8px}
+.field{margin:0 0 16px}
+.field label{display:block;font-size:15px;font-weight:500;margin-bottom:6px}
+.field .hint{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:2px}
+input[type=text],input[type=email],input[type=tel],input[type=date]{
+  width:100%;padding:11px 13px;font:16px/1.4 "DM Sans",sans-serif;color:var(--ink);
+  background:var(--card);border:1px solid var(--line);border-radius:9px;appearance:none}
+input:focus-visible,button:focus-visible,.check:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.row{display:flex;gap:14px}
+.row>.field{flex:1}
+
+.lede{font-size:16px;color:var(--muted);margin:0 0 16px}
+.check{display:flex;gap:13px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:16px 18px;margin:0 0 11px;cursor:pointer}
+.check input{flex:0 0 auto;width:21px;height:21px;margin:2px 0 0;accent-color:var(--green);cursor:pointer}
+.check .t{font-size:15.5px;line-height:1.6}
+.check .t b{display:block;font-weight:700;margin-bottom:3px}
+.check.miss{border-color:var(--err);background:#FDF4F0}
+
+.err{color:var(--err);font-size:15px;margin:16px 0 0;display:none}
+.err.on{display:block}
+
+button[type=submit]{width:100%;margin-top:22px;padding:16px 22px;font:700 17px "DM Sans",sans-serif;
+  color:#fff;background:var(--green);border:0;border-radius:100px;cursor:pointer}
+button[type=submit]:hover{background:var(--green-dk)}
+button[type=submit]:disabled{opacity:.55;cursor:not-allowed}
+.under{font-size:14.5px;color:var(--muted);text-align:center;margin:12px 0 0}
+
+.done{display:none;background:var(--card);border:1px solid #DCE4D0;border-left:5px solid var(--green);
+  border-radius:14px;padding:28px 30px}
+.done.on{display:block}
+.done h2{margin:0 0 10px;font-size:26px}
+.done p:last-child{margin-bottom:0}
+
+.withdraw{background:var(--tint);border:1px solid #DCE4D0;border-radius:12px;padding:20px 22px;margin:30px 0 0}
+.withdraw h3{margin:0 0 8px;font-family:Georgia,serif;font-size:18px;color:var(--green)}
+.withdraw p{font-size:15.5px}
+.withdraw p:last-child{margin-bottom:0}
+
+.npc{display:flex;gap:22px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:26px 0 0}
+.npc img{flex:0 0 auto;width:92px;height:auto}
+.npc h3{margin:0 0 8px;font-family:Georgia,serif;font-size:18px;color:var(--green)}
+.npc p{margin:0 0 8px;font-size:15.5px}
+.npc p:last-child{margin-bottom:0}
+.npc .meta{color:var(--muted);font-size:14px;line-height:1.55}
+
+footer{border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:14px}
+footer .in{max-width:760px;margin:0 auto;padding:24px 20px;display:flex;gap:18px;align-items:flex-start}
+footer img{flex:0 0 auto;width:48px;height:auto}
+footer p{margin:0 0 6px}
+
+@media (max-width:520px){
+  h1{font-size:31px}h2{font-size:21px}.sub{font-size:17px}
+  .perks{padding:24px 20px}.keep{padding:20px 18px}
+  .row{flex-direction:column;gap:0}
+  .npc{flex-direction:column;align-items:center;text-align:center}
+  footer .in{flex-direction:column;align-items:center;text-align:center}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="/">Bridgette</a><a class="back" href="/">Back to bridgette.com.ph</a></div></header>
+<main>
+
+<h1>Become a Founding Tester</h1>
+<p class="sub">Fifty people get to shape what Bridgette becomes, and keep a founder's rate for as long as they stay.</p>
+
+<div class="slots" id="slots" hidden>
+  <b id="slotsLeft">50</b><span id="slotsText">of 50 patient slots left</span>
+</div>
+
+<section class="perks">
+<h2>What you get</h2>
+<ol>
+<li>
+  <span class="n">1</span>
+  <span><span class="big">Three months of Premium, free</span>
+  <span class="small">The full paid tier from day one. Per-meal food analysis, daily and weekly summaries, your personalized longevity tip, screening reminders.</span></span>
+</li>
+<li>
+  <span class="n">2</span>
+  <span><span class="big">Then 33% off any plan, for life</span>
+  <span class="small">After the three months, whatever plan you pick is 33% off for as long as your account stays open. Basic, Premium, Couple, Family: your choice, your rate, permanently.</span></span>
+</li>
+<li>
+  <span class="n">3</span>
+  <span><span class="big">A direct line to the founder</span>
+  <span class="small">You tell me what is broken and I fix it. Founding Testers see changes they asked for ship within the week.</span></span>
+</li>
+<li>
+  <span class="n">4</span>
+  <span><span class="big">Your health story, always yours</span>
+  <span class="small">Exported back to you in full, whenever you ask, for any reason. Including if you decide to leave.</span></span>
+</li>
+</ol>
+</section>
+
+<div class="keep">
+<h3>How you keep the 33%</h3>
+<ul>
+<li><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#5C7340" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>The discount is yours for as long as your account stays open. There is no expiry on it.</span></li>
+<li><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#5C7340" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Need a break? You can freeze your account for up to three months and keep everything, the discount included.</span></li>
+<li><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3.2V9M8 12.1V12.3" stroke="#C4611A" stroke-width="2" stroke-linecap="round"/></svg><span>If you cancel, the Founding Tester discount ends and cannot be restored. You would be welcome back, at normal pricing.</span></li>
+</ul>
+</div>
+
+<p>What we ask in return is honest feedback and your consent to hold the health data you put in. Both are below, in plain words. Read them, because all six are required: this is a real programme with a real rate attached, and these are its terms.</p>
+<p>If any of them is not something you want to agree to, that is completely fine. You can still use Bridgette when we open to everyone, just not as a Founding Tester.</p>
+
+<h2>Your details</h2>
+<form id="consentForm" novalidate>
+
+<div class="field">
+  <label for="fullName">Full name</label>
+  <input type="text" id="fullName" name="fullName" autocomplete="name" required>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="email">Email address</label>
+    <input type="email" id="email" name="email" autocomplete="email" required>
+  </div>
+  <div class="field">
+    <label for="mobile">Mobile number <span class="hint">Optional</span></label>
+    <input type="tel" id="mobile" name="mobile" autocomplete="tel" placeholder="09XX XXX XXXX">
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <label for="dob">Date of birth <span class="hint">Bridgette is 18 and over for now</span></label>
+    <input type="date" id="dob" name="dob" required>
+  </div>
+  <div class="field">
+    <label for="city">City or province <span class="hint">Optional</span></label>
+    <input type="text" id="city" name="city" autocomplete="address-level2">
+  </div>
+</div>
+
+<h2>What you are agreeing to</h2>
+<p class="lede">All six. Tick every box to continue.</p>
+
+<label class="check" for="c_health">
+  <input type="checkbox" id="c_health" data-req>
+  <span class="t"><b>Bridgette can hold and process your health data.</b>
+  Lab results, medical history, diagnoses your providers record, your medicines and supplements, and the lifestyle entries you make. Under the Data Privacy Act of 2012 this is sensitive personal information, and your consent is what makes it lawful for us to hold it.</span>
+</label>
+
+<label class="check" for="c_ai">
+  <input type="checkbox" id="c_ai" data-req>
+  <span class="t"><b>Bridgette can use AI on what you log, including sending it abroad.</b>
+  Your meal entries and summaries go to Anthropic in the United States with your identifiers stripped out. Photos of lab results go as they are, because a photo cannot be de-identified, so one may show your name or your clinic. We send them only so your values get filled in for you, and the app still asks you each time before it reads a photo. No Philippine region is available for this service today.</span>
+</label>
+
+<label class="check" for="c_docs">
+  <input type="checkbox" id="c_docs" data-req>
+  <span class="t"><b>You have read the Privacy Notice and the Terms of Service.</b>
+  Our <a href="/privacy.html" target="_blank" rel="noopener">Privacy Notice</a> and <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a>, both effective 25 October 2026. They open in a new tab so you do not lose this page.</span>
+</label>
+
+<label class="check" for="c_beta">
+  <input type="checkbox" id="c_beta" data-req>
+  <span class="t"><b>You understand this is beta software.</b>
+  Things will break and features will change. Bridgette is a place to keep and share your health records. It is not a medical device, it is not registered as one with the Philippine FDA, and it is never a substitute for your doctor.</span>
+</label>
+
+<label class="check" for="c_feedback">
+  <input type="checkbox" id="c_feedback" data-req>
+  <span class="t"><b>You will tell us what is not working.</b>
+  Bugs, confusing screens, anything that breaks or annoys you: you report it to the founder, and we use what you send to fix and improve Bridgette. This is the part that makes you a Founding Tester instead of an early user, so please take it seriously.</span>
+</label>
+
+<label class="check" for="c_terms">
+  <input type="checkbox" id="c_terms" data-req>
+  <span class="t"><b>You accept the Founding Tester terms.</b>
+  Three months of Premium free, then 33% off any plan for as long as your account stays open. You can freeze for up to three months and keep it. If you cancel, the discount ends and cannot be restored.</span>
+</label>
+
+<p class="err" id="err" role="alert" aria-live="polite"></p>
+<button type="submit" id="submitBtn">Join as a Founding Tester</button>
+<p class="under">Free to join. No card, no payment details, nothing to cancel later.</p>
+</form>
+
+<div class="done" id="done" role="status" aria-live="polite">
+<h2>You are in.</h2>
+<p>We have recorded your agreement and kept a copy of exactly what you signed up to today.</p>
+<p>Watch your inbox. We will email you from <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a> with your access, your three months of Premium, and how to send feedback straight to the founder.</p>
+<p>Changed your mind about any part of this? Email <a href="mailto:dpo@bridgette.com.ph">dpo@bridgette.com.ph</a> and we will act on it. That stays true forever, not just today.</p>
+</div>
+
+<div class="withdraw">
+<h3>You can take this back</h3>
+<p>You can withdraw your consent at any time by emailing <a href="mailto:dpo@bridgette.com.ph">dpo@bridgette.com.ph</a>. You do not have to give a reason.</p>
+<p>Withdrawing means we can no longer run Bridgette for you, so we will send you a complete export of your health data first, then close the account and delete the data. Your health story is yours, and it comes back to you before it goes anywhere. Leaving this way ends the Founding Tester rate, the same as cancelling.</p>
+<p>Withdrawing does not undo processing that already happened while your consent was in place.</p>
+<p>You also have the right to complain to the National Privacy Commission at <a href="https://privacy.gov.ph" target="_blank" rel="noopener">privacy.gov.ph</a>.</p>
+</div>
+
+<section class="npc" aria-label="National Privacy Commission registration">
+<img src="/npc-seal.png" alt="National Privacy Commission DPO and DPS Registered seal, valid until 19 October 2027" width="92" height="172">
+<div>
+<h3>Registered with the National Privacy Commission</h3>
+<p>Bridgette Health Inc. has complied with the registration requirements of the Data Privacy Act of 2012, its Implementing Rules and Regulations, and all related issuances.</p>
+<p class="meta">NPC Registration No. PIC-014-615-2026<br>Valid until 19 October 2027</p>
+<p><a href="/npc-certificate-of-registration.pdf" target="_blank" rel="noopener">View our Certificate of Registration (PDF)</a></p>
+</div>
+</section>
+
+</main>
+<footer><div class="in">
+<img src="/npc-seal.png" alt="National Privacy Commission DPO and DPS Registered seal" width="48" height="90">
+<div>
+<p><strong>Bridgette Health Inc.</strong> | NPC Registration No. PIC-014-615-2026 | SEC Registration No. 2026060254007-00</p>
+<p>Level 21, Unit 2116, Park Triangle Corporate Plaza, North Tower, 32nd Street corner 11th Avenue, Bonifacio Global City, Taguig City, 1632</p>
+<p>Data Protection Officer: <a href="mailto:dpo@bridgette.com.ph">dpo@bridgette.com.ph</a> | General: <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a></p>
+</div>
+</div></footer>
+
+<script>
+// ---------------------------------------------------------------------------
+// This is the publishable key, the same one index.html already ships. It is
+// safe in public: Row Level Security on founding_tester_consents makes the
+// table write-only from the browser. Never put the service role key here.
+// ---------------------------------------------------------------------------
+const SUPABASE_URL = 'https://rkyxxxmbrwvgrljiqzdp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_0CYJ10mUwscehXGMBSf-UA_jOXpRipg';
+
+const CONSENT_FORM_VERSION   = '2026-10-26';
+const PRIVACY_NOTICE_VERSION = '2026-10-25';
+const TERMS_VERSION          = '2026-10-25';
+const TOTAL_SLOTS = 50;
+
+// If the Supabase script is blocked or fails to load, db stays null and the
+// submit handler says so out loud. A form that silently does nothing when you
+// press the button is worse than one that admits it is broken.
+let db = null;
+try {
+  if (window.supabase && window.supabase.createClient) {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (_) { db = null; }
+
+const form = document.getElementById('consentForm');
+const btn  = document.getElementById('submitBtn');
+const err  = document.getElementById('err');
+const done = document.getElementById('done');
+
+function showError(msg, focusEl, scrollTo) {
+  err.textContent = msg;
+  err.classList.add('on');
+  if (focusEl) focusEl.focus({ preventScroll: true });
+  (scrollTo || err).scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function clearError() {
+  err.classList.remove('on');
+  document.querySelectorAll('.check.miss').forEach(n => n.classList.remove('miss'));
+}
+
+function isAdult(dobValue) {
+  const dob = new Date(dobValue + 'T00:00:00');
+  if (isNaN(dob)) return false;
+  const cutoff = new Date();
+  cutoff.setFullYear(cutoff.getFullYear() - 18);
+  return dob <= cutoff;
+}
+
+// Slot counter. Reads a count only, never a row.
+(async function loadSlots() {
+  if (!db) return;
+  try {
+    const { data, error } = await db.rpc('founding_tester_slots_taken');
+    if (error || data === null) return;
+    const left = Math.max(TOTAL_SLOTS - data, 0);
+    document.getElementById('slotsLeft').textContent = left;
+    document.getElementById('slotsText').textContent =
+      left === 1 ? 'of 50 patient slots left' : 'of 50 patient slots left';
+    document.getElementById('slots').hidden = false;
+    if (left === 0) {
+      btn.disabled = true;
+      btn.textContent = 'All 50 slots are taken';
+    }
+  } catch (_) { /* the counter is decoration, never block the form on it */ }
+})();
+
+form.addEventListener('submit', async function (e) {
+  e.preventDefault();
+  clearError();
+
+  const fullName = document.getElementById('fullName').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const mobile   = document.getElementById('mobile').value.trim();
+  const dob      = document.getElementById('dob').value;
+  const city     = document.getElementById('city').value.trim();
+
+  if (!fullName) return showError('Please enter your full name.', document.getElementById('fullName'));
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+    return showError('Please enter a valid email address. This is where your access and your data export would be sent.', document.getElementById('email'));
+  if (!dob) return showError('Please enter your date of birth.', document.getElementById('dob'));
+  if (!isAdult(dob))
+    return showError('Bridgette is only available to people aged 18 and over for now. Profiles for dependents are planned for a later phase.', document.getElementById('dob'));
+
+  const required = Array.from(document.querySelectorAll('input[data-req]'));
+  const missing  = required.filter(c => !c.checked);
+  if (missing.length) {
+    missing.forEach(c => c.closest('.check').classList.add('miss'));
+    return showError(
+      missing.length === 1
+        ? 'One box is still unticked, marked in red. All six are required to join as a Founding Tester.'
+        : missing.length + ' boxes are still unticked, marked in red. All six are required to join as a Founding Tester.',
+      missing[0],
+      missing[0].closest('.check')
+    );
+  }
+
+  if (!db) {
+    return showError('We cannot reach our servers from this browser right now, so nothing has been saved. Please check your connection and reload the page, or email hello@bridgette.com.ph and we will sign you up by hand.');
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing you up...';
+
+  const { error } = await db.from('founding_tester_consents').insert({
+    full_name: fullName,
+    email: email,
+    mobile: mobile || null,
+    date_of_birth: dob,
+    city: city || null,
+    tester_role: 'patient',
+    consent_health_data:    true,
+    consent_ai_processing:  true,
+    consent_terms_privacy:  true,
+    ack_beta:               true,
+    consent_feedback:       true,
+    agree_founding_terms:   true,
+    consent_form_version:   CONSENT_FORM_VERSION,
+    privacy_notice_version: PRIVACY_NOTICE_VERSION,
+    terms_version:          TERMS_VERSION,
+    user_agent: navigator.userAgent
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Join as a Founding Tester';
+    if (error.code === '23505') {
+      return showError('That email address is already signed up as a Founding Tester. Email hello@bridgette.com.ph if you think this is a mistake.', document.getElementById('email'));
+    }
+    return showError('We could not sign you up just now, so nothing was saved. Please try again, or email hello@bridgette.com.ph and we will sort it out.');
+  }
+
+  form.style.display = 'none';
+  document.querySelectorAll('main > h2').forEach(h => h.style.display = 'none');
+  done.classList.add('on');
+  done.scrollIntoView({ block: 'center', behavior: 'smooth' });
+});
+
+document.querySelectorAll('.check input').forEach(cb => {
+  cb.addEventListener('change', () => {
+    if (cb.checked) cb.closest('.check').classList.remove('miss');
+  });
+});
+</script>
+</body>
+</html>
