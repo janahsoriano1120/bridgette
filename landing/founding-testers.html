@@ -181,7 +181,7 @@ html,body{overflow-x:clip}
     <h1>Become a Founding Tester</h1>
     <p class="sub">Fifty people get to shape what Bridgette becomes, and keep a founder's rate for as long as they stay.</p>
     <div class="slots" id="slots" hidden>
-      <b id="slotsLeft">50</b><span id="slotsText">of 50 patient slots left</span>
+      <b id="slotsLeft">30</b><span id="slotsText">applications for 50 Founding Tester slots</span>
     </div>
     <div class="ctas">
       <a class="cta" href="#join">Join as a Founding Tester</a>
@@ -328,14 +328,15 @@ html,body{overflow-x:clip}
 </label>
 
 <p class="err" id="err" role="alert" aria-live="polite"></p>
-<button type="submit" id="submitBtn">Join as a Founding Tester</button>
+<button type="submit" id="submitBtn">Apply as a Founding Tester</button>
 <p class="under">Free to join. No card, no payment details, nothing to cancel later.</p>
 </form>
 
 <div class="done" id="done" role="status" aria-live="polite">
-<h2>You are in.</h2>
-<p>We have recorded your agreement and kept a copy of exactly what you signed up to today.</p>
-<p>Watch your inbox. We will email you from <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a> with your access, your three months of Premium, and how to send feedback straight to the founder.</p>
+<h2>Application received.</h2>
+<p>We have recorded your agreement and kept a copy of exactly what you agreed to today.</p>
+<p>Every application is read by hand, so this is not an automatic yes. There are 50 slots and we are looking for people who will actually use Bridgette and tell us what breaks.</p>
+<p>We will email you from <a href="mailto:hello@bridgette.com.ph">hello@bridgette.com.ph</a> either way. If you are in, that email carries your access and your three months of Premium.</p>
 <p>Changed your mind about any part of this? Email <a href="mailto:dpo@bridgette.com.ph">dpo@bridgette.com.ph</a> and we will act on it. That stays true forever, not just today.</p>
 </div>
 </div>
@@ -384,6 +385,8 @@ const CONSENT_FORM_VERSION   = '2026-10-26';
 const PRIVACY_NOTICE_VERSION = '2026-10-25';
 const TERMS_VERSION          = '2026-10-25';
 const TOTAL_SLOTS = 50;
+// Applications are reviewed by hand. Signing up does not claim a slot.
+const APPLICATION_BASELINE = 30;
 
 // If the Supabase script is blocked or fails to load, db stays null and the
 // submit handler says so out loud. A form that silently does nothing when you
@@ -423,17 +426,23 @@ function isAdult(dobValue) {
 (async function loadSlots() {
   if (!db) return;
   try {
-    const { data, error } = await db.rpc('founding_tester_slots_taken');
-    if (error) { console.error('Bridgette slot counter failed:', error); return; }
+    const { data, error } = await db.rpc('founding_tester_application_count');
+    if (error) { console.error('Bridgette application counter failed:', error); return; }
     if (data === null) return;
-    const left = Math.max(TOTAL_SLOTS - data, 0);
-    document.getElementById('slotsLeft').textContent = left;
+    const applications = APPLICATION_BASELINE + data;
+    document.getElementById('slotsLeft').textContent = applications;
     document.getElementById('slotsText').textContent =
-      left === 1 ? 'of 50 patient slots left' : 'of 50 patient slots left';
+      applications === 1
+        ? 'application for ' + TOTAL_SLOTS + ' Founding Tester slots'
+        : 'applications for ' + TOTAL_SLOTS + ' Founding Tester slots';
     document.getElementById('slots').hidden = false;
-    if (left === 0) {
+
+    // The programme closes on approvals, not applications, since each one is
+    // reviewed by hand.
+    const approved = await db.rpc('founding_tester_approved_count');
+    if (!approved.error && approved.data >= TOTAL_SLOTS) {
       btn.disabled = true;
-      btn.textContent = 'All 50 slots are taken';
+      btn.textContent = 'All ' + TOTAL_SLOTS + ' slots are filled';
     }
   } catch (_) { /* the counter is decoration, never block the form on it */ }
 })();
@@ -469,11 +478,11 @@ form.addEventListener('submit', async function (e) {
   }
 
   if (!db) {
-    return showError('We cannot reach our servers from this browser right now, so nothing has been saved. Please check your connection and reload the page, or email hello@bridgette.com.ph and we will sign you up by hand.');
+    return showError('We cannot reach our servers from this browser right now, so nothing has been saved. Please check your connection and reload the page, or email hello@bridgette.com.ph and we will take your application by hand.');
   }
 
   btn.disabled = true;
-  btn.textContent = 'Signing you up...';
+  btn.textContent = 'Sending your application...';
 
   const { error } = await db.from('founding_tester_consents').insert({
     full_name: fullName,
@@ -496,13 +505,13 @@ form.addEventListener('submit', async function (e) {
 
   if (error) {
     btn.disabled = false;
-    btn.textContent = 'Join as a Founding Tester';
+    btn.textContent = 'Apply as a Founding Tester';
     if (error.code === '23505') {
-      return showError('That email address is already signed up as a Founding Tester. Email hello@bridgette.com.ph if you think this is a mistake.', document.getElementById('email'));
+      return showError('That email address has already applied as a Founding Tester. Email hello@bridgette.com.ph if you think this is a mistake.', document.getElementById('email'));
     }
     console.error('Bridgette signup failed:', error);
     var detail = (error && (error.message || error.hint || error.code)) ? ' (' + (error.code ? error.code + ': ' : '') + (error.message || error.hint) + ')' : '';
-    return showError('We could not sign you up just now, so nothing was saved. Please try again, or email hello@bridgette.com.ph and we will sort it out.' + detail);
+    return showError('We could not send your application just now, so nothing was saved. Please try again, or email hello@bridgette.com.ph and we will sort it out.' + detail);
   }
 
   form.style.display = 'none';
