@@ -278,7 +278,7 @@
       </a>
       <div class="share-meta">
         <strong>Share Token:</strong> brg_mSa41kQ7xR2pLw9<br/>
-        Labs + Lifestyle, Jun 2026 to Oct 2026<br/>
+        Labs + Lifestyle, Feb 2026 to Oct 2026<br/>
         Expires <span style="color:var(--terracotta);font-weight:600">November 20, 2026</span>
       </div>
     </div>
@@ -289,8 +289,9 @@
         <div class="patient-details">41 years old, Female, DOB: March 14, 1985, Patient ID #BR-0041</div>
         <div class="tags">
           <span class="tag t-red">TYPE 2 DIABETES</span>
+          <span class="tag t-amber">PCOS</span>
           <span class="tag t-amber">PENICILLIN ALLERGY</span>
-          <span class="tag t-green">FHX: T2D, STROKE</span>
+          <span class="tag t-green">FHX: T2D</span>
         </div>
       </div>
       <div class="consent-pill">
@@ -312,15 +313,15 @@
     <div class="spec-tabs">
       <button class="spec-tab active" onclick="setSpec(this,'general')">General</button>
       <button class="spec-tab" onclick="setSpec(this,'endocrinology')">Endocrinology</button>
-      <button class="spec-tab" onclick="setSpec(this,'cardiology')">Cardiology</button>
-      <button class="spec-tab" onclick="setSpec(this,'nutrition')">Nutrition</button>
+      <button class="spec-tab" onclick="setSpec(this,'obgyn')">OB-GYN</button>
+      <button class="spec-tab" onclick="setSpec(this,'dermatology')">Dermatology</button>
     </div>
 
     <div class="flags">
-      <div class="flag flag-warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 4V7.5M7 9.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>HbA1c 7.1%, above the 6.5 trigger Dr. Uy set</div>
-      <div class="flag flag-good"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>HbA1c lower at each of the last 4 checks (7.8 to 7.1)</div>
+      <div class="flag flag-warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 4V7.5M7 9.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>HbA1c 6.6%, above the 6.5 trigger Dr. Uy set</div>
+      <div class="flag flag-good"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>HbA1c lower at each of the last 4 checks (7.2 to 6.6)</div>
       <div class="flag flag-warn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 4V7.5M7 9.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Allergy on file: penicillin</div>
-      <div class="flag flag-good"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Walked 35 and 40 min on logged days this week</div>
+      <div class="flag flag-good"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Cycles regular every 28 days, per Dr. Lim-Aquino</div>
     </div>
 
     <div class="ai-card">
@@ -328,29 +329,29 @@
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L6 4H9L6.5 6L7.5 9L5 7L2.5 9L3.5 6L1 4H4L5 1Z" stroke="currentColor" stroke-width="0.8" stroke-linejoin="round"/></svg>
         AI Summary, Updated Oct 26, 2026
       </div>
-      <div class="ai-text" id="ai-summary-text">Maria's HbA1c has come down across four checks (7.8 to 7.1%) and is still above the 6.5% trigger Dr. Uy set. Fasting glucose is 126 mg/dL, LDL 112 mg/dL, creatinine 0.8 mg/dL. She takes metformin 500 mg twice daily and atorvastatin 20 mg nightly, and her doctor-set plan is: sugary drinks 1 per day max, walk 30 min 5 days a week, sleep 7 hours or more. This week her log shows 2 entries on plan and 2 outside it (large milk tea, a short night of sleep). Allergy on file: penicillin. <strong style="color:var(--amber)">Open items from the last visit: review food log in 2 weeks, repeat HbA1c in 3 months. Next follow up with Dr. Uy: Dec 15, 2026.</strong></div>
+      <div class="ai-text" id="ai-summary-text">Maria's care team has 5 members. HbA1c is 6.6%, down from 7.2% in March and still above the 6.5% trigger Dr. Uy set. Fasting glucose is 112 mg/dL (138 in March). Metformin XR was raised to 1000 mg with dinner, and her doctor-set plan is: sugary drinks 1 per day max, walk 30 min 5 days a week, sleep 7 hours or more. Cycles are regular on the combined pill, spironolactone was added by dermatology for hormonal acne, and PT cleared her to return to light strength training. Allergy on file: penicillin. <strong style="color:var(--amber)">Open items: repeat HbA1c and fasting glucose in 3 months, vitamin B12 with the next blood test. Next follow up with Dr. Uy: Dec 15, 2026.</strong></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Key Lab Results (Most Recent: Oct 19, 2026)</div>
+      <div class="card-title">Key Lab Results (Most Recent: Sep 15, 2026)</div>
       <div class="lab-grid">
         <div class="lab-item improving">
           <div class="lab-label">HbA1c</div>
-          <div class="lab-value warn">7.1%</div>
+          <div class="lab-value warn">6.6%</div>
           <div class="lab-ref">(ref: below 5.7, trigger: 6.5)</div>
-          <div class="lab-trend" style="color:var(--amber)">Down from 7.8%</div>
+          <div class="lab-trend" style="color:var(--amber)">Down from 7.2% in March</div>
         </div>
         <div class="lab-item improving">
           <div class="lab-label">Fasting Glucose</div>
-          <div class="lab-value warn">126</div>
+          <div class="lab-value warn">112</div>
           <div class="lab-ref">mg/dL (ref: 70 to 99)</div>
-          <div class="lab-trend" style="color:var(--amber)">108 in 2018</div>
+          <div class="lab-trend" style="color:var(--amber)">138 in March</div>
         </div>
         <div class="lab-item improving">
-          <div class="lab-label">LDL</div>
-          <div class="lab-value warn">112</div>
-          <div class="lab-ref">mg/dL (ref: below 100)</div>
-          <div class="lab-trend" style="color:var(--amber)">On atorvastatin since Jun</div>
+          <div class="lab-label">2-hour OGTT</div>
+          <div class="lab-value warn">214</div>
+          <div class="lab-ref">mg/dL, at diagnosis (Mar 3)</div>
+          <div class="lab-trend" style="color:var(--amber)">Repeat not yet done</div>
         </div>
         <div class="lab-item">
           <div class="lab-label">Creatinine</div>
@@ -360,15 +361,15 @@
         </div>
         <div class="lab-item">
           <div class="lab-label">Blood Pressure</div>
-          <div class="lab-value warn">140/90</div>
-          <div class="lab-ref">mmHg, at Oct 19 visit</div>
-          <div class="lab-trend" style="color:var(--amber)">128/82 in June</div>
+          <div class="lab-value good">118/76</div>
+          <div class="lab-ref">mmHg, at Aug 10 visit</div>
+          <div class="lab-trend" style="color:var(--forest)">Per Dr. Lim-Aquino</div>
         </div>
         <div class="lab-item">
           <div class="lab-label">Weight</div>
-          <div class="lab-value good">71</div>
-          <div class="lab-ref">kg</div>
-          <div class="lab-trend" style="color:var(--forest)">Stable since Jul (72 kg)</div>
+          <div class="lab-value good">-3 kg</div>
+          <div class="lab-ref">since starting metformin</div>
+          <div class="lab-trend" style="color:var(--forest)">Per Dr. Uy, Sep 15</div>
         </div>
       </div>
     </div>
@@ -400,23 +401,20 @@
         <text x="0" y="84" fill="#C47D4E" font-size="10" font-family="sans-serif">6.5</text>
         <rect x="40" y="80" width="540" height="20" fill="rgba(92,115,64,0.06)"/>
         <text x="520" y="95" fill="var(--forest)" font-size="9" font-family="sans-serif">Below trigger</text>
-        <polyline points="100,28 240,40 380,48 520,56" stroke="var(--forest)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="100" cy="28" r="6" fill="var(--burnt)"/>
-        <circle cx="240" cy="40" r="6" fill="var(--amber)"/>
-        <circle cx="380" cy="48" r="6" fill="var(--amber)"/>
-        <circle cx="520" cy="56" r="6" fill="var(--amber)"/>
-        <text x="86" y="20" fill="var(--burnt)" font-size="14" font-family="sans-serif" font-weight="700">7.8</text>
-        <text x="226" y="32" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">7.5</text>
-        <text x="366" y="40" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">7.3</text>
-        <text x="506" y="48" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">7.1</text>
-        <text x="80" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Jun 2026</text>
-        <text x="220" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Jul 2026</text>
-        <text x="360" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Sep 2026</text>
-        <text x="500" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Oct 2026</text>
+        <polyline points="100,52 240,60 380,68 520,76" stroke="var(--forest)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="100" cy="52" r="6" fill="var(--burnt)"/><circle cx="240" cy="60" r="6" fill="var(--amber)"/><circle cx="380" cy="68" r="6" fill="var(--amber)"/><circle cx="520" cy="76" r="6" fill="var(--amber)"/>
+        <text x="86" y="44" fill="var(--burnt)" font-size="14" font-family="sans-serif" font-weight="700">7.2</text>
+        <text x="226" y="52" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">7.0</text>
+        <text x="366" y="60" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">6.8</text>
+        <text x="506" y="68" fill="var(--amber)" font-size="14" font-family="sans-serif" font-weight="700">6.6</text>
+        <text x="80" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Mar 2026</text>
+        <text x="220" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Jun 2026</text>
+        <text x="360" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Aug 2026</text>
+        <text x="500" y="130" fill="#6B6560" font-size="11" font-family="sans-serif">Sep 2026</text>
       </svg>
       <div style="background:rgba(196,146,42,0.12);border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;align-items:center;gap:8px">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3V11M7 11L4 8M7 11L10 8" stroke="#C4922A" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <span style="font-size:13px;font-weight:600;color:#8A6B1A">Down 0.7 points since June. Still above the 6.5 trigger.</span>
+        <span style="font-size:13px;font-weight:600;color:#8A6B1A">Down 0.6 points since March. Still above the 6.5 trigger.</span>
       </div>
     </div>
 
@@ -424,11 +422,11 @@
       <div class="card">
         <div class="card-title">Fasting Glucose</div>
         <svg width="100%" height="60" viewBox="0 0 300 60" fill="none">
-          <polyline points="30,40 270,12" stroke="var(--olive)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <circle cx="30" cy="40" r="4" fill="var(--amber)"/><circle cx="270" cy="12" r="4" fill="var(--burnt)"/>
+          <polyline points="30,12 270,34" stroke="var(--olive)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="30" cy="12" r="4" fill="var(--burnt)"/><circle cx="270" cy="34" r="4" fill="var(--amber)"/>
         </svg>
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px">
-          <span style="color:var(--amber);font-weight:600">108 (2018)</span><span style="color:var(--burnt);font-weight:600">126 mg/dL</span>
+          <span style="color:var(--burnt);font-weight:600">138 (Mar)</span><span style="color:var(--amber);font-weight:600">112 mg/dL</span>
         </div>
       </div>
       <div class="card">
@@ -444,63 +442,84 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Clinical Timeline</div>
+      <div class="card-title">Clinical Timeline (Whole Care Team)</div>
       <div class="timeline-item">
         <div class="tl-dot" style="background:var(--terracotta)"></div>
         <div style="flex:1">
-          <div class="tl-date">October 19, 2026</div>
-          <div class="tl-type">Follow up consultation, Dr. Raymond Uy (Endocrinology)</div>
+          <div class="tl-date">September 15, 2026</div>
+          <div class="tl-type">Diabetes follow up, Dr. Raymond Uy (Endocrinology)</div>
           <div class="tl-soap">
-            <strong>S:</strong> Reports tiredness after meals.<br/>
-            <strong>O:</strong> BP 140/90, pulse 78, weight 71 kg. HbA1c 7.1%.<br/>
-            <strong>Rx:</strong> Metformin 500 mg twice daily with meals. Atorvastatin 20 mg nightly. Omega-3 fish oil 1000 mg daily.<br/>
-            <strong>P:</strong> Review food log in 2 weeks. Repeat HbA1c in 3 months. Follow up Dec 15, 2026.
+            <strong>S:</strong> HbA1c down to 6.6% from 7.2% in March. Fasting glucose 112 mg/dL. Weight down 3 kg. No hypoglycemia episodes.<br/><strong>Rx:</strong> Metformin XR 1000 mg once daily with dinner.<br/><strong>P:</strong> Repeat HbA1c and fasting glucose in 3 months. Vitamin B12 with next blood test. Return Dec 15, 2026.
           </div>
         </div>
       </div>
       <div class="timeline-item">
         <div class="tl-dot" style="background:var(--amber)"></div>
         <div style="flex:1">
-          <div class="tl-date">September 14, 2026</div>
-          <div class="tl-type">Diabetes follow up, Dr. Anna Lim (Endocrinology)</div>
+          <div class="tl-date">August 10, 2026</div>
+          <div class="tl-type">PCOS follow up, Dr. Patricia Lim-Aquino (Obstetrics and Gynecology)</div>
           <div class="tl-soap">
-            <strong>O:</strong> BP 130/84, weight 71 kg.<br/>
-            <strong>Rx:</strong> Metformin 500 mg twice daily with meals.<br/>
-            <strong>P:</strong> Continue metformin, take with food. Repeat HbA1c in 3 months. Follow up Dec 14, 2026.
+            <strong>S:</strong> Cycles regular every 28 days. No breakthrough bleeding. BP 118/76.<br/><strong>Rx:</strong> Drospirenone + ethinyl estradiol, one tablet daily, 21 days on then 7 off.<br/><strong>P:</strong> Do not skip pills while on spironolactone. Pelvic ultrasound and check up in 6 months.
           </div>
         </div>
       </div>
       <div class="timeline-item">
         <div class="tl-dot" style="background:var(--olive)"></div>
         <div style="flex:1">
-          <div class="tl-date">July 15, 2026</div>
-          <div class="tl-type">Meal planning session, Carla Mendoza, RND (Nutrition and Dietetics)</div>
+          <div class="tl-date">July 20, 2026</div>
+          <div class="tl-type">Training plan, back to the gym, Coach Jessa Villareal (Fitness coaching)</div>
           <div class="tl-soap">
-            <strong>O:</strong> Weight 72 kg.<br/>
-            <strong>P:</strong> Half cup of rice at dinner. Vegetables added to baon. Psyllium fiber 1 teaspoon daily. Follow up after 4 weeks of food logs.
+            <strong>S:</strong> Averaging 6,500 steps a day. Post-dinner walks 5 of 7 days last week, per Bridgette logs.<br/><strong>P:</strong> Strength training Mon, Wed, Fri. Walk 30 minutes after dinner. Check in every 4 weeks.
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--olive)"></div>
+        <div style="flex:1">
+          <div class="tl-date">July 14, 2026</div>
+          <div class="tl-type">Low back pain, session 6 of 8, Mark Dizon, PT (Physical therapy)</div>
+          <div class="tl-soap">
+            <strong>S:</strong> Pain down from 6/10 to 2/10. Still tight after sitting more than an hour.<br/><strong>P:</strong> Cleared for light strength training. Bird dog and dead bug daily. 2 more sessions, then home program.
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--olive)"></div>
+        <div style="flex:1">
+          <div class="tl-date">June 2, 2026</div>
+          <div class="tl-type">Initial assessment, low back pain, Mark Dizon, PT (Physical therapy)</div>
+          <div class="tl-soap">
+            <strong>S:</strong> Low back pain after lifting a water container. Pain 6/10. No numbness or leg weakness.<br/><strong>P:</strong> PT twice a week for 6 weeks. Pause gym training until cleared.
           </div>
         </div>
       </div>
       <div class="timeline-item">
         <div class="tl-dot" style="background:var(--forest)"></div>
         <div style="flex:1">
-          <div class="tl-date">June 2, 2026</div>
-          <div class="tl-type">Lipid review, Dr. Paolo Reyes (Cardiology)</div>
+          <div class="tl-date">April 20, 2026</div>
+          <div class="tl-type">Acne and hair growth consult, Dr. Bianca Reyes-Tan (Dermatology)</div>
           <div class="tl-soap">
-            <strong>O:</strong> BP 128/82.<br/>
-            <strong>Rx:</strong> Atorvastatin 20 mg nightly.<br/>
-            <strong>P:</strong> Recheck lipids in 3 months.
+            <strong>S:</strong> Hormonal acne, mild hirsutism, dark velvety patches on the back of the neck.<br/><strong>Rx:</strong> Spironolactone 50 mg every morning. Adapalene 0.1% gel at night. Benzoyl peroxide 2.5% wash daily.<br/><strong>P:</strong> SPF 50 every morning. Potassium blood test in 4 weeks. Follow up in January.
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:var(--terracotta)"></div>
+        <div style="flex:1">
+          <div class="tl-date">March 3, 2026</div>
+          <div class="tl-type">New patient, diabetes diagnosis, Dr. Raymond Uy (Endocrinology)</div>
+          <div class="tl-soap">
+            <strong>S:</strong> Referred by OB-GYN for abnormal OGTT. HbA1c 7.2%, fasting glucose 138, 2-hour OGTT 214. BMI 29. Mother has type 2 diabetes.<br/><strong>Rx:</strong> Metformin XR 500 mg once daily with dinner for 4 weeks, then 1000 mg.<br/><strong>P:</strong> Walk 30 minutes after dinner. Half cup of rice per meal. Repeat HbA1c in 6 months.
           </div>
         </div>
       </div>
       <div class="timeline-item">
         <div class="tl-dot" style="background:var(--sec)"></div>
         <div style="flex:1">
-          <div class="tl-date">May 14, 2018</div>
-          <div class="tl-type">Annual physical exam, Dr. Liza Cruz (Internal Medicine)</div>
+          <div class="tl-date">February 10, 2026</div>
+          <div class="tl-type">Irregular periods, PCOS diagnosis, Dr. Patricia Lim-Aquino (Obstetrics and Gynecology)</div>
           <div class="tl-soap">
-            <strong>O:</strong> Fasting glucose 108 mg/dL. BP 124/80, weight 66 kg.<br/>
-            <strong>P:</strong> Repeat in 6 months. Walk after dinner.
+            <strong>S:</strong> Periods every 45 to 70 days for 2 years. More than 20 follicles in each ovary.<br/><strong>Rx:</strong> Drospirenone + ethinyl estradiol, start on day 1 of next period.<br/><strong>P:</strong> OGTT this week, fasting. Referred to Dr. Raymond Uy (Endocrinology) and Dr. Bianca Reyes-Tan (Dermatology).
           </div>
         </div>
       </div>
@@ -509,11 +528,23 @@
     <div class="card">
       <div class="card-title">Current Medications</div>
       <div class="med-row"><div class="med-pill"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4.5" width="11" height="5" rx="2.5" stroke="var(--terracotta)" stroke-width="1.2"/><path d="M7 4.5V9.5" stroke="var(--terracotta)" stroke-width="1.2"/></svg></div>
-        <div><div class="med-name">Metformin 500 mg</div><div class="med-dose">Twice daily with meals, Dr. Anna Lim, Sep 14, 2026</div></div>
+        <div><div class="med-name">Metformin XR 1000 mg</div><div class="med-dose">Once daily with dinner, Dr. Raymond Uy, Sep 15, 2026</div></div>
         <div class="med-status ms-active">Active</div>
       </div>
       <div class="med-row"><div class="med-pill" style="background:rgba(196,146,42,0.15)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4.5" width="11" height="5" rx="2.5" stroke="var(--amber)" stroke-width="1.2"/><path d="M7 4.5V9.5" stroke="var(--amber)" stroke-width="1.2"/></svg></div>
-        <div><div class="med-name">Atorvastatin 20 mg</div><div class="med-dose">Nightly, Dr. Paolo Reyes, Jun 2, 2026</div></div>
+        <div><div class="med-name">Drospirenone + ethinyl estradiol 3 mg / 0.03 mg</div><div class="med-dose">One tablet daily, Dr. Patricia Lim-Aquino, Aug 10, 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row"><div class="med-pill"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4.5" width="11" height="5" rx="2.5" stroke="var(--terracotta)" stroke-width="1.2"/><path d="M7 4.5V9.5" stroke="var(--terracotta)" stroke-width="1.2"/></svg></div>
+        <div><div class="med-name">Spironolactone 50 mg</div><div class="med-dose">Once daily in the morning, Dr. Bianca Reyes-Tan, Apr 20, 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row"><div class="med-pill"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4.5" width="11" height="5" rx="2.5" stroke="var(--terracotta)" stroke-width="1.2"/><path d="M7 4.5V9.5" stroke="var(--terracotta)" stroke-width="1.2"/></svg></div>
+        <div><div class="med-name">Adapalene 0.1% gel</div><div class="med-dose">At night, Dr. Bianca Reyes-Tan, Apr 20, 2026</div></div>
+        <div class="med-status ms-active">Active</div>
+      </div>
+      <div class="med-row"><div class="med-pill"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4.5" width="11" height="5" rx="2.5" stroke="var(--terracotta)" stroke-width="1.2"/><path d="M7 4.5V9.5" stroke="var(--terracotta)" stroke-width="1.2"/></svg></div>
+        <div><div class="med-name">Benzoyl peroxide 2.5% wash</div><div class="med-dose">Once daily in the morning, Dr. Bianca Reyes-Tan, Apr 20, 2026</div></div>
         <div class="med-status ms-active">Active</div>
       </div>
     </div>
@@ -530,14 +561,6 @@
       <div class="card-title">Current Supplements</div>
       <div class="med-row"><div class="med-pill" style="background:rgba(139,154,110,0.15)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
         <div><div class="med-name">Vitamin D3 1000 IU</div><div class="med-dose">Once daily, added by Maria, Aug 3, 2026</div></div>
-        <div class="med-status ms-active">Active</div>
-      </div>
-      <div class="med-row"><div class="med-pill" style="background:rgba(139,154,110,0.15)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
-        <div><div class="med-name">Omega-3 Fish Oil 1000 mg</div><div class="med-dose">Once daily, advised by Dr. Raymond Uy, Oct 19, 2026</div></div>
-        <div class="med-status ms-active">Active</div>
-      </div>
-      <div class="med-row"><div class="med-pill" style="background:rgba(139,154,110,0.15)"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--olive)" stroke-width="1.2"/><path d="M7 4V10M4 7H10" stroke="var(--olive)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
-        <div><div class="med-name">Psyllium Fiber</div><div class="med-dose">1 teaspoon daily, Carla Mendoza, RND, Jul 15, 2026</div></div>
         <div class="med-status ms-active">Active</div>
       </div>
     </div>
@@ -634,10 +657,10 @@ function setSpec(el, spec) {
   document.querySelectorAll('.spec-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   const summaries = {
-  "general": "Maria's HbA1c has come down across four checks (7.8 to 7.1%) and is still above the 6.5% trigger Dr. Uy set. Fasting glucose is 126 mg/dL, LDL 112 mg/dL, creatinine 0.8 mg/dL. She takes metformin 500 mg twice daily and atorvastatin 20 mg nightly, and her doctor-set plan is: sugary drinks 1 per day max, walk 30 min 5 days a week, sleep 7 hours or more. This week her log shows 2 entries on plan and 2 outside it (large milk tea, a short night of sleep). Allergy on file: penicillin. <strong style=\"color:var(--amber)\">Open items from the last visit: review food log in 2 weeks, repeat HbA1c in 3 months. Next follow up with Dr. Uy: Dec 15, 2026.</strong>",
-  "endocrinology": "Type 2 diabetes on metformin 500 mg twice daily. HbA1c readings on record: 7.8, 7.5, 7.3, 7.1%. Fasting glucose 126 mg/dL (108 mg/dL in a 2018 physical). Home readings at the Oct 19 visit: BP 140/90, weight 71 kg. She reports tiredness after meals and has mentioned missing metformin 2 to 3 times a week. <strong style=\"color:var(--amber)\">Dr. Uy's plan: repeat HbA1c in 3 months. Dr. Lim (Endocrinology) follow up: Dec 14, 2026.</strong>",
-  "cardiology": "Atorvastatin 20 mg nightly started by Dr. Reyes on Jun 2, 2026. Latest LDL 112 mg/dL. BP 140/90 at the Oct 19 visit (128/82 in June, 130/84 in September). Family history: father with high blood pressure and stroke at 62, older brother with high cholesterol. <strong style=\"color:var(--amber)\">Dr. Reyes asked for a lipid recheck about 3 months after the start of atorvastatin.</strong>",
-  "nutrition": "Carla Mendoza, RND (Jul 15, 2026): half cup of rice at dinner, vegetables added to baon, follow up after 4 weeks of food logs. Current logs show walking on 2 of the last 4 logged days and sleep under 7 hours on some nights. Large milk tea is the entry that most often falls outside the doctor-set plan. <strong style=\"color:var(--amber)\">Entries are matched to the plan Dr. Uy set. They are logged by the patient and are not clinical measurements.</strong>"
+  "general": "Maria's care team has 5 members. HbA1c is 6.6%, down from 7.2% in March and still above the 6.5% trigger Dr. Uy set. Fasting glucose is 112 mg/dL (138 in March). Metformin XR was raised to 1000 mg with dinner, and her doctor-set plan is: sugary drinks 1 per day max, walk 30 min 5 days a week, sleep 7 hours or more. Cycles are regular on the combined pill, spironolactone was added by dermatology for hormonal acne, and PT cleared her to return to light strength training. Allergy on file: penicillin. <strong style=\"color:var(--amber)\">Open items: repeat HbA1c and fasting glucose in 3 months, vitamin B12 with the next blood test. Next follow up with Dr. Uy: Dec 15, 2026.</strong>",
+  "endocrinology": "Dr. Raymond Uy (Endocrinology). Type 2 diabetes diagnosed Mar 3, 2026 after an abnormal OGTT (HbA1c 7.2%, fasting glucose 138, 2-hour OGTT 214). Metformin XR started at 500 mg, increased to 1000 mg once daily with dinner. Sep 15: HbA1c 6.6%, fasting glucose 112, weight down 3 kg, no hypoglycemia episodes. <strong style=\"color:var(--amber)\">Plan from Dr. Uy: repeat HbA1c and fasting glucose in 3 months, vitamin B12 with the next blood test, keep logging fasting glucose 3 times a week. Return Dec 15, 2026 with lab results.</strong>",
+  "obgyn": "Dr. Patricia Lim-Aquino (Obstetrics and Gynecology). PCOS diagnosed Feb 10, 2026 (cycles every 45 to 70 days, more than 20 follicles per ovary). On drospirenone + ethinyl estradiol. Aug 10: cycles regular every 28 days, no breakthrough bleeding, BP 118/76. <strong style=\"color:var(--amber)\">Contraception must stay continuous while on spironolactone from dermatology. Pelvic ultrasound and check up in 6 months (Feb 10, 2027).</strong>",
+  "dermatology": "Dr. Bianca Reyes-Tan (Dermatology), consult Apr 20, 2026: hormonal acne, mild hirsutism and acanthosis nigricans on the neck. Spironolactone 50 mg every morning, adapalene 0.1% gel at night, benzoyl peroxide 2.5% wash every morning. Neck patches usually fade as blood sugar control improves. <strong style=\"color:var(--amber)\">Potassium blood test was due 4 weeks after starting. Results take 3 to 6 months. Follow up Jan 20, 2027.</strong>"
 };
   document.getElementById('ai-summary-text').innerHTML = summaries[spec];
 }
