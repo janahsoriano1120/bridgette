@@ -393,16 +393,18 @@
         position: relative; display: block; padding: 0; overflow: hidden;
         aspect-ratio: 16 / 9;
         background-color: #F5EDE3;
-        background-image: url('/waitlist-row-poster.jpg');
+        background-image: url('/waitlist-row-poster-v2.jpg');
         background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
       }
       .wl-stage {
-        position: absolute; left: 24.5%; top: 12.5%; width: 950px;
-        flex-wrap: nowrap; gap: 30px; align-items: stretch; justify-content: flex-start;
+        position: absolute; left: 33.9%; top: 11.6%; width: 958px;
+        flex-wrap: nowrap; gap: 38px; align-items: flex-start; justify-content: flex-start;
         transform-origin: 0 0; transform: scale(var(--wl-s, 0.9));
       }
       .wl-stage .waitlist-card, .wl-stage .provider-callout { width: 460px; max-width: 460px; flex: 0 0 460px; }
-      .wl-stage .provider-callout { align-self: stretch; justify-content: flex-start; padding-bottom: 32px; }
+      .wl-stage .waitlist-card { margin-top: 14px; min-height: 656px; }
+      .wl-stage .provider-callout { align-self: flex-start; min-height: 666px; justify-content: flex-start; padding-bottom: 32px; }
+      .wl-stage .provider-callout-banner { aspect-ratio: 1269 / 1238; background-image: url('/providers-card-banner-v2.jpg'); background-size: cover; background-position: center; }
       .wl-stage .provider-callout-text { margin-top: auto; }
       .wl-stage .provider-callout-btn { margin-bottom: auto; }
       .wl-stage .provider-callout-text h3 { font-size: 22px; }
@@ -1658,7 +1660,7 @@
 <script>
     ;(function(){
       const row = document.getElementById('wl-row'), stage = document.getElementById('wl-stage')
-      function fit(){ if (!row || !stage) return; stage.style.setProperty('--wl-s', (row.clientWidth * 0.585 / 950).toFixed(4)) }
+      function fit(){ if (!row || !stage) return; stage.style.setProperty('--wl-s', (row.clientWidth * 0.634 / 958).toFixed(4)) }
       fit(); window.addEventListener('resize', fit); window.addEventListener('load', fit)
     })()
 
