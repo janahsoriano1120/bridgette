@@ -126,6 +126,18 @@ button[type=submit]:disabled{opacity:.55;cursor:not-allowed}
 .done h2{font-size:28px;color:var(--green);margin:0 0 10px}
 .done p:last-child{margin-bottom:0}
 
+.narrow#join{max-width:1080px}
+.narrow#join>p{max-width:760px}
+.jgrid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.jmain{min-width:0}
+.jside{position:sticky;top:96px;display:grid;gap:16px}
+.jside .withdraw,.jside .npc{margin:0}
+.jside .withdraw{padding:18px 20px}
+.jside .withdraw p{font-size:14.5px;margin-bottom:10px}
+.jside .npc{padding:18px 20px;gap:16px}
+.jside .npc img{width:64px}
+.jside .npc p{font-size:14.5px}
+@media(max-width:960px){.jgrid{grid-template-columns:1fr}.jside{position:static;margin-top:6px}}
 .withdraw{background:var(--tint);border:1px solid #DCE4D0;border-radius:16px;padding:22px 24px;margin:26px 0 0}
 .withdraw h3{margin:0 0 8px;font-size:19px;color:var(--green)}
 .withdraw p{font-size:15.5px}
@@ -299,6 +311,7 @@ html,body{overflow-x:clip}
 <p style="font-size:17px">What we ask in return is honest feedback and your consent to hold the health data you put in. Both are below, in plain words. Read them, because all six are required: this is a real programme with a real rate attached, and these are its terms.</p>
 <p style="margin-bottom:22px">If any of them is not something you want to agree to, that is completely fine. You can still use Bridgette when we open to everyone, just not as a Founding Tester.</p>
 
+<div class="jgrid"><div class="jmain">
 <div class="formcard" id="formcard">
 <div class="prog" id="prog"><div class="pbar"><i id="progFill"></i></div><span id="progTxt"></span></div>
 <h2>Your details</h2>
@@ -441,6 +454,8 @@ html,body{overflow-x:clip}
 </div>
 </div>
 
+</div>
+<aside class="jside">
 <div class="withdraw">
 <h3>You can take this back</h3>
 <p>You can withdraw your consent at any time by emailing <a href="mailto:dpo@bridgette.com.ph">dpo@bridgette.com.ph</a>. You do not have to give a reason.</p>
@@ -458,6 +473,8 @@ html,body{overflow-x:clip}
 <p><a href="/npc-certificate-of-registration.pdf" target="_blank" rel="noopener">View our Certificate of Registration (PDF)</a></p>
 </div>
 </section>
+</aside>
+</div>
 </div>
 
 </main>
