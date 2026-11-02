@@ -104,10 +104,10 @@
       align-self: flex-start;
     }
     .provider-callout-banner {
-      width: 100%; height: 170px;
+      width: 100%; height: auto; aspect-ratio: 2130 / 1312; flex: 0 0 auto;
       background-color: #3F6B4B;
-      background-image: url('/waitlist-row-bg.jpg');
-      background-size: cover; background-position: right center; background-repeat: no-repeat;
+      background-image: url('/providers-card-banner.jpg');
+      background-size: cover; background-position: center; background-repeat: no-repeat;
     }
     .provider-callout-text { padding: 0 28px; }
     @media (max-width: 900px) {
@@ -403,7 +403,8 @@
       }
       .wl-stage .waitlist-card, .wl-stage .provider-callout { width: 460px; max-width: 460px; flex: 0 0 460px; }
       .wl-stage .provider-callout { align-self: stretch; justify-content: flex-start; padding-bottom: 32px; }
-      .wl-stage .provider-callout-banner { flex: 1 1 auto; height: auto; min-height: 260px; }
+      .wl-stage .provider-callout-text { margin-top: auto; }
+      .wl-stage .provider-callout-btn { margin-bottom: auto; }
       .wl-stage .provider-callout-text h3 { font-size: 22px; }
       .wl-stage .provider-callout-text p { font-size: 15px; }
     }
