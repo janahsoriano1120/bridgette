@@ -420,11 +420,24 @@
         </p>
         <a href="#provider-waitlist" class="hero-cta">Become a founding provider</a>
         <div style="margin-top:14px"><a href="/demo.html" style="font-size:14px;font-weight:600;color:#C4611A;text-decoration:none;border-bottom:1.5px solid #C4611A;padding-bottom:2px;display:inline-flex;align-items:center;gap:6px">See a sample patient share link <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L7 3M10 6L7 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+        <div style="margin-top:12px"><a href="/provider-test/" style="font-size:14px;font-weight:600;color:#3D3229;text-decoration:none;border-bottom:1.5px solid #3D3229;padding-bottom:2px">Try the full interactive demo</a></div>
         <p class="hero-roles">For MDs, nutritionists, psychologists, physical trainers, and allied health professionals.</p>
       </div>
 
-      <!-- HERO VISUAL: Provider Dashboard Preview -->
-      <div class="hero-visual">
+      <!-- HERO VISUAL: interactive preview of the provider dashboard -->
+      <div class="demo-frame">
+        <div class="demo-bar">
+          <span class="demo-dots"><i></i><i></i><i></i></span>
+          <span>Live preview with sample patients</span>
+          <a href="/provider-test/" target="_blank" rel="noopener">Open full screen</a>
+        </div>
+        <div class="demo-screen" id="demo-screen">
+          <iframe id="demo-iframe" src="/provider-test/" title="Interactive preview of the Bridgette provider dashboard, with sample data" loading="lazy" width="1180" height="740"></iframe>
+        </div>
+        <div class="demo-hint">Go ahead, click around. Every name and result here is sample data.</div>
+      </div>
+
+      <div class="hero-visual hero-visual-static">
         <div class="hv-header">
           <span class="hv-header-title">Health story</span>
           <span class="hv-header-sub">Shared with you</span>
@@ -439,7 +452,7 @@
             </div>
             <div>
               <div class="hv-patient-name">Maria Santos</div>
-              <div class="hv-patient-meta">32 yrs, Female, PCOS, Dyslipidemia</div>
+              <div class="hv-patient-meta">41 yrs, Female, Type 2 diabetes</div>
             </div>
           </div>
 
@@ -458,7 +471,7 @@
             </svg>
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray);margin-top:4px">
               <span>126 mg/dL</span>
-              <span style="color:var(--olive);font-weight:600">92 mg/dL (now)</span>
+              <span style="color:var(--olive);font-weight:600">112 mg/dL (now)</span>
             </div>
           </div>
 
@@ -469,9 +482,9 @@
             </div>
             <div class="hv-soap-text">
               <strong>S:</strong> Pt reports improved energy since diet changes. Compliant with metformin.<br />
-              <strong>O:</strong> FBS 92 (prev 126), HbA1c 5.6%, BMI stable at 24.1<br />
-              <strong>A:</strong> Pre-diabetes resolving. Lipid panel improving.<br />
-              <strong>P:</strong> Continue current plan. Recheck labs in 3 months.
+              <strong>O:</strong> FBS 112 (prev 126), HbA1c 6.6% (prev 7.2%)<br />
+              <strong>A:</strong> Type 2 diabetes, improving control.<br />
+              <strong>P:</strong> Continue metformin. Recheck HbA1c in 3 months.
             </div>
           </div>
         </div>
@@ -955,7 +968,34 @@
     </div>
   </section>
 
-  <style>@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
+  <style>@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }    /* readable hero text over the textured background */
+    .hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(249,244,236,0.95) 0%, rgba(249,244,236,0.90) 36%, rgba(249,244,236,0.45) 60%, rgba(249,244,236,0) 80%);
+    }
+    .hero h1 { color: #2B211A; }
+    .hero h1 em { color: #B5551A; }
+    .hero-sub { color: #43392F; font-weight: 500; }
+    .hero-roles { color: #54493F; }
+    .hero-badge { border-color: #E2D6C4; }
+
+    /* interactive dashboard preview */
+    .demo-frame { border-radius: 18px; overflow: hidden; background: #FFFFFF; border: 1px solid #E5DACB; box-shadow: 0 24px 64px rgba(61,50,41,0.24); min-width: 0; }
+    .demo-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #F2EBE0; border-bottom: 1px solid #E5DACB; font-size: 12px; color: #54493F; }
+    .demo-dots i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #D3C4AF; margin-right: 6px; }
+    .demo-bar a { margin-left: auto; color: #C4611A; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .demo-screen { position: relative; aspect-ratio: 1180 / 740; overflow: hidden; background: #F7EFE6; }
+    .demo-screen iframe { position: absolute; left: 0; top: 0; width: 1180px; height: 740px; border: 0; transform-origin: 0 0; transform: scale(var(--ds, 0.6)); }
+    .demo-hint { padding: 10px 14px; font-size: 12.5px; color: #54493F; background: #FBF8F3; border-top: 1px solid #E5DACB; text-align: center; }
+    @media (min-width: 901px) {
+      .hero-inner { max-width: 1320px; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.45fr); gap: 48px; }
+      .hero-visual-static { display: none; }
+    }
+    @media (max-width: 900px) {
+      .demo-frame { display: none; }
+      .hero-bg::after { background: linear-gradient(180deg, rgba(249,244,236,0.55), rgba(249,244,236,0.85)); }
+    }
+  </style>
 
   <!-- HOW IT WORKS -->
   <section class="how">
@@ -1194,5 +1234,12 @@
     })
   </script>
 
+<script>
+  ;(function(){
+    const screen = document.getElementById('demo-screen')
+    function fit(){ if (!screen) return; screen.style.setProperty('--ds', (screen.clientWidth / 1180).toFixed(4)) }
+    fit(); window.addEventListener('resize', fit); window.addEventListener('load', fit)
+  })()
+</script>
 </body>
 </html>
