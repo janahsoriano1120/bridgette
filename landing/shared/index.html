@@ -4,52 +4,69 @@
 <style>
 :root{--t:#C4611A;--td:#9A4710;--t2:#E0873F;--tt:#FBEEE3;--g:#5C7340;--gd:#44572F;--gt:#E9F0DE;--ink:#1D1E20;--mu:#7A7B74;--bg:#F4EFE6;--ln:#ECE6DA;--card:#fff;--err:#B5451B;--sh:0 1px 2px rgba(80,50,20,.05),0 10px 28px rgba(80,50,20,.06)}
 *{box-sizing:border-box}
+html{zoom:.9}
 body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 "Inter",system-ui,sans-serif}
 h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}button,input,select,textarea{font:inherit}.hide{display:none!important}.sub{color:var(--mu);font-size:13px}
 :focus-visible{outline:2.5px solid var(--t);outline-offset:2px}
-.app{display:grid;grid-template-columns:248px 1fr;gap:14px;padding:14px;max-width:1480px;margin:0 auto}
-.side{background:var(--card);border-radius:22px;box-shadow:var(--sh);padding:20px 14px 16px;position:sticky;top:14px;height:calc(100vh - 28px);display:flex;flex-direction:column;overflow:auto}
-.side img{width:132px;margin:0 0 8px 8px}
-.sec{font-size:12.5px;color:var(--mu);padding:14px 12px 6px}
-.nv{display:block;text-decoration:none;padding:10px 12px;border-radius:12px;color:#45463f;font-weight:500;margin-top:2px}
-.nv:hover{background:#F7F2E9}.nv.on{background:var(--tt);color:var(--td);font-weight:700}
-.sidenote{margin-top:auto;font-size:12.5px;color:var(--mu);padding:12px 8px 0;border-top:1px solid var(--ln)}
+.app{display:grid;grid-template-columns:236px 1fr;gap:14px;padding:14px;max-width:1500px;margin:0 auto;align-items:start}
+.side{background:var(--card);border-radius:22px;box-shadow:var(--sh);padding:18px 14px 16px;position:sticky;top:14px}
+.side img{width:128px;margin:0 0 6px 8px;display:block}
+.sec{font-size:12.5px;color:var(--mu);padding:12px 12px 6px}
+.nv{display:block;text-decoration:none;padding:9px 12px;border-radius:12px;color:#45463f;font-weight:500;margin-top:2px}
+.nv:hover{background:#F7F2E9}.nv.on{background:linear-gradient(135deg,var(--t2),var(--td));color:#fff;font-weight:700;box-shadow:0 6px 14px rgba(196,97,26,.25)}
+.sidenote{font-size:12.5px;color:var(--mu);padding:12px 8px 0;margin-top:10px;border-top:1px solid var(--ln)}
+.inv{margin-top:12px;background:var(--gt);border-radius:16px;padding:12px 12px 14px}.inv b{display:block;color:var(--gd);font-size:13.5px}.inv p{margin:4px 0 10px;font-size:12.5px;color:#55663F}
+.inv a{display:block;text-align:center;background:var(--g);color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:8px}.inv a:hover{background:var(--gd)}
 .main{display:grid;gap:14px;min-width:0;align-content:start}
 .c{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:18px 20px;min-width:0;scroll-margin-top:14px}
-.ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.c h3{font-size:18px}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.c h3{font-size:17px}
 .oG{border:1.5px solid #8FA66F}.oT{border:1.5px solid #D9915A}.oB{border:1.5px solid #6FA7A3}
-.alert{background:var(--tt);border:1px solid #F0D3BC;border-radius:16px;padding:12px 16px;color:var(--td)}.alert b{color:var(--td)}
-.hero{border-radius:22px;padding:24px 28px;color:#fff;background:linear-gradient(120deg,#C4611A 0%,#A94F12 100%)}
-.hero h1{font-size:28px}.hero p{margin:6px 0 0;opacity:.92}
-.led{background:linear-gradient(135deg,#E9F0DE,#DDE8CC);border-radius:20px;padding:16px 20px}.led h3{color:var(--gd);font-size:16px}.led .sub{color:#55663F}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.chips span{background:#fff;border-radius:100px;padding:4px 14px;font-weight:700;color:var(--gd)}
+.head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:2px 4px}
+.head h1{font-size:24px}.head .sub{margin-top:2px}
+.alert{background:var(--tt);border:1px solid #F0D3BC;border-radius:14px;padding:10px 16px;color:var(--td);font-size:13.5px}.alert b{color:var(--td)}
+.pill{display:inline-block;border-radius:100px;padding:1px 10px;font-size:12px;font-weight:700;white-space:nowrap}.pg{background:var(--gt);color:var(--gd)}.po{background:var(--tt);color:var(--td)}.pn{background:#EFEBE0;color:#6b6450}.py{background:#FFF1D2;color:#8A5A10}
+.tag{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #E5B58E;border-radius:100px;padding:1px 10px;font-size:12.5px;font-weight:600;color:#45463f;white-space:nowrap}.tag:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--t2)}.tag.s{border-color:#9DB37C}.tag.s:before{background:var(--g)}
+.m3{display:grid;grid-template-columns:1fr 1.15fr 1fr;border:1px solid var(--ln);border-radius:16px}
+.m3>div{padding:14px 18px;min-width:0}.m3>div+div{border-left:1px solid var(--ln)}
+.m2{display:grid;grid-template-columns:1fr 1.7fr;border:1px solid var(--ln);border-radius:16px;margin-top:12px}
+.m2>div{padding:14px 18px;min-width:0}.m2>div+div{border-left:1px solid var(--ln)}
+.sh{font-weight:700;font-size:14px;margin-bottom:8px}.sh.o{color:var(--td)}.sh.g{color:var(--gd)}.sh.y{color:#8A5A10}
+.med{padding:9px 0;border-bottom:1px dashed var(--ln)}.med:last-child{border:0}.med b{display:block;font-size:15px}.med span{color:#5a5b54;font-size:13.5px;display:block}.med .tag{margin-top:5px}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;font-size:14px}.kv dt{color:var(--mu);font-weight:600}.kv dd{margin:0}
+.ct{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--ln)}.ct:last-child{border:0}
+.av{width:38px;height:38px;border-radius:50%;border:1.5px solid #D9915A;display:grid;place-items:center;font-weight:700;font-size:12.5px;color:var(--td)}
+.ct b{display:block}.ct .r{text-align:right;font-size:12.5px;color:var(--mu)}.ct .fu{grid-column:2/4}
+.lastn h4{font-size:16px;display:inline}.lastn .meta{color:var(--mu);font-size:13px;margin-left:8px}
+.lastn p{margin:8px 0;max-width:80ch}.lastn .rx{display:inline-block;background:#F4F1E8;border-radius:10px;padding:5px 12px;margin:2px 6px 2px 0}
+.fu{display:inline-block;background:var(--gt);color:var(--gd);border-radius:100px;padding:3px 12px;font-weight:600;font-size:13px}
+.allbtn{background:linear-gradient(135deg,var(--t2),var(--td));color:#fff;border:0;border-radius:10px;padding:7px 14px;font-weight:700;cursor:pointer;float:right}
+.vis{border-top:1px solid var(--ln);padding:10px 0}.vis:first-child{border:0}.vis b{font-size:14.5px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lab{background:#F7F3EB;border-radius:16px;padding:14px 16px;min-width:0}
 .lab .t{display:flex;justify-content:space-between;gap:8px;color:#55564f}
-.lab b{font-size:24px;letter-spacing:-.02em}.lab small{color:var(--mu);font-weight:500;font-size:13px;margin-left:3px}
+.lab b{font-size:23px;letter-spacing:-.02em}.lab small{color:var(--mu);font-weight:500;font-size:13px;margin-left:3px}
 .lab .ft{font-size:12.5px;color:var(--mu);margin-top:6px}
 .lab svg{display:block;margin:6px 0 2px;max-width:100%}
-.pill{display:inline-block;border-radius:100px;padding:1px 10px;font-size:12px;font-weight:700;white-space:nowrap}.pg{background:var(--gt);color:var(--gd)}.po{background:var(--tt);color:var(--td)}.pn{background:#EFEBE0;color:#6b6450}.py{background:#FFF1D2;color:#8A5A10}.pd{background:#FBEEE3;color:var(--td)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:0}.cols>div{padding:4px 18px}.cols>div+div{border-left:1px solid var(--ln)}.cols>div:first-child{padding-left:0}
-.cols h4{font-size:14px;margin-bottom:8px}.t-o{color:var(--td)}.t-g{color:var(--gd)}
-.med{padding:10px 0;border-bottom:1px dashed var(--ln)}.med:last-child{border:0}.med b{display:block}.med span{color:#5a5b54;font-size:13.5px}
-.rec{border:1px solid var(--ln);border-radius:14px;margin-bottom:10px;background:#fff}
-.rec summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;padding:12px 14px}
+.rec{border:1px solid var(--ln);border-radius:14px;margin-bottom:8px;background:#fff}
+.rec summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;padding:11px 14px}
 .rec summary::-webkit-details-marker{display:none}.rec summary .tt{flex:1;min-width:0}.rec summary b{display:block}
 .rec .bd{padding:0 14px 14px;color:#3b3c37;white-space:pre-wrap}
-.day{border-top:1px solid var(--ln);padding:10px 0}.day:first-child{border:0}.day b{display:inline-block;min-width:92px}
+.day{border-top:1px solid var(--ln);padding:9px 0}.day:first-child{border:0}.day b{display:inline-block;min-width:92px}
+.promo{background:linear-gradient(135deg,#E9F0DE,#DDE8CC);border-radius:20px;padding:20px 24px}.promo h3{color:var(--gd);font-size:18px}.promo p{margin:6px 0 12px;max-width:70ch;color:#3d4f2b}
+.promo a{display:inline-block;background:var(--g);color:#fff;text-decoration:none;font-weight:700;border-radius:12px;padding:10px 18px}.promo a:hover{background:var(--gd)}
 .gate{max-width:560px;margin:7vh auto;background:#fff;border-radius:24px;box-shadow:var(--sh);padding:30px 30px 26px}
 .gate img{width:150px;margin-bottom:14px}.gate h1{font-size:24px;margin-bottom:6px}
-label{display:block;font-weight:600;font-size:13px;margin:14px 0 5px}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}
 input[type=text],select,textarea{width:100%;border:1px solid #E2DACB;border-radius:12px;padding:10px 13px;background:#FCFAF6;color:var(--ink)}
-textarea{min-height:130px;resize:vertical}
+textarea{min-height:96px;resize:vertical}
 label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:13.5px;font-weight:400;color:#45463f}.chk input{margin-top:3px;accent-color:var(--t)}
-.btn{background:var(--t);color:#fff;border:0;border-radius:12px;padding:11px 20px;font-weight:700;cursor:pointer;margin-top:18px}.btn:hover{background:var(--td)}.btn:disabled{opacity:.5;cursor:default}
+.btn{background:var(--t);color:#fff;border:0;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;margin-top:14px}.btn:hover{background:var(--td)}.btn:disabled{opacity:.5;cursor:default}
 .err{color:var(--err);font-weight:600;margin-top:12px}.ok{color:var(--gd);font-weight:600;margin-top:12px}
-.fine{font-size:12.5px;color:var(--mu);margin-top:14px}.fine a{color:var(--td)}
+.fine{font-size:12.5px;color:var(--mu);margin-top:12px}.fine a{color:var(--td)}
+.nrow{display:grid;grid-template-columns:1fr 2fr;gap:12px}
 .foot{font-size:12.5px;color:var(--mu);padding:4px 6px 24px}
-.empty{color:var(--mu);padding:6px 0}
-@media(max-width:900px){.app{grid-template-columns:1fr;padding:10px}.side{position:static;height:auto}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote{display:none}.grid2,.cols{grid-template-columns:1fr}.cols>div+div{border-left:0;border-top:1px solid var(--ln);padding-left:0;margin-top:10px;padding-top:12px}.cols>div{padding:4px 0}}
+.empty{color:var(--mu);padding:4px 0}
+@media(max-width:1000px){.app{grid-template-columns:1fr;padding:10px}.side{position:static}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote,.inv{display:none}.grid2,.m3,.m2,.nrow{grid-template-columns:1fr}.m3>div+div,.m2>div+div{border-left:0;border-top:1px solid var(--ln)}}
 </style></head><body>
 
 <div id="gate" class="gate">
@@ -77,6 +94,7 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
     <div class="sec" id="sideName">Shared record</div>
     <nav id="nav"></nav>
     <div class="sidenote">View-only link. <span id="sideExp"></span></div>
+    <div class="inv"><b id="invHead">Invited to Bridgette</b><p>See your patients' full health story in one place.</p><a href="/providers.html">Bridgette for Providers</a></div>
   </aside>
   <div class="main" id="main"></div>
 </div>
@@ -89,9 +107,13 @@ var LICENSED=['Physician','Nurse','Pharmacist','Nutritionist-Dietitian','Physica
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function rpc(fn,body){return fetch(URL_+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
-function fmt(d){if(!d)return '';var x=new Date(String(d).length<=10?d+'T00:00:00':d);return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
-function ageOf(d){if(!d)return '';var b=new Date(d),n=new Date();if(isNaN(b))return '';var a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
+function pd(d){if(!d)return null;var x=new Date(String(d).length<=10&&/^\d{4}-/.test(d)?d+'T00:00:00':d);return isNaN(x)?null:x}
+function fmt(d){var x=pd(d);return x?x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}
+function sfmt(d){var x=pd(d);return x?x.toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}
+function ago(d){var x=pd(d);if(!x)return '';var days=Math.floor((Date.now()-x)/864e5);if(days<1)return 'today';if(days<30)return days+'d ago';var m=Math.floor(days/30.4);return m<12?m+'mo ago':Math.floor(m/12)+'y ago'}
+function ageOf(d){var b=pd(d),n=new Date();if(!b)return '';var a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
 function first(n){return String(n||'The patient').split(' ')[0]}
+function ini(n){return String(n).replace(/^(Dr\.|Dra\.|Coach)\s+/i,'').replace(/,.*$/,'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 
 function check(){ $('prcWrap').classList.toggle('hide',LICENSED.indexOf($('gProf').value)<0); $('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked) }
 ['gName','gProf','gAck','gPrc'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
@@ -116,7 +138,6 @@ function spark(pts,lo,hi){
   var dots=pts.map(function(a,i){return '<circle cx="'+x(i)+'" cy="'+y(a.v)+'" r="'+(i===pts.length-1?5:3.2)+'" fill="'+(i===pts.length-1?'#C4611A':'#fff')+'" stroke="#C4611A" stroke-width="1.8"/>'}).join('');
   return '<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" role="img" aria-label="Trend">'+band+'<path d="'+d+'" fill="none" stroke="#C4611A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
 }
-
 function labsHtml(){
   var by={};(data.labs||[]).forEach(function(r){var v=Number(r.value);if(!r.test||isNaN(v))return;(by[r.test]=by[r.test]||[]).push({v:v,d:r.date,unit:r.unit,lo:r.low,hi:r.high})});
   var names=Object.keys(by).sort();if(!names.length)return '<div class="empty">No lab results were shared.</div>';
@@ -128,19 +149,14 @@ function labsHtml(){
     return '<div class="lab"><div class="t"><span>'+esc(n)+'</span><span class="pill '+st+'">'+tx+'</span></div><b>'+esc(L.v)+'<small>'+esc(L.unit||'')+'</small></b>'+spark(a,lo,hi)+'<div class="ft">'+esc([rng,ch].filter(Boolean).join('. '))+(a.length===1?' '+fmt(L.d):'')+'</div></div>'
   }).join('')+'</div><p class="sub" style="margin:10px 0 0">Shaded band is the lab range printed on the report.</p>';
 }
-function medsHtml(){
-  var m=data.meds||[],rx=m.filter(function(x){return x.kind==='medication'}),sp=m.filter(function(x){return x.kind!=='medication'});
-  function row(x){return '<div class="med"><b>'+esc(x.name)+'</b><span>'+esc([x.dosage,x.frequency].filter(Boolean).join(', ')||x.reason||'')+'</span></div>'}
-  return '<div class="cols"><div><h4 class="t-o">Medications</h4>'+(rx.length?rx.map(row).join(''):'<div class="empty">None shared.</div>')+'</div><div><h4 class="t-g">Supplements</h4>'+(sp.length?sp.map(row).join(''):'<div class="empty">None shared.</div>')+'</div></div>';
-}
 function recsHtml(){
-  var r=data.records||[];if(!r.length)return '<div class="empty">No records were shared.</div>';
-  return r.map(function(x){
-    var tag=x.by_doctor?'<span class="pill pd">Entered by a doctor</span>':'<span class="pill pn">Self reported</span>';
+  var r=data.records||[];if(!r.length)return '';
+  return '<div class="c oT" id="recs"><div class="ch"><h3>Uploaded records</h3></div>'+r.map(function(x){
+    var tag=x.by_doctor?'<span class="pill po">Entered by a doctor</span>':'<span class="pill pn">Self reported</span>';
     var meds=(x.medications||[]).map(function(m){return typeof m==='string'?m:[m.name,m.dosage].filter(Boolean).join(' ')}).filter(Boolean);
     var body=[x.summary,meds.length?'Medications: '+meds.join(', '):''].filter(Boolean).join('\n\n');
     return '<details class="rec"><summary><div class="tt"><b>'+esc(x.title||x.facility||'Medical record')+'</b><span class="sub">'+esc([x.by_doctor?(x.provider||x.facility):x.facility,fmt(x.date)].filter(Boolean).join('  |  '))+'</span></div>'+tag+'</summary>'+(body?'<div class="bd">'+esc(body)+'</div>':'')+'</details>'
-  }).join('');
+  }).join('')+'</div>';
 }
 function lifeHtml(){
   var f=data.food||[],s=data.sleep||[],days={};
@@ -152,33 +168,92 @@ function lifeHtml(){
 function notesSent(){
   var n=data.notes||[];if(!n.length)return '';
   var lab={pending:'Waiting for the patient',accepted:'Added to the record',declined:'Not added'};
-  return '<h4 style="margin:18px 0 8px">Notes you sent</h4>'+n.map(function(x){return '<div class="day"><b style="min-width:0">'+esc(x.title||'Note')+'</b> <span class="pill '+(x.status==='accepted'?'pg':'py')+'">'+lab[x.status]+'</span><div class="sub">'+esc(fmt(x.created_at))+'</div></div>'}).join('');
+  return '<div style="margin-top:14px">'+n.map(function(x){return '<div class="day"><b style="min-width:0">'+esc(x.title||'Note')+'</b> <span class="pill '+(x.status==='accepted'?'pg':'py')+'">'+lab[x.status]+'</span> <span class="sub">'+esc(fmt(x.created_at))+'</span></div>'}).join('')+'</div>';
 }
 
 function render(){
-  var p=data.patient||{},inc=data.includes||{},nm=first(p.name),age=ageOf(p.dob);
+  var p=data.patient||{},inc=data.includes||{},snap=data.snapshot||{},nm=first(p.name),age=p.dob?ageOf(p.dob):'';
+  var team=(snap.care_team||[]).slice(),conds=snap.conditions||[];
   $('gate').classList.add('hide');$('app').classList.remove('hide');
   $('sideName').textContent=nm+"'s record";
   $('sideExp').textContent=data.expires_at?('Open until '+fmt(data.expires_at)+'.'):'';
-  var sec=[['sum','Overview']];
-  if(inc.labs)sec.push(['labs','Lab results']);if(inc.meds)sec.push(['meds','Medications']);if(inc.records)sec.push(['recs',"Records and doctors' notes"]);if(inc.lifestyle)sec.push(['life','Lifestyle']);sec.push(['note','Write a note']);
-  $('nav').innerHTML=sec.map(function(s,i){return '<a class="nv'+(i?'':' on')+'" href="#'+s[0]+'">'+s[1]+'</a>'}).join('');
-  var shared=[];if(inc.labs)shared.push('Labs');if(inc.meds)shared.push('Medications and supplements');if(inc.records)shared.push('Records and notes');if(inc.lifestyle)shared.push('Meals and sleep');
-  var h='<div class="alert" id="sum"><b>Patient-controlled record.</b> '+esc(nm)+' entered or uploaded what you see here. Bridgette has not verified it. Please confirm conditions and history with '+esc(nm)+' before you rely on them.</div>';
-  h+='<div class="hero"><h1>'+esc(p.name||'Patient')+'</h1><p>'+esc([age!==''?age+' years old':'',p.sex].filter(Boolean).join(', '))+(data.expires_at?'  |  Link open until '+esc(fmt(data.expires_at)):'')+'</p></div>';
-  h+='<div class="led"><h3>What '+esc(nm)+' chose to share with you</h3><div class="chips">'+shared.map(function(x){return '<span>'+esc(x)+'</span>'}).join('')+'</div><p class="sub" style="margin:10px 0 0">'+esc(nm)+' can stop sharing at any time. This page is view-only.</p></div>';
-  if(inc.labs)h+='<div class="c oG" id="labs"><div class="ch"><h3>Labs and trends</h3></div>'+labsHtml()+'</div>';
-  if(inc.meds)h+='<div class="c oT" id="meds"><div class="ch"><h3>Medications and supplements</h3></div>'+medsHtml()+'</div>';
-  if(inc.records)h+='<div class="c oT" id="recs"><div class="ch"><h3>Records and doctors\' notes</h3></div>'+recsHtml()+'</div>';
-  if(inc.lifestyle)h+='<div class="c oB" id="life"><div class="ch"><h3>Lifestyle, last 30 days</h3></div>'+lifeHtml()+'</div>';
+  $('invHead').textContent=nm+' invited you to Bridgette';
   var licensed=!!who.prc;
-  h+='<div class="c oT" id="note"><div class="ch"><h3>Write a note to '+esc(nm)+'</h3></div><p class="sub" style="margin:0 0 4px">'+esc(nm)+' reviews your note first. It joins their record only if they accept it and confirm you wrote it. Your name, profession'+(licensed?' and PRC number':'')+' are shown with it.</p>'
-   +'<form id="nForm"><label for="nTitle">Title</label><input type="text" id="nTitle" maxlength="120" placeholder="Follow up visit">'
-   +'<label for="nBody">Note</label><textarea id="nBody" required maxlength="4000" placeholder="What you found, advised or prescribed."></textarea>'
-   +(licensed?'<label for="nDx">Diagnosis (optional)</label><input type="text" id="nDx" maxlength="200">':'<p class="fine">Diagnoses can only be added by a licensed provider with a PRC number.</p>')
-   +'<button class="btn" id="nBtn" type="submit">Send to '+esc(nm)+'</button><div id="nMsg" class="hide"></div></form><div id="sent">'+notesSent()+'</div></div>';
+
+  // medications, newest prescriber first
+  var rx=[],seen={};
+  var visits=[];team.forEach(function(d){(d.visits||[]).forEach(function(v){visits.push({d:d,v:v,t:pd(v.date)})})});
+  visits.sort(function(a,b){return (b.t||0)-(a.t||0)});
+  visits.forEach(function(x){(x.v.prescriptions||[]).forEach(function(r){var k=String(r.name).toLowerCase();if(seen[k])return;seen[k]=1;rx.push({name:r.name,line:[r.dosage,r.instructions].filter(Boolean).join(', '),by:x.d.role,date:x.v.date})})});
+  var meds=data.meds||[];
+  meds.filter(function(m){return m.kind==='medication'}).forEach(function(m){var k=String(m.name).toLowerCase();if(seen[k])return;seen[k]=1;rx.push({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})});
+  var sp=meds.filter(function(m){return m.kind!=='medication'});
+  function medRow(r){return '<div class="med"><b>'+esc(r.name)+'</b><span>'+esc(r.line)+'</span>'+(r.self?'<span class="tag s">Self added</span>':'<span class="tag">by '+esc(r.by)+', '+esc(sfmt(r.date))+'</span>')+'</div>'}
+
+  var hist='';
+  var cur=conds.filter(function(c){return c.status!=='past'}),past=conds.filter(function(c){return c.status==='past'});
+  if(cur.length||past.length){hist='<dl class="kv">'+(cur.length?'<dt>Conditions</dt><dd>'+cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(past.length?'<dt>Past</dt><dd>'+past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+'</dl>'}
+  else hist='<div class="empty">None shared.</div>';
+
+  var teamHtml=team.length?team.map(function(d){
+    var v=d.visits&&d.visits[0];
+    return '<div class="ct"><div class="av">'+esc(ini(d.name))+'</div><div><b>'+esc(d.name)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+'</div>'
+  }).join(''):'<div class="empty">No care team shared.</div>';
+
+  var last=visits[0],lastHtml='<div class="empty">No doctors\' notes shared.</div>',allHtml='';
+  if(last){
+    var v=last.v;
+    lastHtml='<div class="lastn"><h4>'+esc(v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(v.date))+'  '+esc(ago(v.date))+'</span>'
+      +((v.diagnosis||[]).length?'<div style="margin-top:8px">'+v.diagnosis.map(function(x){return '<span class="pill pg" style="margin:0 6px 4px 0">'+esc(x)+'</span>'}).join('')+'</div>':'')
+      +'<p>'+esc(v.notes||v.summary||'')+'</p>'
+      +(v.summary&&v.notes?'<p class="sub">'+esc(v.summary)+'</p>':'')
+      +(v.prescriptions||[]).map(function(r){return '<span class="rx"><b>'+esc(r.name)+'</b> '+esc(r.dosage)+'. '+esc(r.instructions||'')+'</span>'}).join('')
+      +((v.next_steps||[]).length?'<div style="margin-top:8px">'+v.next_steps.map(function(x){return '<span class="fu">'+esc(x)+'</span>'}).join(' ')+'</div>':'')+'</div>';
+    allHtml=visits.map(function(x){return '<div class="vis"><b>'+esc(x.v.title)+'</b> <span class="sub">'+esc(x.d.name)+', '+esc(x.d.role)+'  '+esc(fmt(x.v.date))+'</span><p style="margin:4px 0 0;color:#3b3c37">'+esc(x.v.summary||x.v.notes||'')+'</p></div>'}).join('');
+  }
+
+  var sec=[['note','Write a note']];
+  if(inc.meds||team.length||conds.length)sec.push(['meds','Medications and history']);
+  if(team.length)sec.push(['team','Care team']);
+  if(inc.labs)sec.push(['labs','Lab results']);if(inc.lifestyle)sec.push(['life','Lifestyle']);if((data.records||[]).length)sec.push(['recs','Uploaded records']);
+  $('nav').innerHTML=sec.map(function(s,i){return '<a class="nv'+(i?'':' on')+'" data-s="'+s[0]+'" href="#'+s[0]+'">'+s[1]+'</a>'}).join('');
+
+  var h='<div class="head"><div><h1>'+esc(p.name||'Patient')+'</h1><div class="sub">'+esc([age!==''?age+' years old':'',p.sex].filter(Boolean).join(', '))+(data.expires_at?'  |  Link open until '+esc(fmt(data.expires_at)):'')+'</div></div></div>';
+  h+='<div class="alert"><b>Patient-controlled record.</b> '+esc(nm)+' entered or uploaded what you see here. Bridgette has not verified it. Please confirm conditions and history with '+esc(nm)+' before you rely on them.</div>';
+
+  h+='<div class="c oT" id="note"><div class="ch"><h3>Write a note to '+esc(nm)+'</h3><span class="sub">'+esc(nm)+' reviews it first. It joins their record only if they accept it.</span></div>'
+   +'<form id="nForm"><div class="nrow"><div><label for="nTitle" style="margin-top:0">Title</label><input type="text" id="nTitle" maxlength="120" placeholder="Follow up visit">'
+   +(licensed?'<label for="nDx">Diagnosis (optional)</label><input type="text" id="nDx" maxlength="200">':'<p class="fine" style="margin-top:10px">Diagnoses can only be added by a licensed provider with a PRC number.</p>')+'</div>'
+   +'<div><label for="nBody" style="margin-top:0">Note</label><textarea id="nBody" required maxlength="4000" placeholder="What you found, advised or prescribed."></textarea></div></div>'
+   +'<button class="btn" id="nBtn" type="submit">Send to '+esc(nm)+'</button> <span class="fine">Shown with your name, profession'+(licensed?' and PRC number':'')+'.</span><div id="nMsg" class="hide"></div></form><div id="sent">'+notesSent()+'</div></div>';
+
+  if(inc.meds||team.length||conds.length){
+    h+='<div class="c oT" id="meds"><div class="ch"><h3>Medications, history and care team</h3></div>'
+     +'<div class="m3"><div><div class="sh o">History</div>'+hist+'</div>'
+     +'<div><div class="sh g">Prescribed meds</div>'+(rx.length?rx.map(medRow).join(''):'<div class="empty">None shared.</div>')+'</div>'
+     +'<div><div class="sh y">Supplements</div>'+(sp.length?sp.map(function(m){return medRow({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})}).join(''):'<div class="empty">None shared.</div>')+'</div></div>'
+     +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div><div class="sh o">Last doctor\'s note'+(allHtml?'<button class="allbtn" id="allBtn" type="button">All doctors\' notes</button>':'')+'</div>'+lastHtml+'<div id="allNotes" class="hide" style="margin-top:10px">'+allHtml+'</div></div></div></div>';
+  }
+  if(inc.labs)h+='<div class="c oG" id="labs"><div class="ch"><h3>Labs and trends</h3></div>'+labsHtml()+'</div>';
+  if(inc.lifestyle)h+='<div class="c oB" id="life"><div class="ch"><h3>Lifestyle, last 30 days</h3></div>'+lifeHtml()+'</div>';
+  h+=recsHtml();
+  h+='<div class="promo" id="join"><h3>'+esc(nm)+' keeps their health story on Bridgette</h3><p>Patients bring their labs, medications and daily logs into one place and share them with their care team. Doctors on Bridgette see each patient\'s full story before the visit, see updates between visits, and write notes straight into the record. Founding provider spots are open.</p><a href="/providers.html">Join Bridgette for Providers</a></div>';
   h+='<div class="foot">Shown by Bridgette from what '+esc(nm)+' shared. It lists entries as they were entered and is not a clinical assessment. <a href="/privacy.html" style="color:var(--td)">Privacy</a> | <a href="/terms.html" style="color:var(--td)">Terms</a></div>';
   $('main').innerHTML=h;
+
+  var ab=$('allBtn');if(ab)ab.addEventListener('click',function(){var a=$('allNotes');a.classList.toggle('hide');ab.textContent=a.classList.contains('hide')?"All doctors' notes":'Hide'});
+  // highlight the section being read
+  var links=document.querySelectorAll('#nav .nv');
+  function setOn(id){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('data-s')===id)})}
+  links.forEach(function(l){l.addEventListener('click',function(){setOn(l.getAttribute('data-s'))})});
+  var ids=sec.map(function(s){return s[0]}),els=ids.map(function(i){return $(i)});
+  window.addEventListener('scroll',function(){
+    var cur=ids[0],y=window.innerHeight*.35;
+    els.forEach(function(el,i){if(el&&el.getBoundingClientRect().top<=y)cur=ids[i]});
+    if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4)cur=ids[ids.length-1];
+    setOn(cur)
+  },{passive:true});
+
   $('nForm').addEventListener('submit',function(e){
     e.preventDefault();var b=$('nBtn'),m=$('nMsg'),title=$('nTitle').value;b.disabled=true;b.textContent='Sending...';
     rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null}).then(function(r){
