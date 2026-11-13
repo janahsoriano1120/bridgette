@@ -15,6 +15,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}button,input,select,t
 .nv{display:block;text-decoration:none;padding:9px 12px;border-radius:12px;color:#45463f;font-weight:500;margin-top:2px}
 .nv:hover{background:#F7F2E9}.nv.on{background:linear-gradient(135deg,var(--t2),var(--td));color:#fff;font-weight:700;box-shadow:0 6px 14px rgba(196,97,26,.25)}
 .sidenote{font-size:12.5px;color:var(--mu);padding:12px 8px 0;margin-top:10px;border-top:1px solid var(--ln)}
+.you{margin-top:10px;border-top:1px solid var(--ln);padding:12px 8px 0;font-size:13px}.you b{display:block}.you button{border:0;background:none;color:var(--td);font-weight:700;padding:0;cursor:pointer;margin-top:4px}.you input{margin:4px 0;padding:7px 10px}.you .btn{padding:7px 14px;margin-top:6px}
 .inv{margin-top:12px;background:var(--gt);border-radius:16px;padding:12px 12px 14px}.inv b{display:block;color:var(--gd);font-size:13.5px}.inv p{margin:4px 0 10px;font-size:12.5px;color:#55663F}
 .inv a{display:block;text-align:center;background:var(--g);color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:8px}.inv a:hover{background:var(--gd)}
 .main{display:grid;gap:14px;min-width:0;align-content:start}
@@ -89,7 +90,8 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
       <option value="">Choose one</option>
       <option>Physician</option><option>Nurse</option><option>Pharmacist</option><option>Nutritionist-Dietitian</option><option>Physical therapist</option><option>Psychologist</option><option>Other health professional</option>
     </select>
-    <div id="prcWrap" class="hide"><label for="gPrc">PRC license number</label><input type="text" id="gPrc" maxlength="40" placeholder="0123456"></div>
+    <div id="prcWrap" class="hide"><label for="gPrc">PRC license number (required)</label><input type="text" id="gPrc" maxlength="40" placeholder="0123456"><p class="fine" style="margin:6px 0 0">Physicians with a PRC number are shown with MD after their name.</p></div>
+    <label for="gSpec">Specialty or subspecialty (optional)</label><input type="text" id="gSpec" maxlength="80" placeholder="Endocrinology">
     <label class="chk"><input type="checkbox" id="gAck"><span>I understand this is a patient-controlled health record. Entries come from the patient, are not verified by Bridgette, and I will confirm conditions and history with the patient before I rely on them.</span></label>
     <button class="btn" id="gBtn" type="submit" disabled>View the health story</button>
     <div id="gErr" class="err hide"></div>
@@ -103,6 +105,7 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
     <div class="sec" id="sideName">Shared record</div>
     <nav id="nav"></nav>
     <div class="sidenote">View-only link. <span id="sideExp"></span></div>
+    <div class="you" id="you"></div>
     <div class="inv"><b id="invHead">Invited to Bridgette</b><p>See your patients' full health story in one place.</p><a href="/providers.html">Bridgette for Providers</a></div>
   </aside>
   <div class="main" id="main"></div>
@@ -112,7 +115,7 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 <script>
 var URL_='https://rkyxxxmbrwvgrljiqzdp.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreXh4eG1icnd2Z3JsamlxemRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODIxOTcsImV4cCI6MjA5MjQ1ODE5N30.RqiFDBTf3eipWLmWZYrAjCS-tSZuiky4vOJDLmdNNmE';
 var token=decodeURIComponent(location.pathname.replace(/\/+$/,'').split('/').pop()||'');
-var who={name:'',prof:'',prc:''}, data=null;
+var who={name:'',prof:'',prc:'',spec:''}, data=null;
 var LICENSED=['Physician','Nurse','Pharmacist','Nutritionist-Dietitian','Physical therapist','Psychologist'];
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -125,17 +128,17 @@ function ageOf(d){var b=pd(d),n=new Date();if(!b)return '';var a=n.getFullYear()
 function first(n){return String(n||'The patient').split(' ')[0]}
 function ini(n){return String(n).replace(/^(Dr\.|Dra\.|Coach)\s+/i,'').replace(/,.*$/,'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 
-function check(){ $('prcWrap').classList.toggle('hide',LICENSED.indexOf($('gProf').value)<0); $('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked) }
+function check(){ var lic=LICENSED.indexOf($('gProf').value)>=0; $('prcWrap').classList.toggle('hide',!lic); $('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked&&(!lic||$('gPrc').value.trim())) }
 ['gName','gProf','gAck','gPrc'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
 $('gateForm').addEventListener('submit',function(e){
   e.preventDefault();
-  who={name:$('gName').value.trim(),prof:$('gProf').value,prc:LICENSED.indexOf($('gProf').value)>=0?$('gPrc').value.trim():''};
+  who={name:$('gName').value.trim(),prof:$('gProf').value,prc:LICENSED.indexOf($('gProf').value)>=0?$('gPrc').value.trim():'',spec:$('gSpec').value.trim()};
   $('gBtn').disabled=true;$('gBtn').textContent='Opening...';
-  rpc('open_share',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null}).then(function(r){
+  rpc('open_share',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_specialty:who.spec||null}).then(function(r){
     if(!r||r.error||r.message){
-      var m={not_found:'This link does not exist. Please ask the patient to send it again.',revoked:'The patient has stopped sharing this link.',expired:'This link has expired. Please ask the patient for a new one.',identity:'Please enter your name and profession.'}[r&&r.error]||'We could not open this link. Please try again.';
+      var m={not_found:'This link does not exist. Please ask the patient to send it again.',revoked:'The patient has stopped sharing this link.',expired:'This link has expired. Please ask the patient for a new one.',identity:'Please enter your name and profession.',prc:'A PRC license number is required for licensed professions.'}[r&&r.error]||'We could not open this link. Please try again.';
       $('gErr').textContent=m;$('gErr').classList.remove('hide');$('gBtn').textContent='View the health story';check();return}
-    data=r;render();
+    if(r.viewer&&r.viewer.name)who.name=r.viewer.name;data=r;render();
   }).catch(function(){$('gErr').textContent='We could not reach Bridgette. Check your connection and try again.';$('gErr').classList.remove('hide');$('gBtn').textContent='View the health story';check()});
 });
 
@@ -189,6 +192,8 @@ function render(){
   $('sideExp').textContent=data.expires_at?('Open until '+fmt(data.expires_at)+'.'):'';
   $('invHead').textContent=nm+' invited you to Bridgette';
   var licensed=!!who.prc;
+  function drawYou(edit){var y=$('you');if(!edit){y.innerHTML='<span class="sub">You are viewing as</span><b>'+esc(who.name)+'</b><span class="sub">'+esc([who.prof,who.spec].filter(Boolean).join(', '))+'</span><button id="youEd" type="button">Edit name or specialty</button>';$('youEd').onclick=function(){drawYou(true)}}else{y.innerHTML='<span class="sub">Name</span><input type="text" id="yN" maxlength="120" value="'+esc(who.name)+'"><span class="sub">Specialty or subspecialty</span><input type="text" id="yS" maxlength="80" value="'+esc(who.spec)+'"><button class="btn" id="yOk" type="button">Save</button>';$('yOk').onclick=function(){var n=$('yN').value.trim();if(n)who.name=n;who.spec=$('yS').value.trim();drawYou(false)}}}
+  drawYou(false);
 
   // medications, newest prescriber first
   var rx=[],seen={};
@@ -276,12 +281,12 @@ function render(){
 
   $('nForm').addEventListener('submit',function(e){
     e.preventDefault();var b=$('nBtn'),m=$('nMsg'),title=$('nTitle').value;b.disabled=true;b.textContent='Sending...';
-    rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null}).then(function(r){
+    rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null,p_specialty:who.spec||null}).then(function(r){
       m.classList.remove('hide');
       if(r&&r.ok){m.className='ok';m.textContent='Sent. '+nm+' will see it and decide whether to add it to their record.';
         data.notes=(data.notes||[]);data.notes.unshift({title:title||'Note',status:'pending',created_at:new Date().toISOString()});$('sent').innerHTML=notesSent();
         $('nBody').value='';$('nTitle').value='';if($('nDx'))$('nDx').value=''}
-      else{m.className='err';m.textContent='We could not send the note. The link may have expired or been stopped.'}
+      else{m.className='err';m.textContent='We could not send the note. The link may have expired or been stopped, or a PRC number is missing.'}
       b.disabled=false;b.textContent='Send to '+nm;
     }).catch(function(){m.classList.remove('hide');m.className='err';m.textContent='We could not reach Bridgette. Try again.';b.disabled=false;b.textContent='Send to '+nm});
   });
