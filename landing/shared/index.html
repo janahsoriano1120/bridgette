@@ -77,6 +77,8 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 .chp{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.chp button{border:1px solid var(--ln);background:#fff;border-radius:100px;padding:4px 14px;font-weight:600;color:#55564f;cursor:pointer}.chp button.on{background:var(--tt);border-color:#E5B58E;color:var(--td)}
 .nt{border:1px solid var(--ln);border-radius:14px;margin-top:10px}.nt summary{list-style:none;cursor:pointer;padding:12px 14px}.nt summary::-webkit-details-marker{display:none}.nt .bd{padding:0 14px 14px;color:#3b3c37}.nt .bd p{margin:6px 0}
 @media(max-width:1000px){.app{grid-template-columns:1fr;padding:10px}.side{position:static}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote,.inv{display:none}.grid2,.m3,.m2,.nrow{grid-template-columns:1fr}.m3>div+div,.m2>div+div{border-left:0;border-top:1px solid var(--ln)}}
+img.av{object-fit:cover;padding:0;display:block}.unv{display:inline-flex;align-items:center;gap:5px;margin-left:6px;vertical-align:middle}.q{width:18px;height:18px;border-radius:50%;border:1.5px solid #9A6A12;background:#fff;color:#9A6A12;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-grid;place-items:center}
+.tip{grid-column:1/-1;background:#FBF3E2;border:1px solid #EBD9AE;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.55;color:#5A4210;font-weight:400}.ct .tip{grid-column:2/4}
 #rev{position:fixed;inset:0;z-index:98;background:rgba(30,25,18,.5);display:flex;align-items:center;justify-content:center;padding:16px}#rev .box{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.25)}#rev h2{font-size:21px;margin-bottom:4px}#rev .rl{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--mu)}#rev .rv{margin-top:2px;line-height:1.55;white-space:pre-wrap}#rev .rr{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}.btn2{background:#fff;color:var(--ink);border:1px solid #E2DACB;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;margin-top:14px}
 .mrow{display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1.2fr 34px;gap:8px;margin-top:8px}.frow{display:grid;grid-template-columns:1fr 200px 34px;gap:8px;margin-top:8px;align-items:start}.frow .fn{display:grid;gap:4px}.x{border:1px solid #E2DACB;background:#fff;border-radius:10px;height:40px;font-size:18px;cursor:pointer;color:var(--mu)}.addb{border:1px dashed #D9915A;background:var(--tt);color:var(--td);border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer;margin-top:10px}
 .promo{background:var(--gt);border-radius:16px;padding:18px;margin-top:18px}.promo h3{font-size:17px}.promo ul{margin:8px 0 0 18px;padding:0;line-height:1.6;font-size:14px}
@@ -120,7 +122,6 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
   </aside>
   <div class="main" id="main"></div>
 </div>
-<div id="ov" class="ov hide"><div class="ovp"><div class="ovh"><h3>All notes</h3><button id="ovx" type="button">Close</button></div><div class="seg" id="seg"></div><div id="specs"></div><div id="ovl"></div></div></div>
 
 <script>
 var URL_='https://rkyxxxmbrwvgrljiqzdp.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreXh4eG1icnd2Z3JsamlxemRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODIxOTcsImV4cCI6MjA5MjQ1ODE5N30.RqiFDBTf3eipWLmWZYrAjCS-tSZuiky4vOJDLmdNNmE';
@@ -250,17 +251,20 @@ function render(){
 
   var teamHtml=team.length?team.map(function(d){
     var v=d.visits&&d.visits[0];
-    return '<div class="ct"><div class="av">'+esc(ini(d.name))+'</div><div><b>'+esc(d.name)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+'</div>'
+    return '<div class="ct">'+(d.photo?'<img class="av" src="'+esc(d.photo)+'" alt="" onerror="this.outerHTML=\'<div class=av>'+esc(ini(d.name))+'</div>\'">':'<div class="av">'+esc(ini(d.name))+'</div>')+'<div><b>'+esc(d.name)+(d.is_md&&!/,\s*MD/i.test(d.name)?', MD':'')+(d.creds?', '+esc(d.creds):'')+unv(d)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+tipEl(d)+'</div>'
   }).join(''):'<div class="empty">No care team shared.</div>';
 
   var last=visits[0],prev=visits[1],lastHtml='<div class="empty">No notes shared.</div>',prevHtml='';
-  function kb(x){return '<span class="pill '+(x.d.is_md?'po':'pn')+'">'+(x.d.is_md?'MD':'Non-MD')+'</span>'}
+  var TIP='Note added by a shared link. This means this doctor is not on Bridgette. The patient may have shared the link with their doctor to see their health story. Please verify this with the patient yourself and use your own judgment.';
+  function unv(d){return d.from_share?'<span class="unv"><span class="pill py">Unverified</span><button type="button" class="q" aria-label="What does unverified mean?">?</button></span>':''}
+  function tipEl(d){return d.from_share?'<div class="tip hide">'+TIP+'</div>':''}
+  function kb(x){return '<span class="pill '+(x.d.is_md?'po':'pn')+'">'+(x.d.is_md?'MD':'Non-MD')+'</span>'+unv(x.d)}
   function noteBody(x){var v=x.v;return ((v.diagnosis||[]).length?'<div style="margin-top:6px">'+v.diagnosis.map(function(y){return '<span class="pill pg" style="margin:0 6px 4px 0">'+esc(y)+'</span>'}).join('')+'</div>':'')
       +'<p>'+esc(v.notes||v.summary||'')+'</p>'+(v.summary&&v.notes?'<p class="sub">'+esc(v.summary)+'</p>':'')
       +(v.prescriptions||[]).map(function(r){return '<span class="rx"><b>'+esc(r.name)+'</b> '+esc(r.dosage)+'. '+esc(r.instructions||'')+'</span>'}).join('')
       +((v.next_steps||[]).length?'<div style="margin-top:8px">'+v.next_steps.map(function(y){return '<span class="fu">'+esc(y)+'</span>'}).join(' ')+'</div>':'')}
   if(last){
-    lastHtml='<div class="lastn"><h4>'+esc(last.v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(last.v.date))+'  '+esc(ago(last.v.date))+'</span> '+kb(last)+noteBody(last)+'</div>';
+    lastHtml='<div class="lastn"><h4>'+esc(last.v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(last.v.date))+'  '+esc(ago(last.v.date))+'</span> '+kb(last)+noteBody(last)+tipEl(last.d)+'</div>';
     if(prev)prevHtml='<button class="peek" id="peek" type="button"><div class="blur"><b>'+esc(prev.v.title)+'</b> <span class="sub">'+esc(prev.d.name)+', '+esc(prev.d.role)+'  '+esc(fmt(prev.v.date))+'</span><p>'+esc((prev.v.summary||prev.v.notes||'').slice(0,240))+'</p></div><span class="peekbtn">See all notes ('+visits.length+')</span></button>';
   }
   var ft='all',sp='all';
@@ -298,7 +302,7 @@ function render(){
      +'<div class="m3"><div><div class="sh o">History</div>'+hist+'</div>'
      +'<div><div class="sh g">Prescribed meds</div>'+(rx.length?rx.map(medRow).join(''):'<div class="empty">None shared.</div>')+'</div>'
      +'<div><div class="sh y">Supplements</div>'+(supp.length?supp.map(function(m){return medRow({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})}).join(''):'<div class="empty">None shared.</div>')+'</div></div>'
-     +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div><div class="sh o">Latest provider note</div>'+lastHtml+prevHtml+'</div></div></div>';
+     +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div id="noteCol"><div class="sh o">Latest provider note</div>'+lastHtml+prevHtml+'</div></div></div>';
   }
   if(inc.labs)h+='<div class="c oG" id="labs"><div class="ch"><h3>Labs and trends</h3></div>'+labsHtml()+'</div>';
   if(inc.lifestyle)h+='<div class="c oB" id="life"><div class="ch"><h3>Lifestyle, last 30 days</h3></div>'+lifeHtml()+'</div>';
@@ -307,8 +311,14 @@ function render(){
   h+='<div class="foot">Shown by Bridgette from what '+esc(nm)+' shared. It lists entries as they were entered and is not a clinical assessment. <a href="/privacy.html" style="color:var(--td)">Privacy</a> | <a href="/terms.html" style="color:var(--td)">Terms</a></div>';
   $('main').innerHTML=h;
 
-  var pk=$('peek');if(pk)pk.addEventListener('click',function(){drawOv();$('ov').classList.remove('hide')});
-  $('ovx').onclick=function(){$('ov').classList.add('hide')};$('ov').addEventListener('click',function(e){if(e.target===$('ov'))$('ov').classList.add('hide')});
+  var latestHtml=$('noteCol')?$('noteCol').innerHTML:'';
+  function wirePeek(){var pk=$('peek');if(pk)pk.addEventListener('click',function(){
+    ft='all';sp='all';
+    $('noteCol').innerHTML='<div class="sh o" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>All provider notes ('+visits.length+')</span><button id="ovBack" type="button" class="btn2" style="margin:0;padding:6px 14px">Back to latest</button></div><div class="seg" id="seg"></div><div id="specs"></div><div id="ovl"></div>';
+    drawOv();
+    $('ovBack').onclick=function(){$('noteCol').innerHTML=latestHtml;wirePeek()};
+  })}
+  wirePeek();
   // highlight the section being read
   var links=document.querySelectorAll('#nav .nv');
   function setOn(id){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('data-s')===id)})}
