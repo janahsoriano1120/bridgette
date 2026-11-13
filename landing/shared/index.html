@@ -66,6 +66,15 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 .nrow{display:grid;grid-template-columns:1fr 2fr;gap:12px}
 .foot{font-size:12.5px;color:var(--mu);padding:4px 6px 24px}
 .empty{color:var(--mu);padding:4px 0}
+.peek{display:block;width:100%;text-align:left;border:1px solid var(--ln);border-radius:14px;background:#fff;padding:12px 14px;margin-top:14px;position:relative;cursor:pointer;overflow:hidden;font:inherit}
+.peek .blur{filter:blur(4.5px);opacity:.7;pointer-events:none;user-select:none}.peek .blur p{margin:4px 0 0}
+.peekbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,var(--t2),var(--td));color:#fff;font-weight:700;border-radius:10px;padding:8px 18px;white-space:nowrap;box-shadow:0 6px 14px rgba(196,97,26,.3)}
+.ov{position:fixed;inset:0;background:rgba(40,28,16,.45);z-index:50;display:flex;justify-content:center;align-items:flex-start;padding:5vh 14px;overflow:auto}
+.ovp{background:#fff;border-radius:20px;max-width:840px;width:100%;padding:20px 24px;box-shadow:var(--sh)}
+.ovh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.ovh button{border:1px solid var(--ln);background:#fff;border-radius:10px;padding:7px 14px;font-weight:700;cursor:pointer}
+.seg{display:inline-flex;background:#FAF6EE;border:1px solid var(--ln);border-radius:14px;padding:4px;gap:2px;flex-wrap:wrap}.seg button{border:0;background:none;padding:7px 16px;border-radius:10px;font-weight:700;color:var(--mu);cursor:pointer}.seg button.on{background:#fff;color:var(--td);box-shadow:0 1px 4px rgba(80,50,20,.12)}
+.chp{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.chp button{border:1px solid var(--ln);background:#fff;border-radius:100px;padding:4px 14px;font-weight:600;color:#55564f;cursor:pointer}.chp button.on{background:var(--tt);border-color:#E5B58E;color:var(--td)}
+.nt{border:1px solid var(--ln);border-radius:14px;margin-top:10px}.nt summary{list-style:none;cursor:pointer;padding:12px 14px}.nt summary::-webkit-details-marker{display:none}.nt .bd{padding:0 14px 14px;color:#3b3c37}.nt .bd p{margin:6px 0}
 @media(max-width:1000px){.app{grid-template-columns:1fr;padding:10px}.side{position:static}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote,.inv{display:none}.grid2,.m3,.m2,.nrow{grid-template-columns:1fr}.m3>div+div,.m2>div+div{border-left:0;border-top:1px solid var(--ln)}}
 </style></head><body>
 
@@ -98,6 +107,7 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
   </aside>
   <div class="main" id="main"></div>
 </div>
+<div id="ov" class="ov hide"><div class="ovp"><div class="ovh"><h3>All notes</h3><button id="ovx" type="button">Close</button></div><div class="seg" id="seg"></div><div id="specs"></div><div id="ovl"></div></div></div>
 
 <script>
 var URL_='https://rkyxxxmbrwvgrljiqzdp.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreXh4eG1icnd2Z3JsamlxemRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODIxOTcsImV4cCI6MjA5MjQ1ODE5N30.RqiFDBTf3eipWLmWZYrAjCS-tSZuiky4vOJDLmdNNmE';
@@ -200,16 +210,25 @@ function render(){
     return '<div class="ct"><div class="av">'+esc(ini(d.name))+'</div><div><b>'+esc(d.name)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+'</div>'
   }).join(''):'<div class="empty">No care team shared.</div>';
 
-  var last=visits[0],lastHtml='<div class="empty">No doctors\' notes shared.</div>',allHtml='';
-  if(last){
-    var v=last.v;
-    lastHtml='<div class="lastn"><h4>'+esc(v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(v.date))+'  '+esc(ago(v.date))+'</span>'
-      +((v.diagnosis||[]).length?'<div style="margin-top:8px">'+v.diagnosis.map(function(x){return '<span class="pill pg" style="margin:0 6px 4px 0">'+esc(x)+'</span>'}).join('')+'</div>':'')
-      +'<p>'+esc(v.notes||v.summary||'')+'</p>'
-      +(v.summary&&v.notes?'<p class="sub">'+esc(v.summary)+'</p>':'')
+  var last=visits[0],prev=visits[1],lastHtml='<div class="empty">No notes shared.</div>',prevHtml='';
+  function kb(x){return '<span class="pill '+(x.d.is_md?'po':'pn')+'">'+(x.d.is_md?'MD':'Non-MD')+'</span>'}
+  function noteBody(x){var v=x.v;return ((v.diagnosis||[]).length?'<div style="margin-top:6px">'+v.diagnosis.map(function(y){return '<span class="pill pg" style="margin:0 6px 4px 0">'+esc(y)+'</span>'}).join('')+'</div>':'')
+      +'<p>'+esc(v.notes||v.summary||'')+'</p>'+(v.summary&&v.notes?'<p class="sub">'+esc(v.summary)+'</p>':'')
       +(v.prescriptions||[]).map(function(r){return '<span class="rx"><b>'+esc(r.name)+'</b> '+esc(r.dosage)+'. '+esc(r.instructions||'')+'</span>'}).join('')
-      +((v.next_steps||[]).length?'<div style="margin-top:8px">'+v.next_steps.map(function(x){return '<span class="fu">'+esc(x)+'</span>'}).join(' ')+'</div>':'')+'</div>';
-    allHtml=visits.map(function(x){return '<div class="vis"><b>'+esc(x.v.title)+'</b> <span class="sub">'+esc(x.d.name)+', '+esc(x.d.role)+'  '+esc(fmt(x.v.date))+'</span><p style="margin:4px 0 0;color:#3b3c37">'+esc(x.v.summary||x.v.notes||'')+'</p></div>'}).join('');
+      +((v.next_steps||[]).length?'<div style="margin-top:8px">'+v.next_steps.map(function(y){return '<span class="fu">'+esc(y)+'</span>'}).join(' ')+'</div>':'')}
+  if(last){
+    lastHtml='<div class="lastn"><h4>'+esc(last.v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(last.v.date))+'  '+esc(ago(last.v.date))+'</span> '+kb(last)+noteBody(last)+'</div>';
+    if(prev)prevHtml='<button class="peek" id="peek" type="button"><div class="blur"><b>'+esc(prev.v.title)+'</b> <span class="sub">'+esc(prev.d.name)+', '+esc(prev.d.role)+'  '+esc(fmt(prev.v.date))+'</span><p>'+esc((prev.v.summary||prev.v.notes||'').slice(0,240))+'</p></div><span class="peekbtn">See all notes ('+visits.length+')</span></button>';
+  }
+  var ft='all',sp='all';
+  function drawOv(){
+    var list=visits.filter(function(x){return ft==='all'||(ft==='md'?x.d.is_md:!x.d.is_md)}).filter(function(x){return ft!=='md'||sp==='all'||x.d.role===sp});
+    $('seg').innerHTML=[['all','All'],['md','MD'],['non','Non-MD']].map(function(s){return '<button type="button" data-f="'+s[0]+'" class="'+(ft===s[0]?'on':'')+'">'+s[1]+'</button>'}).join('');
+    var roles=[];visits.forEach(function(x){if(x.d.is_md&&roles.indexOf(x.d.role)<0)roles.push(x.d.role)});
+    $('specs').innerHTML=ft==='md'?'<div class="chp">'+['all'].concat(roles).map(function(r){return '<button type="button" data-s="'+esc(r)+'" class="'+(sp===r?'on':'')+'">'+(r==='all'?'All specialties':esc(r))+'</button>'}).join('')+'</div>':'';
+    $('ovl').innerHTML=list.length?list.map(function(x){return '<details class="nt"><summary><b>'+esc(x.v.title)+'</b> '+kb(x)+'<div class="sub">'+esc(x.d.name)+', '+esc(x.d.role)+'  |  '+esc(fmt(x.v.date))+'</div></summary><div class="bd">'+noteBody(x)+'</div></details>'}).join(''):'<div class="empty" style="margin-top:12px">No notes match.</div>';
+    document.querySelectorAll('#seg button').forEach(function(bn){bn.onclick=function(){ft=bn.getAttribute('data-f');sp='all';drawOv()}});
+    document.querySelectorAll('#specs button').forEach(function(bn){bn.onclick=function(){sp=bn.getAttribute('data-s');drawOv()}});
   }
 
   var sec=[['note','Write a note']];
@@ -232,7 +251,7 @@ function render(){
      +'<div class="m3"><div><div class="sh o">History</div>'+hist+'</div>'
      +'<div><div class="sh g">Prescribed meds</div>'+(rx.length?rx.map(medRow).join(''):'<div class="empty">None shared.</div>')+'</div>'
      +'<div><div class="sh y">Supplements</div>'+(sp.length?sp.map(function(m){return medRow({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})}).join(''):'<div class="empty">None shared.</div>')+'</div></div>'
-     +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div><div class="sh o">Last doctor\'s note'+(allHtml?'<button class="allbtn" id="allBtn" type="button">All doctors\' notes</button>':'')+'</div>'+lastHtml+'<div id="allNotes" class="hide" style="margin-top:10px">'+allHtml+'</div></div></div></div>';
+     +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div><div class="sh o">Latest provider note</div>'+lastHtml+prevHtml+'</div></div></div>';
   }
   if(inc.labs)h+='<div class="c oG" id="labs"><div class="ch"><h3>Labs and trends</h3></div>'+labsHtml()+'</div>';
   if(inc.lifestyle)h+='<div class="c oB" id="life"><div class="ch"><h3>Lifestyle, last 30 days</h3></div>'+lifeHtml()+'</div>';
@@ -241,7 +260,8 @@ function render(){
   h+='<div class="foot">Shown by Bridgette from what '+esc(nm)+' shared. It lists entries as they were entered and is not a clinical assessment. <a href="/privacy.html" style="color:var(--td)">Privacy</a> | <a href="/terms.html" style="color:var(--td)">Terms</a></div>';
   $('main').innerHTML=h;
 
-  var ab=$('allBtn');if(ab)ab.addEventListener('click',function(){var a=$('allNotes');a.classList.toggle('hide');ab.textContent=a.classList.contains('hide')?"All doctors' notes":'Hide'});
+  var pk=$('peek');if(pk)pk.addEventListener('click',function(){drawOv();$('ov').classList.remove('hide')});
+  $('ovx').onclick=function(){$('ov').classList.add('hide')};$('ov').addEventListener('click',function(e){if(e.target===$('ov'))$('ov').classList.add('hide')});
   // highlight the section being read
   var links=document.querySelectorAll('#nav .nv');
   function setOn(id){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('data-s')===id)})}
