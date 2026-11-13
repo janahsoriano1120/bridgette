@@ -2,3 +2,8 @@
   base = "landing"
   publish = "."
   command = "echo 'no build needed'"
+
+[[redirects]]
+  from = "/shared/*"
+  to = "/shared/index.html"
+  status = 200
