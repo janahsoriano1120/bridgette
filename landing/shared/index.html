@@ -77,7 +77,14 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 .chp{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.chp button{border:1px solid var(--ln);background:#fff;border-radius:100px;padding:4px 14px;font-weight:600;color:#55564f;cursor:pointer}.chp button.on{background:var(--tt);border-color:#E5B58E;color:var(--td)}
 .nt{border:1px solid var(--ln);border-radius:14px;margin-top:10px}.nt summary{list-style:none;cursor:pointer;padding:12px 14px}.nt summary::-webkit-details-marker{display:none}.nt .bd{padding:0 14px 14px;color:#3b3c37}.nt .bd p{margin:6px 0}
 @media(max-width:1000px){.app{grid-template-columns:1fr;padding:10px}.side{position:static}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote,.inv{display:none}.grid2,.m3,.m2,.nrow{grid-template-columns:1fr}.m3>div+div,.m2>div+div{border-left:0;border-top:1px solid var(--ln)}}
+#rev{position:fixed;inset:0;z-index:98;background:rgba(30,25,18,.5);display:flex;align-items:center;justify-content:center;padding:16px}#rev .box{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.25)}#rev h2{font-size:21px;margin-bottom:4px}#rev .rl{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--mu)}#rev .rv{margin-top:2px;line-height:1.55;white-space:pre-wrap}#rev .rr{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}.btn2{background:#fff;color:var(--ink);border:1px solid #E2DACB;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;margin-top:14px}
+.mrow{display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1.2fr 34px;gap:8px;margin-top:8px}.frow{display:grid;grid-template-columns:1fr 200px 34px;gap:8px;margin-top:8px;align-items:start}.frow .fn{display:grid;gap:4px}.x{border:1px solid #E2DACB;background:#fff;border-radius:10px;height:40px;font-size:18px;cursor:pointer;color:var(--mu)}.addb{border:1px dashed #D9915A;background:var(--tt);color:var(--td);border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer;margin-top:10px}
+.promo{background:var(--gt);border-radius:16px;padding:18px;margin-top:18px}.promo h3{font-size:17px}.promo ul{margin:8px 0 0 18px;padding:0;line-height:1.6;font-size:14px}
+@media(max-width:700px){.mrow{grid-template-columns:1fr 1fr}.mrow .x{grid-column:span 2;height:34px}.frow{grid-template-columns:1fr}}
+#ended{position:fixed;inset:0;z-index:99;background:#F3EEE6;display:flex;align-items:center;justify-content:center;padding:24px}#ended .box{max-width:440px;background:#fff;border-radius:20px;padding:32px;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}#ended h2{font-size:22px;margin-bottom:10px}#ended p{color:var(--mu);line-height:1.6;margin:0}
 </style></head><body>
+<div id="rev" class="hide" role="dialog" aria-modal="true"><div class="box" id="rvBox"></div></div>
+<div id="ended" class="hide" role="alert"><div class="box"><h2 id="endedT">Access ended</h2><p id="endedM">The patient has stopped sharing this record. Everything on this page has been cleared.</p></div></div>
 
 <div id="gate" class="gate">
   <img src="/bridgette-logo-full.png" alt="Bridgette">
@@ -90,8 +97,11 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
       <option value="">Choose one</option>
       <option>Physician</option><option>Nurse</option><option>Pharmacist</option><option>Nutritionist-Dietitian</option><option>Physical therapist</option><option>Psychologist</option><option>Other health professional</option>
     </select>
-    <div id="prcWrap" class="hide"><label for="gPrc">PRC license number (required)</label><input type="text" id="gPrc" maxlength="40" placeholder="0123456"><p class="fine" style="margin:6px 0 0">Physicians with a PRC number are shown with MD after their name.</p></div>
-    <label for="gSpec">Specialty or subspecialty (optional)</label><input type="text" id="gSpec" maxlength="80" placeholder="Endocrinology">
+    <div id="prcWrap" class="hide"><label for="gPrc">PRC license number (required)</label><input type="text" id="gPrc" maxlength="40" placeholder="0123456"><p class="fine" style="margin:6px 0 0">Physicians with a PRC number are shown as Dr. Name, MD.</p></div>
+    <div id="specSelWrap" class="hide"><label for="gSpecSel">Specialty</label><select id="gSpecSel"><option value="">Choose one</option><option>Family Medicine</option><option>General Practice</option><option>Internal Medicine</option><option>Pediatrics</option><option>Obstetrics and Gynecology</option><option>Dermatology</option><option>Cardiology</option><option>Endocrinology</option><option>Gastroenterology</option><option>Pulmonology</option><option>Nephrology</option><option>Rheumatology</option><option>Neurology</option><option>Psychiatry</option><option>Ophthalmology</option><option>Otolaryngology (ENT)</option><option>Orthopedics</option><option>General Surgery</option><option>Urology</option><option>Oncology</option><option>Emergency Medicine</option><option>Sports Medicine</option><option>Other</option></select></div>
+    <div id="specTxtWrap"><label for="gSpec">Specialty or role (optional)</label><input type="text" id="gSpec" maxlength="80" placeholder="Physical therapy"></div>
+    <div id="subWrap" class="hide"><label for="gSub">Subspecialty (optional)</label><input type="text" id="gSub" maxlength="80" placeholder="Reproductive endocrinology"></div>
+    <label for="gCred">Credentials after your name (optional)</label><input type="text" id="gCred" maxlength="80" placeholder="FPOGS, MBA"><p class="fine" style="margin:6px 0 0">Fellowships, degrees or certifications. We add MD for you.</p>
     <label class="chk"><input type="checkbox" id="gAck"><span>I understand this is a patient-controlled health record. Entries come from the patient, are not verified by Bridgette, and I will confirm conditions and history with the patient before I rely on them.</span></label>
     <button class="btn" id="gBtn" type="submit" disabled>View the health story</button>
     <div id="gErr" class="err hide"></div>
@@ -115,7 +125,7 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 <script>
 var URL_='https://rkyxxxmbrwvgrljiqzdp.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreXh4eG1icnd2Z3JsamlxemRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODIxOTcsImV4cCI6MjA5MjQ1ODE5N30.RqiFDBTf3eipWLmWZYrAjCS-tSZuiky4vOJDLmdNNmE';
 var token=decodeURIComponent(location.pathname.replace(/\/+$/,'').split('/').pop()||'');
-var who={name:'',prof:'',prc:'',spec:''}, data=null;
+var who={name:'',prof:'',prc:'',spec:'',sub:'',cred:''}, data=null;
 var LICENSED=['Physician','Nurse','Pharmacist','Nutritionist-Dietitian','Physical therapist','Psychologist'];
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -128,20 +138,48 @@ function ageOf(d){var b=pd(d),n=new Date();if(!b)return '';var a=n.getFullYear()
 function first(n){return String(n||'The patient').split(' ')[0]}
 function ini(n){return String(n).replace(/^(Dr\.|Dra\.|Coach)\s+/i,'').replace(/,.*$/,'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 
-function check(){ var lic=LICENSED.indexOf($('gProf').value)>=0; $('prcWrap').classList.toggle('hide',!lic); $('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked&&(!lic||$('gPrc').value.trim())) }
-['gName','gProf','gAck','gPrc'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
+function tc(n){n=String(n||'').trim();return (n===n.toLowerCase()||n===n.toUpperCase())?n.toLowerCase().replace(/(^|[\s.'-])([a-z])/g,function(m,a,c){return a+c.toUpperCase()}):n}
+function isPhys(){return $('gProf').value==='Physician'}
+function specVal(){return isPhys()?($('gSpecSel').value==='Other'?$('gSpec').value.trim():$('gSpecSel').value):$('gSpec').value.trim()}
+function baseName(n,prof,prc){n=String(n||'').trim();if(prof==='Physician'&&prc){return 'Dr. '+n.replace(/^(dr|dra|doc)\.?\s+/i,'').replace(/\s*,?\s*md\.?$/i,'')}return n}
+function cleanCred(c){return String(c||'').replace(/\bMD\b,?\s*/gi,'').replace(/^[,\s]+|[,\s]+$/g,'')}
+function fullName(){var md=who.prof==='Physician'&&who.prc;return baseName(who.name,who.prof,who.prc)+(md?', MD':'')+(cleanCred(who.cred)?', '+cleanCred(who.cred):'')}
+function check(){var lic=LICENSED.indexOf($('gProf').value)>=0,ph=isPhys();$('prcWrap').classList.toggle('hide',!lic);$('specSelWrap').classList.toggle('hide',!ph);$('specTxtWrap').classList.toggle('hide',ph&&$('gSpecSel').value!=='Other');$('subWrap').classList.toggle('hide',!ph);$('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked&&(!lic||$('gPrc').value.trim())&&(!ph||specVal()))}
+['gName','gProf','gAck','gPrc','gSpecSel','gSpec'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
 $('gateForm').addEventListener('submit',function(e){
   e.preventDefault();
-  who={name:$('gName').value.trim(),prof:$('gProf').value,prc:LICENSED.indexOf($('gProf').value)>=0?$('gPrc').value.trim():'',spec:$('gSpec').value.trim()};
+  who={name:tc($('gName').value),prof:$('gProf').value,prc:LICENSED.indexOf($('gProf').value)>=0?$('gPrc').value.trim():'',spec:specVal(),sub:isPhys()?$('gSub').value.trim():'',cred:$('gCred').value.trim()};
   $('gBtn').disabled=true;$('gBtn').textContent='Opening...';
-  rpc('open_share',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_specialty:who.spec||null}).then(function(r){
+  rpc('open_share',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_specialty:who.spec||null,p_credentials:who.cred||null,p_subspecialty:who.sub||null}).then(function(r){
     if(!r||r.error||r.message){
       var m={not_found:'This link does not exist. Please ask the patient to send it again.',revoked:'The patient has stopped sharing this link.',expired:'This link has expired. Please ask the patient for a new one.',identity:'Please enter your name and profession.',prc:'A PRC license number is required for licensed professions.'}[r&&r.error]||'We could not open this link. Please try again.';
       $('gErr').textContent=m;$('gErr').classList.remove('hide');$('gBtn').textContent='View the health story';check();return}
-    if(r.viewer&&r.viewer.name)who.name=r.viewer.name;data=r;render();
+    data=r;render();watch();
   }).catch(function(){$('gErr').textContent='We could not reach Bridgette. Check your connection and try again.';$('gErr').classList.remove('hide');$('gBtn').textContent='View the health story';check()});
 });
 
+var watching=false,watchTimer=null;
+function endAccess(why){
+  if(watchTimer){clearInterval(watchTimer);watchTimer=null}
+  data=null;
+  var m=$('main');if(m)m.innerHTML='';var nv=$('nav');if(nv)nv.innerHTML='';
+  $('app').classList.add('hide');$('gate').classList.add('hide');$('rev').classList.add('hide');
+  $('endedT').textContent=why==='expired'?'This link has expired':'Access ended';
+  $('endedM').textContent=why==='expired'?'Please ask the patient for a new link. Everything on this page has been cleared.':'The patient has stopped sharing this record. Everything on this page has been cleared.';
+  $('ended').classList.remove('hide');
+}
+function checkAccess(){
+  if(!data)return;
+  rpc('check_share',{p_token:token}).then(function(r){
+    if(r&&r.active===false)endAccess(r.reason||'revoked');
+  }).catch(function(){});
+}
+function watch(){
+  if(watching)return;watching=true;
+  watchTimer=setInterval(checkAccess,5000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)checkAccess()});
+  window.addEventListener('focus',checkAccess);
+}
 function spark(pts,lo,hi){
   var W=210,H=64,p=8,v=pts.map(function(x){return x.v}),mn=Math.min.apply(null,v),mx=Math.max.apply(null,v);
   if(lo!=null)mn=Math.min(mn,lo);if(hi!=null)mx=Math.max(mx,hi);if(mx===mn){mx+=1;mn-=1}
@@ -192,7 +230,7 @@ function render(){
   $('sideExp').textContent=data.expires_at?('Open until '+fmt(data.expires_at)+'.'):'';
   $('invHead').textContent=nm+' invited you to Bridgette';
   var licensed=!!who.prc;
-  function drawYou(edit){var y=$('you');if(!edit){y.innerHTML='<span class="sub">You are viewing as</span><b>'+esc(who.name)+'</b><span class="sub">'+esc([who.prof,who.spec].filter(Boolean).join(', '))+'</span><button id="youEd" type="button">Edit name or specialty</button>';$('youEd').onclick=function(){drawYou(true)}}else{y.innerHTML='<span class="sub">Name</span><input type="text" id="yN" maxlength="120" value="'+esc(who.name)+'"><span class="sub">Specialty or subspecialty</span><input type="text" id="yS" maxlength="80" value="'+esc(who.spec)+'"><button class="btn" id="yOk" type="button">Save</button>';$('yOk').onclick=function(){var n=$('yN').value.trim();if(n)who.name=n;who.spec=$('yS').value.trim();drawYou(false)}}}
+  function drawYou(edit){var y=$('you');if(!edit){y.innerHTML='<span class="sub">You are viewing as</span><b>'+esc(fullName())+'</b><span class="sub">'+esc([who.prof,who.spec,who.sub].filter(Boolean).join(', '))+'</span><button id="youEd" type="button">Edit name or specialty</button>';$('youEd').onclick=function(){drawYou(true)}}else{y.innerHTML='<span class="sub">Name</span><input type="text" id="yN" maxlength="120" value="'+esc(who.name)+'"><span class="sub">Credentials after your name</span><input type="text" id="yC" maxlength="80" value="'+esc(who.cred)+'"><span class="sub">Specialty</span><input type="text" id="yS" maxlength="80" value="'+esc(who.spec)+'"><span class="sub">Subspecialty</span><input type="text" id="yU" maxlength="80" value="'+esc(who.sub)+'"><button class="btn" id="yOk" type="button">Save</button>';$('yOk').onclick=function(){var n=$('yN').value.trim();if(n)who.name=tc(n);who.cred=$('yC').value.trim();who.spec=$('yS').value.trim();who.sub=$('yU').value.trim();drawYou(false)}}}
   drawYou(false);
 
   // medications, newest prescriber first
@@ -248,8 +286,12 @@ function render(){
   h+='<div class="c oT" id="note"><div class="ch"><h3>Write a note to '+esc(nm)+'</h3><span class="sub">'+esc(nm)+' reviews it first. It joins their record only if they accept it.</span></div>'
    +'<form id="nForm"><div class="nrow"><div><label for="nTitle" style="margin-top:0">Title</label><input type="text" id="nTitle" maxlength="120" placeholder="Follow up visit">'
    +(licensed?'<label for="nDx">Diagnosis (optional)</label><input type="text" id="nDx" maxlength="200">':'<p class="fine" style="margin-top:10px">Diagnoses can only be added by a licensed provider with a PRC number.</p>')+'</div>'
-   +'<div><label for="nBody" style="margin-top:0">Note</label><textarea id="nBody" required maxlength="4000" placeholder="What you found, advised or prescribed."></textarea></div></div>'
-   +'<button class="btn" id="nBtn" type="submit">Send to '+esc(nm)+'</button> <span class="fine">Shown with your name, profession'+(licensed?' and PRC number':'')+'.</span><div id="nMsg" class="hide"></div></form><div id="sent">'+notesSent()+'</div></div>';
+   +'<div><label for="nBody" style="margin-top:0">Note</label><textarea id="nBody" required maxlength="4000" placeholder="What you found and advised."></textarea></div></div>'
+   +'<label style="margin-top:18px">Medications advised (optional)</label><p class="fine" style="margin:2px 0 0">Medicine, dose, how often and until when. '+esc(nm)+' sees these as medications from you.</p><div id="medList"></div><button type="button" class="addb" id="medAdd">Add a medication</button>'
+   +'<label style="margin-top:18px">Attach files or photos (optional)</label><p class="fine" style="margin:2px 0 0">Photos of a prescription you gave in person, results, or documents. Name each file. If '+esc(nm)+' accepts, they are saved to their vault.</p><div id="fileList"></div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="addb" id="fileAdd">Choose files</button><button type="button" class="addb" id="camAdd">Take a photo</button></div>'
+   +'<input type="file" id="fileIn" class="hide" accept="image/*,application/pdf" multiple><input type="file" id="camIn" class="hide" accept="image/*" capture="environment"><div id="fileErr" class="err"></div>'
+   +'<button class="btn" id="nBtn" type="submit">Review note</button> <span class="fine">You will review your name, note and files before it is sent.</span><div id="nMsg" class="hide"></div></form><div id="sent">'+notesSent()+'</div></div>';
 
   if(inc.meds||team.length||conds.length){
     h+='<div class="c oT" id="meds"><div class="ch"><h3>Medications, history and care team</h3></div>'
@@ -279,16 +321,85 @@ function render(){
     setOn(cur)
   },{passive:true});
 
+  var files=[],meds=[],kinds=['Prescription given in person','Lab result','Other'];
+  function drawMeds(){
+    $('medList').innerHTML=meds.map(function(m,i){return '<div class="mrow"><input type="text" data-i="'+i+'" data-k="name" placeholder="Medicine" maxlength="80" value="'+esc(m.name)+'"><input type="text" data-i="'+i+'" data-k="dose" placeholder="Dose" maxlength="40" value="'+esc(m.dose)+'"><input type="text" data-i="'+i+'" data-k="freq" placeholder="How often" maxlength="60" value="'+esc(m.freq)+'"><input type="text" data-i="'+i+'" data-k="until" placeholder="Until when" maxlength="60" value="'+esc(m.until)+'"><button type="button" class="x" data-rm="'+i+'" aria-label="Remove medication">&times;</button></div>'}).join('');
+    document.querySelectorAll('#medList input').forEach(function(el){el.oninput=function(){meds[+el.getAttribute('data-i')][el.getAttribute('data-k')]=el.value}});
+    document.querySelectorAll('#medList .x').forEach(function(b){b.onclick=function(){meds.splice(+b.getAttribute('data-rm'),1);drawMeds()}});
+  }
+  function drawFiles(){
+    $('fileList').innerHTML=files.map(function(f,i){return '<div class="frow"><div class="fn"><input type="text" data-fi="'+i+'" maxlength="80" placeholder="Name this file" value="'+esc(f.label)+'"><span class="sub">'+esc(f.file.name)+' ('+Math.max(1,Math.round(f.file.size/1024))+' KB)</span></div><select data-fk="'+i+'">'+kinds.map(function(k){return '<option'+(f.kind===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select><button type="button" class="x" data-fr="'+i+'" aria-label="Remove file">&times;</button></div>'}).join('');
+    document.querySelectorAll('#fileList input').forEach(function(el){el.oninput=function(){files[+el.getAttribute('data-fi')].label=el.value}});
+    document.querySelectorAll('#fileList select').forEach(function(el){el.onchange=function(){files[+el.getAttribute('data-fk')].kind=el.value}});
+    document.querySelectorAll('#fileList .x').forEach(function(b){b.onclick=function(){files.splice(+b.getAttribute('data-fr'),1);drawFiles()}});
+  }
+  function addFiles(list){
+    var err='';
+    Array.prototype.forEach.call(list,function(f){
+      if(files.length>=6){err='You can attach up to 6 files.';return}
+      if(f.size>10*1024*1024){err=f.name+' is over 10 MB.';return}
+      if(!/^(image\/|application\/pdf)/.test(f.type)&&!/\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name)){err=f.name+' is not a photo or PDF.';return}
+      files.push({file:f,label:f.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').slice(0,80),kind:kinds[2]});
+    });
+    $('fileErr').textContent=err;drawFiles();
+  }
+  $('medAdd').onclick=function(){if(meds.length<20){meds.push({name:'',dose:'',freq:'',until:''});drawMeds()}};
+  $('fileAdd').onclick=function(){$('fileIn').click()};$('camAdd').onclick=function(){$('camIn').click()};
+  $('fileIn').onchange=function(){addFiles(this.files);this.value=''};$('camIn').onchange=function(){addFiles(this.files);this.value=''};
+  function medsClean(){return meds.filter(function(m){return m.name.trim()}).map(function(m){return{name:m.name.trim(),dose:m.dose.trim(),frequency:m.freq.trim(),until:m.until.trim()}})}
+  function closeRev(){$('rev').classList.add('hide')}
+  function openReview(){
+    var mc=medsClean(),ph=who.prof==='Physician';
+    var h2='<h2>Review before sending</h2><p class="sub" style="margin:0">Check everything. '+esc(nm)+' sees exactly this.</p>'
+     +'<div class="rl">Your name</div><div class="rv"><b>'+esc(fullName())+'</b></div>'
+     +'<div class="rl">Profession</div><div class="rv">'+esc(who.prof)+(who.prc?'  |  PRC '+esc(who.prc):'')+'</div>'
+     +'<div class="rl">Specialty</div><div class="rv">'+esc(who.spec||'Not given')+'</div>'
+     +(who.sub?'<div class="rl">Subspecialty</div><div class="rv">'+esc(who.sub)+'</div>':(ph?'<div class="rl">Do you have a subspecialty? (optional)</div><input type="text" id="rvSub" maxlength="80" placeholder="Leave blank if none">':''))
+     +'<div class="rl">Title</div><div class="rv">'+esc($('nTitle').value||'Note')+'</div>'
+     +($('nDx')&&$('nDx').value.trim()?'<div class="rl">Diagnosis</div><div class="rv">'+esc($('nDx').value)+'</div>':'')
+     +'<div class="rl">Note</div><div class="rv">'+esc($('nBody').value)+'</div>'
+     +(mc.length?'<div class="rl">Medications advised</div>'+mc.map(function(m){return '<div class="rv">'+esc([m.name,m.dose,m.frequency,m.until?'until '+m.until:''].filter(Boolean).join(', '))+'</div>'}).join(''):'')
+     +(files.length?'<div class="rl">Files that will be saved to the patient\'s vault if accepted</div>'+files.map(function(f){return '<div class="rv">'+esc(f.label.trim())+'  <span class="sub">'+esc(f.kind)+'</span></div>'}).join(''):'')
+     +'<div id="rvMsg" class="err hide"></div><div class="rr"><button class="btn2" id="rvBack" type="button">Back and edit</button><button class="btn" id="rvSend" type="button" style="margin-top:14px">Send to '+esc(nm)+'</button></div>';
+    $('rvBox').innerHTML=h2;$('rev').classList.remove('hide');
+    $('rvBack').onclick=function(){var sb=$('rvSub');if(sb&&sb.value.trim())who.sub=sb.value.trim();drawYou(false);closeRev()};
+    $('rvSend').onclick=sendNote;
+  }
   $('nForm').addEventListener('submit',function(e){
-    e.preventDefault();var b=$('nBtn'),m=$('nMsg'),title=$('nTitle').value;b.disabled=true;b.textContent='Sending...';
-    rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null,p_specialty:who.spec||null}).then(function(r){
-      m.classList.remove('hide');
-      if(r&&r.ok){m.className='ok';m.textContent='Sent. '+nm+' will see it and decide whether to add it to their record.';
-        data.notes=(data.notes||[]);data.notes.unshift({title:title||'Note',status:'pending',created_at:new Date().toISOString()});$('sent').innerHTML=notesSent();
-        $('nBody').value='';$('nTitle').value='';if($('nDx'))$('nDx').value=''}
-      else{m.className='err';m.textContent='We could not send the note. The link may have expired or been stopped, or a PRC number is missing.'}
-      b.disabled=false;b.textContent='Send to '+nm;
-    }).catch(function(){m.classList.remove('hide');m.className='err';m.textContent='We could not reach Bridgette. Try again.';b.disabled=false;b.textContent='Send to '+nm});
+    e.preventDefault();
+    if(files.some(function(f){return !f.label.trim()})){$('fileErr').textContent="Please name every file so it can be saved in the patient's vault.";return}
+    openReview();
   });
+  function uploadAll(){var out=[],p=Promise.resolve();files.forEach(function(f,i){p=p.then(function(){var m=$('rvMsg');m.className='sub';m.textContent='Uploading file '+(i+1)+' of '+files.length+'...';var safe=f.file.name.replace(/[^A-Za-z0-9._-]/g,'_').slice(-60);var path=data.link_id+'/'+Date.now()+'-'+i+'-'+safe;return fetch(URL_+'/storage/v1/object/share-notes/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':f.file.type||'application/octet-stream'},body:f.file}).then(function(r){if(!r.ok)throw new Error('upload');out.push({path:path,name:f.label.trim(),kind:f.kind,type:f.file.type||'',size:f.file.size})})})});return p.then(function(){return out})}
+  function failSend(msg){var m=$('rvMsg');m.className='err';m.textContent=msg;$('rvSend').disabled=false;$('rvBack').disabled=false}
+  function sendNote(){
+    var sb=$('rvSub');if(sb)who.sub=sb.value.trim();
+    var title=$('nTitle').value;$('rvSend').disabled=true;$('rvBack').disabled=true;$('rvMsg').className='sub';$('rvMsg').textContent='Sending...';
+    uploadAll().then(function(att){
+      return rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null,p_specialty:who.spec||null,p_credentials:who.cred||null,p_subspecialty:who.sub||null,p_meds:medsClean(),p_attachments:att}).then(function(r){
+        if(r&&r.ok){
+          data.notes=(data.notes||[]);data.notes.unshift({title:title||'Note',status:'pending',created_at:new Date().toISOString()});$('sent').innerHTML=notesSent();
+          $('nBody').value='';$('nTitle').value='';if($('nDx'))$('nDx').value='';files=[];meds=[];drawFiles();drawMeds();drawYou(false);
+          showPromo();
+        }else failSend('We could not send the note. The link may have expired or been stopped, or a PRC number is missing.');
+      });
+    }).catch(function(){failSend('We could not send. Check your connection, and that the link is still open, then try again.')});
+  }
+  function showPromo(){
+    $('rvBox').innerHTML='<h2>Sent</h2><p class="sub" style="margin:0">'+esc(nm)+' will review your note and decide whether to add it to their record.</p>'
+     +'<div class="promo"><h3>'+esc(nm)+' shared this with you. Want every patient to share this way?</h3>'
+     +'<ul><li>See your patients\' full health story in one place, with their consent</li><li>Turn your guidance into reminders they get between visits</li><li>See whether patients follow it, and keep them with you</li></ul>'
+     +'<p style="margin:12px 0 0"><a href="https://bridgette.com.ph/providers" target="_blank" rel="noopener" style="color:#9A4710;font-weight:700">See what Bridgette offers doctors</a></p>'
+     +'<form id="lForm"><label for="lN">Full name</label><input type="text" id="lN" required maxlength="120" value="'+esc(fullName())+'"><label for="lE">Email</label><input type="email" id="lE" required maxlength="200" placeholder="you@clinic.com" style="width:100%;border:1px solid #E2DACB;border-radius:12px;padding:10px 13px;background:#FCFAF6"><label for="lP">PRC license number</label><input type="text" id="lP" maxlength="40" value="'+esc(who.prc||'')+'">'
+     +'<label class="chk"><input type="checkbox" id="lC"><span>I agree that Bridgette may email me about joining Bridgette for Providers. I can unsubscribe anytime.</span></label>'
+     +'<button class="btn" id="lB" type="submit" disabled>Send me the invite</button><div id="lM" class="hide"></div></form></div>'
+     +'<div class="rr"><button class="btn2" id="rvDone" type="button">Done</button></div>';
+    $('rvDone').onclick=closeRev;
+    $('lC').onchange=function(){$('lB').disabled=!this.checked};
+    $('lForm').onsubmit=function(e){e.preventDefault();var b=$('lB'),m=$('lM');b.disabled=true;b.textContent='Sending...';
+      rpc('submit_provider_lead',{p_token:token,p_name:$('lN').value,p_email:$('lE').value,p_prc:$('lP').value||null,p_specialty:[who.spec,who.sub].filter(Boolean).join(', ')||null,p_consent:$('lC').checked}).then(function(r){
+        m.classList.remove('hide');if(r&&r.ok){m.className='ok';m.textContent='Thank you. We will email you at '+$('lE').value+'.';b.textContent='Sent'}else{m.className='err';m.textContent='Please check your email address and try again.';b.disabled=false;b.textContent='Send me the invite'}
+      }).catch(function(){m.classList.remove('hide');m.className='err';m.textContent='We could not reach Bridgette. Try again.';b.disabled=false;b.textContent='Send me the invite'})};
+  }
 }
 </script></body></html>
