@@ -202,7 +202,7 @@ function render(){
   visits.forEach(function(x){(x.v.prescriptions||[]).forEach(function(r){var k=String(r.name).toLowerCase();if(seen[k])return;seen[k]=1;rx.push({name:r.name,line:[r.dosage,r.instructions].filter(Boolean).join(', '),by:x.d.role,date:x.v.date})})});
   var meds=data.meds||[];
   meds.filter(function(m){return m.kind==='medication'}).forEach(function(m){var k=String(m.name).toLowerCase();if(seen[k])return;seen[k]=1;rx.push({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})});
-  var sp=meds.filter(function(m){return m.kind!=='medication'});
+  var supp=meds.filter(function(m){return m.kind!=='medication'});
   function medRow(r){return '<div class="med"><b>'+esc(r.name)+'</b><span>'+esc(r.line)+'</span>'+(r.self?'<span class="tag s">Self added</span>':'<span class="tag">by '+esc(r.by)+', '+esc(sfmt(r.date))+'</span>')+'</div>'}
 
   var hist='';
@@ -255,7 +255,7 @@ function render(){
     h+='<div class="c oT" id="meds"><div class="ch"><h3>Medications, history and care team</h3></div>'
      +'<div class="m3"><div><div class="sh o">History</div>'+hist+'</div>'
      +'<div><div class="sh g">Prescribed meds</div>'+(rx.length?rx.map(medRow).join(''):'<div class="empty">None shared.</div>')+'</div>'
-     +'<div><div class="sh y">Supplements</div>'+(sp.length?sp.map(function(m){return medRow({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})}).join(''):'<div class="empty">None shared.</div>')+'</div></div>'
+     +'<div><div class="sh y">Supplements</div>'+(supp.length?supp.map(function(m){return medRow({name:m.name,line:[m.dosage,m.frequency].filter(Boolean).join(', '),self:true})}).join(''):'<div class="empty">None shared.</div>')+'</div></div>'
      +'<div class="m2" id="team"><div><div class="sh o">Care team</div>'+teamHtml+'</div><div><div class="sh o">Latest provider note</div>'+lastHtml+prevHtml+'</div></div></div>';
   }
   if(inc.labs)h+='<div class="c oG" id="labs"><div class="ch"><h3>Labs and trends</h3></div>'+labsHtml()+'</div>';
