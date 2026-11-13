@@ -79,6 +79,8 @@ label.chk{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size
 @media(max-width:1000px){.app{grid-template-columns:1fr;padding:10px}.side{position:static}.side nav{display:flex;flex-wrap:wrap;gap:4px}.sidenote,.inv{display:none}.grid2,.m3,.m2,.nrow{grid-template-columns:1fr}.m3>div+div,.m2>div+div{border-left:0;border-top:1px solid var(--ln)}}
 img.av{object-fit:cover;padding:0;display:block}.unv{display:inline-flex;align-items:center;gap:5px;margin-left:6px;vertical-align:middle}.q{width:18px;height:18px;border-radius:50%;border:1.5px solid #9A6A12;background:#fff;color:#9A6A12;font-size:11px;font-weight:700;line-height:1;cursor:pointer;padding:0;display:inline-grid;place-items:center}
 .tip{grid-column:1/-1;background:#FBF3E2;border:1px solid #EBD9AE;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.55;color:#5A4210;font-weight:400}.ct .tip{grid-column:2/4}
+#ncol{}.acts{grid-column:2/4;display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.lk{border:1px solid #E2DACB;background:#fff;border-radius:10px;padding:6px 12px;font-weight:700;color:var(--td);cursor:pointer;font-size:13px}.lk:hover{background:var(--tt)}
+.prof{grid-column:2/4;background:#FCFAF6;border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:13.5px;line-height:1.6}.prof b{display:inline}.prof .k{color:var(--mu);font-size:12.5px;font-weight:700;margin-top:6px;display:block}
 #rev{position:fixed;inset:0;z-index:98;background:rgba(30,25,18,.5);display:flex;align-items:center;justify-content:center;padding:16px}#rev .box{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.25)}#rev h2{font-size:21px;margin-bottom:4px}#rev .rl{margin-top:14px;font-size:12.5px;font-weight:700;color:var(--mu)}#rev .rv{margin-top:2px;line-height:1.55;white-space:pre-wrap}#rev .rr{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}.btn2{background:#fff;color:var(--ink);border:1px solid #E2DACB;border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;margin-top:14px}
 .mrow{display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1.2fr 34px;gap:8px;margin-top:8px}.frow{display:grid;grid-template-columns:1fr 200px 34px;gap:8px;margin-top:8px;align-items:start}.frow .fn{display:grid;gap:4px}.x{border:1px solid #E2DACB;background:#fff;border-radius:10px;height:40px;font-size:18px;cursor:pointer;color:var(--mu)}.addb{border:1px dashed #D9915A;background:var(--tt);color:var(--td);border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer;margin-top:10px}
 .promo{background:var(--gt);border-radius:16px;padding:18px;margin-top:18px}.promo h3{font-size:17px}.promo ul{margin:8px 0 0 18px;padding:0;line-height:1.6;font-size:14px}
@@ -94,14 +96,13 @@ img.av{object-fit:cover;padding:0;display:block}.unv{display:inline-flex;align-i
   <p class="sub">Before you view it, tell us who you are. The patient can see who opened their link and when.</p>
   <form id="gateForm" autocomplete="off">
     <label for="gName">Full name</label><input type="text" id="gName" required maxlength="120" placeholder="Dr. Juan Dela Cruz">
-    <label for="gProf">Profession</label>
-    <select id="gProf" required>
-      <option value="">Choose one</option>
-      <option>Physician</option><option>Nurse</option><option>Pharmacist</option><option>Nutritionist-Dietitian</option><option>Physical therapist</option><option>Psychologist</option><option>Other health professional</option>
-    </select>
+    <label for="gKind">I am a</label>
+    <select id="gKind" required><option value="">Select your role</option><option value="MD">Medical Doctor (MD)</option><option value="NON">Non-MD Provider</option></select>
+    <div id="profWrap" class="hide"><label for="gProf">Your profession</label>
+    <select id="gProf"><option value="">Choose one</option><option>Nurse</option><option>Pharmacist</option><option>Nutritionist-Dietitian</option><option>Physical therapist</option><option>Psychologist</option><option>Fitness coach</option><option>Other health professional</option><option>Physician</option></select></div>
     <div id="prcWrap" class="hide"><label for="gPrc">PRC license number (required)</label><input type="text" id="gPrc" maxlength="40" placeholder="0123456"><p class="fine" style="margin:6px 0 0">Physicians with a PRC number are shown as Dr. Name, MD.</p></div>
     <div id="specSelWrap" class="hide"><label for="gSpecSel">Specialty</label><select id="gSpecSel"><option value="">Choose one</option><option>Family Medicine</option><option>General Practice</option><option>Internal Medicine</option><option>Pediatrics</option><option>Obstetrics and Gynecology</option><option>Dermatology</option><option>Cardiology</option><option>Endocrinology</option><option>Gastroenterology</option><option>Pulmonology</option><option>Nephrology</option><option>Rheumatology</option><option>Neurology</option><option>Psychiatry</option><option>Ophthalmology</option><option>Otolaryngology (ENT)</option><option>Orthopedics</option><option>General Surgery</option><option>Urology</option><option>Oncology</option><option>Emergency Medicine</option><option>Sports Medicine</option><option>Other</option></select></div>
-    <div id="specTxtWrap"><label for="gSpec">Specialty or role (optional)</label><input type="text" id="gSpec" maxlength="80" placeholder="Physical therapy"></div>
+    <div id="specTxtWrap"><label for="gSpec">What is your specialty? (optional)</label><input type="text" id="gSpec" maxlength="80" placeholder="e.g. Sports rehab, Diabetes education"></div>
     <div id="subWrap" class="hide"><label for="gSub">Subspecialty (optional)</label><input type="text" id="gSub" maxlength="80" placeholder="Reproductive endocrinology"></div>
     <label for="gCred">Credentials after your name (optional)</label><input type="text" id="gCred" maxlength="80" placeholder="FPOGS, MBA"><p class="fine" style="margin:6px 0 0">Fellowships, degrees or certifications. We add MD for you.</p>
     <label class="chk"><input type="checkbox" id="gAck"><span>I understand this is a patient-controlled health record. Entries come from the patient, are not verified by Bridgette, and I will confirm conditions and history with the patient before I rely on them.</span></label>
@@ -126,6 +127,7 @@ img.av{object-fit:cover;padding:0;display:block}.unv{display:inline-flex;align-i
 <script>
 var URL_='https://rkyxxxmbrwvgrljiqzdp.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreXh4eG1icnd2Z3JsamlxemRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4ODIxOTcsImV4cCI6MjA5MjQ1ODE5N30.RqiFDBTf3eipWLmWZYrAjCS-tSZuiky4vOJDLmdNNmE';
 var token=decodeURIComponent(location.pathname.replace(/\/+$/,'').split('/').pop()||'');
+var TIP='Note added by a shared link. This means this doctor is not on Bridgette. The patient may have shared the link with their doctor to see their health story. Please verify this with the patient yourself and use your own judgment.';
 var who={name:'',prof:'',prc:'',spec:'',sub:'',cred:''}, data=null;
 var LICENSED=['Physician','Nurse','Pharmacist','Nutritionist-Dietitian','Physical therapist','Psychologist'];
 function $(id){return document.getElementById(id)}
@@ -140,13 +142,15 @@ function first(n){return String(n||'The patient').split(' ')[0]}
 function ini(n){return String(n).replace(/^(Dr\.|Dra\.|Coach)\s+/i,'').replace(/,.*$/,'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 
 function tc(n){n=String(n||'').trim();return (n===n.toLowerCase()||n===n.toUpperCase())?n.toLowerCase().replace(/(^|[\s.'-])([a-z])/g,function(m,a,c){return a+c.toUpperCase()}):n}
-function isPhys(){return $('gProf').value==='Physician'}
+document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('.q');if(!q)return;e.preventDefault();e.stopPropagation();var h=q.closest('.ct,.lastn,.nt'),t=h&&h.querySelector('.tip');if(t)t.classList.toggle('hide')});
+function isPhys(){return $('gKind').value==='MD'}
+function syncKind(){var k=$('gKind').value;$('profWrap').classList.toggle('hide',k!=='NON');if(k==='MD')$('gProf').value='Physician';else if($('gProf').value==='Physician')$('gProf').value=''}
 function specVal(){return isPhys()?($('gSpecSel').value==='Other'?$('gSpec').value.trim():$('gSpecSel').value):$('gSpec').value.trim()}
 function baseName(n,prof,prc){n=String(n||'').trim();if(prof==='Physician'&&prc){return 'Dr. '+n.replace(/^(dr|dra|doc)\.?\s+/i,'').replace(/\s*,?\s*md\.?$/i,'')}return n}
 function cleanCred(c){return String(c||'').replace(/\bMD\b,?\s*/gi,'').replace(/^[,\s]+|[,\s]+$/g,'')}
 function fullName(){var md=who.prof==='Physician'&&who.prc;return baseName(who.name,who.prof,who.prc)+(md?', MD':'')+(cleanCred(who.cred)?', '+cleanCred(who.cred):'')}
-function check(){var lic=LICENSED.indexOf($('gProf').value)>=0,ph=isPhys();$('prcWrap').classList.toggle('hide',!lic);$('specSelWrap').classList.toggle('hide',!ph);$('specTxtWrap').classList.toggle('hide',ph&&$('gSpecSel').value!=='Other');$('subWrap').classList.toggle('hide',!ph);$('gBtn').disabled=!($('gName').value.trim()&&$('gProf').value&&$('gAck').checked&&(!lic||$('gPrc').value.trim())&&(!ph||specVal()))}
-['gName','gProf','gAck','gPrc','gSpecSel','gSpec'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
+function check(){syncKind();var lic=LICENSED.indexOf($('gProf').value)>=0,ph=isPhys();$('prcWrap').classList.toggle('hide',!lic);$('specSelWrap').classList.toggle('hide',!ph);$('specTxtWrap').classList.toggle('hide',ph&&$('gSpecSel').value!=='Other');$('subWrap').classList.toggle('hide',!ph);$('gBtn').disabled=!($('gName').value.trim()&&$('gKind').value&&$('gProf').value&&$('gAck').checked&&(!lic||$('gPrc').value.trim())&&(!ph||specVal()))}
+['gName','gKind','gProf','gAck','gPrc','gSpecSel','gSpec'].forEach(function(i){$(i).addEventListener('input',check);$(i).addEventListener('change',check)});
 $('gateForm').addEventListener('submit',function(e){
   e.preventDefault();
   who={name:tc($('gName').value),prof:$('gProf').value,prc:LICENSED.indexOf($('gProf').value)>=0?$('gPrc').value.trim():'',spec:specVal(),sub:isPhys()?$('gSub').value.trim():'',cred:$('gCred').value.trim()};
@@ -231,7 +235,7 @@ function render(){
   $('sideExp').textContent=data.expires_at?('Open until '+fmt(data.expires_at)+'.'):'';
   $('invHead').textContent=nm+' invited you to Bridgette';
   var licensed=!!who.prc;
-  function drawYou(edit){var y=$('you');if(!edit){y.innerHTML='<span class="sub">You are viewing as</span><b>'+esc(fullName())+'</b><span class="sub">'+esc([who.prof,who.spec,who.sub].filter(Boolean).join(', '))+'</span><button id="youEd" type="button">Edit name or specialty</button>';$('youEd').onclick=function(){drawYou(true)}}else{y.innerHTML='<span class="sub">Name</span><input type="text" id="yN" maxlength="120" value="'+esc(who.name)+'"><span class="sub">Credentials after your name</span><input type="text" id="yC" maxlength="80" value="'+esc(who.cred)+'"><span class="sub">Specialty</span><input type="text" id="yS" maxlength="80" value="'+esc(who.spec)+'"><span class="sub">Subspecialty</span><input type="text" id="yU" maxlength="80" value="'+esc(who.sub)+'"><button class="btn" id="yOk" type="button">Save</button>';$('yOk').onclick=function(){var n=$('yN').value.trim();if(n)who.name=tc(n);who.cred=$('yC').value.trim();who.spec=$('yS').value.trim();who.sub=$('yU').value.trim();drawYou(false)}}}
+  function drawYou(edit){var y=$('you');if(!edit){y.innerHTML='<span class="sub">You are viewing as</span><b>'+esc(fullName())+'</b><span class="sub">'+esc([who.prof==='Physician'?'':who.prof,who.spec,who.sub].filter(Boolean).join(', '))+'</span><button id="youEd" type="button">Edit name or specialty</button>';$('youEd').onclick=function(){drawYou(true)}}else{y.innerHTML='<span class="sub">Name</span><input type="text" id="yN" maxlength="120" value="'+esc(who.name)+'"><span class="sub">Credentials after your name</span><input type="text" id="yC" maxlength="80" value="'+esc(who.cred)+'"><span class="sub">Specialty</span><input type="text" id="yS" maxlength="80" value="'+esc(who.spec)+'"><span class="sub">Subspecialty</span><input type="text" id="yU" maxlength="80" value="'+esc(who.sub)+'"><button class="btn" id="yOk" type="button">Save</button>';$('yOk').onclick=function(){var n=$('yN').value.trim();if(n)who.name=tc(n);who.cred=$('yC').value.trim();who.spec=$('yS').value.trim();who.sub=$('yU').value.trim();drawYou(false)}}}
   drawYou(false);
 
   // medications, newest prescriber first
@@ -249,13 +253,16 @@ function render(){
   if(cur.length||past.length){hist='<dl class="kv">'+(cur.length?'<dt>Conditions</dt><dd>'+cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(past.length?'<dt>Past</dt><dd>'+past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+'</dl>'}
   else hist='<div class="empty">None shared.</div>';
 
-  var teamHtml=team.length?team.map(function(d){
+  var teamHtml=team.length?team.map(function(d,i){
     var v=d.visits&&d.visits[0];
-    return '<div class="ct">'+(d.photo?'<img class="av" src="'+esc(d.photo)+'" alt="" onerror="this.outerHTML=\'<div class=av>'+esc(ini(d.name))+'</div>\'">':'<div class="av">'+esc(ini(d.name))+'</div>')+'<div><b>'+esc(d.name)+(d.is_md&&!/,\s*MD/i.test(d.name)?', MD':'')+(d.creds?', '+esc(d.creds):'')+unv(d)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+tipEl(d)+'</div>'
+    return '<div class="ct">'+(d.photo?'<img class="av" src="'+esc(d.photo)+'" alt="" onerror="this.outerHTML=\'<div class=av>'+esc(ini(d.name))+'</div>\'">':'<div class="av">'+esc(ini(d.name))+'</div>')+'<div><b>'+esc(d.name)+(d.is_md&&!/,\s*MD/i.test(d.name)?', MD':'')+(d.creds?', '+esc(d.creds):'')+unv(d)+'</b><span class="sub">'+esc(d.role)+(d.is_md?'':', non-MD')+'</span></div><div class="r">Last seen '+esc(sfmt(d.last_seen))+'<br>'+esc(ago(d.last_seen))+'</div>'+(d.follow_up?'<div class="fu">Follow up '+esc(fmt(d.follow_up))+'</div>':'')+'<div class="acts"><button type="button" class="lk" data-pv="'+i+'">View provider</button><button type="button" class="lk" data-nt="'+i+'">View notes</button></div>'
+     +'<div class="prof hide" id="pf'+i+'"><span class="k">Role</span>'+esc(d.role)+(d.is_md?' (physician)':', non-MD')+(d.creds?'<span class="k">Credentials</span>'+esc(d.creds):'')
+     +'<span class="k">Source</span>'+(d.from_share?'Added through a share link. This provider is not on Bridgette and has not been verified.':'On the patient\'s Care Team.')
+     +(d.last_seen?'<span class="k">Last seen</span>'+esc(d.last_seen):'')+(d.follow_up?'<span class="k">Follow up</span>'+esc(fmt(d.follow_up)):'')
+     +'<span class="k">Notes shared with you</span>'+((d.visits||[]).length)+'</div>'+tipEl(d)+'</div>'
   }).join(''):'<div class="empty">No care team shared.</div>';
 
   var last=visits[0],prev=visits[1],lastHtml='<div class="empty">No notes shared.</div>',prevHtml='';
-  var TIP='Note added by a shared link. This means this doctor is not on Bridgette. The patient may have shared the link with their doctor to see their health story. Please verify this with the patient yourself and use your own judgment.';
   function unv(d){return d.from_share?'<span class="unv"><span class="pill py">Unverified</span><button type="button" class="q" aria-label="What does unverified mean?">?</button></span>':''}
   function tipEl(d){return d.from_share?'<div class="tip hide">'+TIP+'</div>':''}
   function kb(x){return '<span class="pill '+(x.d.is_md?'po':'pn')+'">'+(x.d.is_md?'MD':'Non-MD')+'</span>'+unv(x.d)}
@@ -267,13 +274,13 @@ function render(){
     lastHtml='<div class="lastn"><h4>'+esc(last.v.title)+'</h4><span class="meta">'+esc(last.d.name)+', '+esc(last.d.role)+'  '+esc(fmt(last.v.date))+'  '+esc(ago(last.v.date))+'</span> '+kb(last)+noteBody(last)+tipEl(last.d)+'</div>';
     if(prev)prevHtml='<button class="peek" id="peek" type="button"><div class="blur"><b>'+esc(prev.v.title)+'</b> <span class="sub">'+esc(prev.d.name)+', '+esc(prev.d.role)+'  '+esc(fmt(prev.v.date))+'</span><p>'+esc((prev.v.summary||prev.v.notes||'').slice(0,240))+'</p></div><span class="peekbtn">See all notes ('+visits.length+')</span></button>';
   }
-  var ft='all',sp='all';
+  var ft='all',sp='all',pv='';
   function drawOv(){
-    var list=visits.filter(function(x){return ft==='all'||(ft==='md'?x.d.is_md:!x.d.is_md)}).filter(function(x){return ft!=='md'||sp==='all'||x.d.role===sp});
+    var list=visits.filter(function(x){return !pv||x.d.name===pv}).filter(function(x){return ft==='all'||(ft==='md'?x.d.is_md:!x.d.is_md)}).filter(function(x){return ft!=='md'||sp==='all'||x.d.role===sp});
     $('seg').innerHTML=[['all','All'],['md','MD'],['non','Non-MD']].map(function(s){return '<button type="button" data-f="'+s[0]+'" class="'+(ft===s[0]?'on':'')+'">'+s[1]+'</button>'}).join('');
     var roles=[];visits.forEach(function(x){if(x.d.is_md&&roles.indexOf(x.d.role)<0)roles.push(x.d.role)});
     $('specs').innerHTML=ft==='md'?'<div class="chp">'+['all'].concat(roles).map(function(r){return '<button type="button" data-s="'+esc(r)+'" class="'+(sp===r?'on':'')+'">'+(r==='all'?'All specialties':esc(r))+'</button>'}).join('')+'</div>':'';
-    $('ovl').innerHTML=list.length?list.map(function(x){return '<details class="nt"><summary><b>'+esc(x.v.title)+'</b> '+kb(x)+'<div class="sub">'+esc(x.d.name)+', '+esc(x.d.role)+'  |  '+esc(fmt(x.v.date))+'</div></summary><div class="bd">'+noteBody(x)+'</div></details>'}).join(''):'<div class="empty" style="margin-top:12px">No notes match.</div>';
+    $('ovl').innerHTML=list.length?list.map(function(x){return '<details class="nt"><summary><b>'+esc(x.v.title)+'</b> '+kb(x)+'<div class="sub">'+esc(x.d.name)+', '+esc(x.d.role)+'  |  '+esc(fmt(x.v.date))+'</div>'+tipEl(x.d)+'</summary><div class="bd">'+noteBody(x)+'</div></details>'}).join(''):'<div class="empty" style="margin-top:12px">No notes match.</div>';
     document.querySelectorAll('#seg button').forEach(function(bn){bn.onclick=function(){ft=bn.getAttribute('data-f');sp='all';drawOv()}});
     document.querySelectorAll('#specs button').forEach(function(bn){bn.onclick=function(){sp=bn.getAttribute('data-s');drawOv()}});
   }
@@ -312,13 +319,19 @@ function render(){
   $('main').innerHTML=h;
 
   var latestHtml=$('noteCol')?$('noteCol').innerHTML:'';
-  function wirePeek(){var pk=$('peek');if(pk)pk.addEventListener('click',function(){
-    ft='all';sp='all';
-    $('noteCol').innerHTML='<div class="sh o" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>All provider notes ('+visits.length+')</span><button id="ovBack" type="button" class="btn2" style="margin:0;padding:6px 14px">Back to latest</button></div><div class="seg" id="seg"></div><div id="specs"></div><div id="ovl"></div>';
+  function openNotes(i){
+    pv=(i===''||i==null)?'':team[+i].name;ft='all';sp='all';
+    var n=visits.filter(function(x){return !pv||x.d.name===pv}).length;
+    $('noteCol').innerHTML='<div class="sh o" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>'+(pv?'Notes from '+esc(pv)+' ('+n+')':'All provider notes ('+visits.length+')')+'</span><button id="ovBack" type="button" class="btn2" style="margin:0;padding:6px 14px">Back to latest</button></div><div class="seg" id="seg"></div><div id="specs"></div><div id="ovl"></div>';
     drawOv();
-    $('ovBack').onclick=function(){$('noteCol').innerHTML=latestHtml;wirePeek()};
-  })}
+    if(pv){$('seg').style.display='none';$('specs').style.display='none'}
+    $('ovBack').onclick=function(){pv='';$('noteCol').innerHTML=latestHtml;wirePeek()};
+    $('noteCol').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function wirePeek(){var pk=$('peek');if(pk)pk.addEventListener('click',function(){openNotes('')})}
   wirePeek();
+  document.querySelectorAll('[data-nt]').forEach(function(bn){bn.onclick=function(){openNotes(bn.getAttribute('data-nt'))}});
+  document.querySelectorAll('[data-pv]').forEach(function(bn){bn.onclick=function(){var p=$('pf'+bn.getAttribute('data-pv'));p.classList.toggle('hide');bn.textContent=p.classList.contains('hide')?'View provider':'Hide provider'}});
   // highlight the section being read
   var links=document.querySelectorAll('#nav .nv');
   function setOn(id){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('data-s')===id)})}
@@ -362,7 +375,7 @@ function render(){
     var mc=medsClean(),ph=who.prof==='Physician';
     var h2='<h2>Review before sending</h2><p class="sub" style="margin:0">Check everything. '+esc(nm)+' sees exactly this.</p>'
      +'<div class="rl">Your name</div><div class="rv"><b>'+esc(fullName())+'</b></div>'
-     +'<div class="rl">Profession</div><div class="rv">'+esc(who.prof)+(who.prc?'  |  PRC '+esc(who.prc):'')+'</div>'
+     +'<div class="rl">I am a</div><div class="rv">'+esc(who.prof==='Physician'?'Medical Doctor (MD)':who.prof)+(who.prc?'  |  PRC '+esc(who.prc):'')+'</div>'
      +'<div class="rl">Specialty</div><div class="rv">'+esc(who.spec||'Not given')+'</div>'
      +(who.sub?'<div class="rl">Subspecialty</div><div class="rv">'+esc(who.sub)+'</div>':(ph?'<div class="rl">Do you have a subspecialty? (optional)</div><input type="text" id="rvSub" maxlength="80" placeholder="Leave blank if none">':''))
      +'<div class="rl">Title</div><div class="rv">'+esc($('nTitle').value||'Note')+'</div>'
