@@ -300,8 +300,11 @@ function render(){
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function sxLine(x){return esc(x.procedure)+' ('+(x.surgery_month?MON[x.surgery_month-1]+' ':'')+esc(x.surgery_year)+(x.hospital?', '+esc(x.hospital):'')+')'}
   function vxLine(x){return esc(x.vaccine_name)+(x.dose_label?' '+esc(x.dose_label):'')+(x.given_on?' ('+esc(String(x.given_on).slice(0,10))+')':'')}
-  if(cur.length||past.length||sx.length||vx.length){hist='<dl class="kv">'+(cur.length?'<dt>Conditions</dt><dd>'+cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(past.length?'<dt>Past</dt><dd>'+past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(sx.length?'<dt>Surgeries</dt><dd>'+sx.map(sxLine).join(', ')+'</dd>':'')+(vx.length?'<dt>Vaccines</dt><dd>'+vx.map(vxLine).join(', ')+'</dd>':'')+'</dl>'}
-  else hist='<div class="empty">None shared.</div>';
+  var none='<span class="sub">None shared</span>';
+  hist='<dl class="kv"><dt>Conditions</dt><dd>'+(cur.length?cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', '):none)+'</dd>'
+   +'<dt>Past</dt><dd>'+(past.length?past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', '):none)+'</dd>'
+   +'<dt>Surgeries</dt><dd>'+(sx.length?sx.map(sxLine).join(', '):none)+'</dd>'
+   +'<dt>Vaccines</dt><dd>'+(vx.length?vx.map(vxLine).join(', '):none)+'</dd></dl>';
 
   var teamHtml=team.length?team.map(function(d,i){
     var v=d.visits&&d.visits[0];
