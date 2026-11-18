@@ -6,7 +6,7 @@
 *{box-sizing:border-box}
 html{zoom:.9}
 body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 "DM Sans",system-ui,sans-serif}
-h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}button,input,select,textarea{font:inherit}.hide{display:none!important}.sub{color:var(--mu);font-size:13px}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}button,input,select,textarea{font:inherit}.hide{display:none!important}.pkr{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.pk{padding:8px 13px;border-radius:999px;border:1px solid #D9D2C3;background:#fff;color:#4F5048;font-size:13px;font-weight:600;cursor:pointer}.pk.on{border-color:#C4611A;background:#FBF1E8;color:#383A33}.sub{color:var(--mu);font-size:13px}
 :focus-visible{outline:2.5px solid var(--t);outline-offset:2px}
 .app{display:grid;grid-template-columns:236px 1fr;gap:14px;padding:14px;max-width:1500px;margin:0 auto;align-items:start}
 .side{background:var(--card);border-radius:22px;box-shadow:var(--sh);padding:18px 14px 16px;position:sticky;top:14px}
@@ -170,6 +170,12 @@ var TIP='Note added by a shared link. This means this doctor is not on Bridgette
 var who={name:'',prof:'',prc:'',spec:'',sub:'',cred:''}, data=null;
 var LICENSED=['Physician','Nurse','Pharmacist','Nutritionist-Dietitian','Physical therapist','Psychologist'];
 function $(id){return document.getElementById(id)}
+var pickCond=null,pickStat='';
+function getDx(){if(pickCond==='o')return $('nDx')?$('nDx').value.trim():'';if(pickCond!==null&&window.__conds&&window.__conds[pickCond])return window.__conds[pickCond].name;return''}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.pk');if(!b)return;
+ var grp=b.parentNode;grp.querySelectorAll('.pk').forEach(function(x){x.classList.remove('on')});
+ if(grp.id==='pkCond'){var i=b.getAttribute('data-i');if(String(pickCond)===i){pickCond=null}else{pickCond=i==='o'?'o':+i;b.classList.add('on')}if($('nDx'))$('nDx').classList.toggle('hide',pickCond!=='o')}
+ else if(grp.id==='pkStat'){var v=b.getAttribute('data-s');if(pickStat===v){pickStat=''}else{pickStat=v;b.classList.add('on')}}});
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function rpc(fn,body){return fetch(URL_+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json()})}
 function pd(d){if(!d)return null;var x=new Date(String(d).length<=10&&/^\d{4}-/.test(d)?d+'T00:00:00':d);return isNaN(x)?null:x}
@@ -268,7 +274,7 @@ function notesSent(){
 
 function render(){
   var p=data.patient||{},inc=data.includes||{},snap=data.snapshot||{},nm=first(p.name),age=p.dob?ageOf(p.dob):'';
-  var team=(snap.care_team||[]).slice(),conds=snap.conditions||[];
+  var team=(snap.care_team||[]).slice(),conds=snap.conditions||[];window.__conds=conds;
   $('gate').classList.add('hide');$('app').classList.remove('hide');
   $('sideName').textContent=nm+"'s record";
   $('sideExp').textContent=data.expires_at?('Open until '+fmt(data.expires_at)+'.'):'';
@@ -335,7 +341,7 @@ function render(){
 
   h+='<div class="c oT" id="note"><div class="ch"><h3>Write a note to '+esc(nm)+'</h3><span class="sub">'+esc(nm)+' reviews it first. It joins their record only if they accept it.</span></div>'
    +'<form id="nForm"><div class="nrow"><div><label for="nTitle" style="margin-top:0">Title</label><input type="text" id="nTitle" maxlength="120" placeholder="Follow up visit">'
-   +(licensed?'<label for="nDx">Diagnosis (optional)</label><input type="text" id="nDx" maxlength="200">':'<p class="fine" style="margin-top:10px">Diagnoses can only be added by a licensed provider with a PRC number.</p>')+'</div>'
+   +(licensed?'<label>Condition you are treating <span class="sub">(optional)</span></label><div class="pkr" id="pkCond">'+conds.map(function(c,i){return '<button type="button" class="pk" data-i="'+i+'">'+esc(c.name)+'</button>'}).join('')+'<button type="button" class="pk" data-i="o">Another condition</button></div><input type="text" id="nDx" maxlength="200" placeholder="Condition name" class="hide" style="margin-top:8px"><label>Status <span class="sub">(optional)</span></label><div class="pkr" id="pkStat">'+['Managing','Improving','Stable','Worsening','Resolved'].map(function(x){return '<button type="button" class="pk" data-s="'+x+'">'+x+'</button>'}).join('')+'</div>':'<p class="fine" style="margin-top:10px">Diagnoses can only be added by a licensed provider with a PRC number.</p>')+'</div>'
    +'<div><label for="nBody" style="margin-top:0">Note</label><textarea id="nBody" required maxlength="4000" placeholder="What you found and advised."></textarea></div></div>'
    +'<label style="margin-top:18px">Medications advised (optional)</label><p class="fine" style="margin:2px 0 0">Medicine, dose, how often and until when. '+esc(nm)+' sees these as medications from you.</p><div id="medList"></div><button type="button" class="addb" id="medAdd">Add a medication</button>'
    +'<label style="margin-top:18px">Attach files or photos (optional)</label><p class="fine" style="margin:2px 0 0">Photos of a prescription you gave in person, results, or documents. Name each file. If '+esc(nm)+' accepts, they are saved to their vault.</p><div id="fileList"></div>'
@@ -418,7 +424,7 @@ function render(){
      +'<div class="rl">Specialty</div><div class="rv">'+esc(who.spec||'Not given')+'</div>'
      +(who.sub?'<div class="rl">Subspecialty</div><div class="rv">'+esc(who.sub)+'</div>':(ph?'<div class="rl">Do you have a subspecialty? (optional)</div><input type="text" id="rvSub" maxlength="80" placeholder="Leave blank if none">':''))
      +'<div class="rl">Title</div><div class="rv">'+esc($('nTitle').value||'Note')+'</div>'
-     +($('nDx')&&$('nDx').value.trim()?'<div class="rl">Diagnosis</div><div class="rv">'+esc($('nDx').value)+'</div>':'')
+     +(getDx()?'<div class="rl">Condition</div><div class="rv">'+esc(getDx())+(pickStat?', '+esc(pickStat):'')+'</div>':'')
      +'<div class="rl">Note</div><div class="rv">'+esc($('nBody').value)+'</div>'
      +(mc.length?'<div class="rl">Medications advised</div>'+mc.map(function(m){return '<div class="rv">'+esc([m.name,m.dose,m.frequency,m.until?'until '+m.until:''].filter(Boolean).join(', '))+'</div>'}).join(''):'')
      +(files.length?'<div class="rl">Files that will be saved to the patient\'s vault if accepted</div>'+files.map(function(f){return '<div class="rv">'+esc(f.label.trim())+'  <span class="sub">'+esc(f.kind)+'</span></div>'}).join(''):'')
@@ -438,10 +444,10 @@ function render(){
     var sb=$('rvSub');if(sb)who.sub=sb.value.trim();
     var title=$('nTitle').value;$('rvSend').disabled=true;$('rvBack').disabled=true;$('rvMsg').className='sub';$('rvMsg').textContent='Sending...';
     uploadAll().then(function(att){
-      return rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:$('nDx')?$('nDx').value:null,p_specialty:who.spec||null,p_credentials:who.cred||null,p_subspecialty:who.sub||null,p_meds:medsClean(),p_attachments:att}).then(function(r){
+      return rpc('submit_share_note',{p_token:token,p_name:who.name,p_profession:who.prof,p_prc:who.prc||null,p_title:title,p_note:$('nBody').value,p_diagnosis:getDx()||null,p_condition_status:pickStat||null,p_specialty:who.spec||null,p_credentials:who.cred||null,p_subspecialty:who.sub||null,p_meds:medsClean(),p_attachments:att}).then(function(r){
         if(r&&r.ok){
           data.notes=(data.notes||[]);data.notes.unshift({title:title||'Note',status:'pending',created_at:new Date().toISOString()});$('sent').innerHTML=notesSent();
-          $('nBody').value='';$('nTitle').value='';if($('nDx'))$('nDx').value='';files=[];meds=[];drawFiles();drawMeds();drawYou(false);
+          $('nBody').value='';$('nTitle').value='';if($('nDx'))$('nDx').value='';pickCond=null;pickStat='';document.querySelectorAll('.pk.on').forEach(function(x){x.classList.remove('on')});if($('nDx'))$('nDx').classList.add('hide');files=[];meds=[];drawFiles();drawMeds();drawYou(false);
           showPromo();
         }else failSend('We could not send the note. The link may have expired or been stopped, or a PRC number is missing.');
       });
