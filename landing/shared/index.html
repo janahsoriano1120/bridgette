@@ -296,7 +296,11 @@ function render(){
 
   var hist='';
   var cur=conds.filter(function(c){return c.status!=='past'}),past=conds.filter(function(c){return c.status==='past'});
-  if(cur.length||past.length){hist='<dl class="kv">'+(cur.length?'<dt>Conditions</dt><dd>'+cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(past.length?'<dt>Past</dt><dd>'+past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+'</dl>'}
+  var sx=snap.surgeries||[],vx=snap.vaccines||[];
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function sxLine(x){return esc(x.procedure)+' ('+(x.surgery_month?MON[x.surgery_month-1]+' ':'')+esc(x.surgery_year)+(x.hospital?', '+esc(x.hospital):'')+')'}
+  function vxLine(x){return esc(x.vaccine_name)+(x.dose_label?' '+esc(x.dose_label):'')+(x.given_on?' ('+esc(String(x.given_on).slice(0,10))+')':'')}
+  if(cur.length||past.length||sx.length||vx.length){hist='<dl class="kv">'+(cur.length?'<dt>Conditions</dt><dd>'+cur.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(past.length?'<dt>Past</dt><dd>'+past.map(function(c){return esc(c.name)+(c.year?' ('+esc(c.year)+')':'')}).join(', ')+'</dd>':'')+(sx.length?'<dt>Surgeries</dt><dd>'+sx.map(sxLine).join(', ')+'</dd>':'')+(vx.length?'<dt>Vaccines</dt><dd>'+vx.map(vxLine).join(', ')+'</dd>':'')+'</dl>'}
   else hist='<div class="empty">None shared.</div>';
 
   var teamHtml=team.length?team.map(function(d,i){
@@ -332,7 +336,7 @@ function render(){
   }
 
   var sec=[['note','Write a note']];
-  if(inc.meds||team.length||conds.length)sec.push(['meds','Medications and history']);
+  if(inc.meds||team.length||conds.length||(snap.surgeries||[]).length||(snap.vaccines||[]).length)sec.push(['meds','Medications and history']);
   if(team.length)sec.push(['team','Care team']);
   if(inc.labs)sec.push(['labs','Lab results']);if(inc.lifestyle)sec.push(['life','Lifestyle']);if((data.records||[]).length)sec.push(['recs','Uploaded records']);
   $('nav').innerHTML=sec.map(function(s,i){return '<a class="nv'+(i?'':' on')+'" data-s="'+s[0]+'" href="#'+s[0]+'">'+s[1]+'</a>'}).join('');
@@ -350,7 +354,7 @@ function render(){
    +'<input type="file" id="fileIn" class="hide" accept="image/*,application/pdf" multiple><input type="file" id="camIn" class="hide" accept="image/*" capture="environment"><div id="fileErr" class="err"></div>'
    +'<button class="btn" id="nBtn" type="submit">Review note</button> <span class="fine">You will review your name, note and files before it is sent.</span><div id="nMsg" class="hide"></div></form><div id="sent">'+notesSent()+'</div></div>';
 
-  if(inc.meds||team.length||conds.length){
+  if(inc.meds||team.length||conds.length||(snap.surgeries||[]).length||(snap.vaccines||[]).length){
     h+='<div class="c oT" id="meds"><div class="ch"><h3>Medications, history and care team</h3></div>'
      +'<div class="m3"><div><div class="sh o">History</div>'+hist+'</div>'
      +'<div><div class="sh g">Prescribed meds</div>'+(rx.length?rx.map(medRow).join(''):'<div class="empty">None shared.</div>')+'</div>'
