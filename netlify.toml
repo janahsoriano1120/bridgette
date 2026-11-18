@@ -7,3 +7,16 @@
   from = "/shared/*"
   to = "/shared/index.html"
   status = 200
+
+# Private share links: share.bridgette.com.ph/<token> opens the doctor page.
+# Real files (logo, photos, terms) still load; everything else goes to the page.
+[[redirects]]
+  from = "https://share.bridgette.com.ph/*"
+  to = "/shared/index.html"
+  status = 200
+
+# Provider sign-up page.
+[[redirects]]
+  from = "https://provider.bridgette.com.ph/"
+  to = "/provider-signup/index.html"
+  status = 200
