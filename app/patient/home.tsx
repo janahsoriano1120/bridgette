@@ -11,8 +11,11 @@ import {
   RefreshControl,
   StatusBar,
   ImageBackground,
+  Image,
   Alert,
-} from 'react-native'
+  LayoutAnimation,
+  Platform,
+  UIManager, PanResponder } from 'react-native'
 import { BlurView } from 'expo-blur'
 import ReAnimated, { FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withTiming, cancelAnimation, Easing, runOnJS } from 'react-native-reanimated'
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -20,20 +23,46 @@ import Svg, { Path, Circle, Text as SvgText, Defs, LinearGradient, Stop } from '
 import { useAuthStore } from '../../store/authStore'
 import { supabase } from '../../lib/supabase'
 import Icon from '../../components/Icon'
+import { KidMed, KidLog, slotsFor, takenKeys, scheduledToday, dueSlots } from '../../lib/kidMeds'
+import { ageText, daysOld, parseISO as parseKidISO } from '../../lib/kidsSchedule'
+import { signedUrl } from '../../lib/shareData'
 import TrendsScreen from './trends'
-import LifestyleScreen from './lifestyle'
+import LifestyleScreen, { LifestyleStart } from './lifestyle'
 import MedicalRecordsScreen from './medicalrecords'
 import ShareLinkScreen from './sharelink'
+import DocNoteScreen from './docnote'
+import { registerPushToken } from '../../lib/pushToken'
+import * as ExpoNotifications from 'expo-notifications'
 import SupplementsScreen from './supplements'
 import PatientNotificationsScreen from './notifications'
 import CaregivingScreen from './caregiving'
+import ProfileScreen from './profile'
+import SettingsScreen from './settings'
+import CommunityScreen from './community'
+import VaccinesScreen from './vaccines'
+import PetsScreen from './pets'
+import LabelReaderScreen from './labelreader'
+import GroceryScreen from './grocery'
 import DoctorMessages from '../../components/DoctorMessages'
+import NotificationsPopover from '../../components/NotificationsPopover'
+import ScreenBackground from '../../components/ScreenBackground'
+import { getRecentNote, getFollowUps, syncSharedNotes, providerFullName } from './sharelink'
 import CaregiversScreen from './caregivers'
 import PatientTabBar from '../../components/PatientTabBar'
-import MedicalHistoryScreen from './medicalhistory'
+import EdgeFades from '../../components/EdgeFades'
+import { EmbeddedCtx, ChromeInsetCtx, subBack, pendingProfile } from '../../lib/embedded'
+import SwipeBack from '../../components/SwipeBack'
+import PatientTopBar from '../../components/PatientTopBar'
+import MedicalHubScreen from './medicalhub'
+import AllergiesScreen from './allergies'
+import KidsScreen from './kids'
+import ActivityLogScreen from './activitylog'
+import { logEvent } from '../../lib/activityLog'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-const DRAWER_WIDTH = 220
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) UIManager.setLayoutAnimationEnabledExperimental(true)
+
+const DRAWER_WIDTH = 290
 
 type Period = 'daily' | 'weekly' | 'annual'
 
@@ -52,6 +81,9 @@ const MOCK_UNREAD_COUNT = 2
 
 const DASHBOARD_CARDS: { key: string; label: string }[] = [
   { key: 'summary', label: 'Daily Summary' },
+  { key: 'kids', label: 'Bridgette for Kids' },
+  { key: 'careteam', label: 'Care Team' },
+  { key: 'appointments', label: 'Appointments' },
   { key: 'trends', label: 'Trends' },
   { key: 'foods', label: 'Foods' },
   { key: 'supplements', label: 'Supplements & Medicine' },
@@ -71,7 +103,14 @@ function to12h(hhmm: string) {
 }
 
 // Frosted glass card: blur over the photo, plus a cream tint so text stays crisp.
-function FrostedCard({ children, style }: { children: React.ReactNode; style?: any }) {
+function FrostedCard({ children, style, solid = true }: { children: React.ReactNode; style?: any; solid?: boolean }) {
+  if (solid) {
+    return (
+      <View style={[styles.cardBlur, { backgroundColor: '#FFFFFF' }, style]}>
+        <View style={{ padding: 16 }}>{children}</View>
+      </View>
+    )
+  }
   return (
     <BlurView intensity={32} tint="light" style={[styles.cardBlur, style]}>
       <View style={styles.cardTint}>{children}</View>
@@ -216,7 +255,43 @@ export default function PatientHome() {
   const session = useAuthStore((state) => state.session)
   const profile = useAuthStore((state) => state.profile)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [activePage, setActivePage] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle' | 'share' | 'notifications' | 'supplements' | 'caregivers' | 'caregiving' | 'messages' | 'history'>('dashboard')
+  const [histTab, setHistTab] = useState<'all' | 'surgery' | 'records'>('all')
+  const [quickOpen, setQuickOpen] = useState(false)
+  const [lifestyleStart, setLifestyleStart] = useState<LifestyleStart>(null)
+  const [savedLabel, setSavedLabel] = useState<any>(null)
+  const [activePage, setActivePageRaw] = useState<'dashboard' | 'records' | 'trends' | 'lifestyle' | 'share' | 'notifications' | 'supplements' | 'caregivers' | 'caregiving' | 'messages' | 'history' | 'profile' | 'settings' | 'community' | 'vaccines' | 'pets' | 'labelreader' | 'grocery' | 'allergies' | 'kids' | 'activitylog' | 'docnote'>('dashboard')
+  // Back goes to the page you came from, not always the dashboard.
+  const pageRef = useRef<typeof activePage>('dashboard')
+  pageRef.current = activePage
+  const navStack = useRef<(typeof activePage)[]>([])
+  const skipSub = useRef(false)
+  function setActivePage(next: typeof activePage) {
+    const cur = pageRef.current
+    if (next === cur) return
+    if (next === 'dashboard') navStack.current = []
+    else if (cur !== 'dashboard') navStack.current.push(cur)
+    if (cur === 'share') skipSub.current = false
+    pageRef.current = next
+    setActivePageRaw(next)
+  }
+  function goBack() {
+    const prev = navStack.current.pop() || 'dashboard'
+    if (pageRef.current === 'share') skipSub.current = false
+    pageRef.current = prev
+    setActivePageRaw(prev)
+  }
+  function goBackTo(target: typeof activePage) {
+    const i = navStack.current.lastIndexOf(target)
+    if (i >= 0) navStack.current = navStack.current.slice(0, i)
+    pageRef.current = target
+    setActivePageRaw(target)
+  }
+  function backSub() {
+    if (pageRef.current === 'share' && skipSub.current) { goBack(); return }
+    if (!(subBack.current && subBack.current())) goBack()
+  }
+  const [pendingNotes, setPendingNotes] = useState<any[]>([])
+  const [reviewNote, setReviewNote] = useState<{ note: any; from: string } | null>(null)
   const [threadOpen, setThreadOpen] = useState(false)
   const [period, setPeriod] = useState<Period>('daily')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
@@ -224,6 +299,7 @@ export default function PatientHome() {
   const [selectedTest, setSelectedTest] = useState('Glucose (Fasting)')
   const [testPickerOpen, setTestPickerOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(MOCK_UNREAD_COUNT)
+  const [msgNotifOpen, setMsgNotifOpen] = useState(false)
   const [caregiverInvites, setCaregiverInvites] = useState<{ link_id: string; patient_email: string; tier: string; can_chat_providers: boolean }[]>([])
   const [order, setOrder] = useState<string[]>(DEFAULT_ORDER)
   const [editMode, setEditMode] = useState(false)
@@ -259,10 +335,44 @@ export default function PatientHome() {
   const [hasQualityData, setHasQualityData] = useState(false)
   const [supplements, setSupplements] = useState<SupplementDef[]>([])
   const [suppTaken, setSuppTaken] = useState<Record<string, string>>({}) // supplement_id -> checkin id
+  // Children's medicines and supplements for today, ticked off here and on the Kids page.
+  const [kidsTitle, setKidsTitle] = useState('Bridgette for Kids')
+  const [kidList, setKidList] = useState<{ id: string; name: string; birth_date?: string; photo_path?: string | null }[]>([])
+  const [kidPhotos, setKidPhotos] = useState<Record<string, string>>({})
+  const [kidMeds, setKidMeds] = useState<KidMed[]>([])
+  const [kidLogs, setKidLogs] = useState<KidLog[]>([])
   const [activityData, setActivityData] = useState<{ label: string; value: number }[]>([])
   const [sleepData, setSleepData] = useState<{ label: string, value: number }[]>([])
   const [trendData, setTrendData] = useState<{ label: string, value: number }[]>([])
   const [summary, setSummary] = useState('')
+  const [openGroups, setOpenGroups] = useState<string[]>([])
+  const [, setNoteTick] = useState(0)
+  useEffect(() => {
+    const uid = session?.user.id
+    if (!uid) return
+    syncSharedNotes(uid).then(() => setNoteTick((n) => n + 1))
+    supabase.from('share_notes').select('*').eq('patient_id', uid).eq('status', 'pending').order('created_at', { ascending: false }).then(({ data }) => {
+      setPendingNotes(data || [])
+      if (data && data.length && activePage !== 'notifications') setUnreadCount((u) => Math.max(u, data.length))
+    })
+  }, [session?.user.id, activePage])
+  useEffect(() => {
+    const uid = session?.user.id
+    if (!uid) return
+    registerPushToken(uid)
+    let sub: any
+    try {
+      sub = ExpoNotifications.addNotificationResponseReceivedListener(async (resp: any) => {
+        const d = resp?.notification?.request?.content?.data
+        if (d?.type !== 'share_note' || !d?.note_id) return
+        const { data } = await supabase.from('share_notes').select('*').eq('id', d.note_id).eq('status', 'pending').maybeSingle()
+        if (data) { setReviewNote({ note: data, from: 'dashboard' }); setActivePage('docnote') }
+      })
+    } catch {}
+    return () => { try { sub && sub.remove() } catch {} }
+  }, [session?.user.id])
+  const recentNote = getRecentNote()
+  const followUps = getFollowUps()
 
   useEffect(() => {
     if (session?.user.id) fetchDashboardData()
@@ -297,7 +407,26 @@ export default function PatientHome() {
     const saved: string[] = (data?.dashboard_order || []).filter((k: string) => DEFAULT_ORDER.includes(k))
     if (saved.length) {
       const missing = DEFAULT_ORDER.filter((k) => !saved.includes(k))
-      setOrder([...saved, ...missing])
+      let merged = [...saved, ...missing]
+      if (missing.includes('kids')) {
+        merged = merged.filter((k) => k !== 'kids')
+        const at = merged.indexOf('summary')
+        merged.splice(at >= 0 ? at + 1 : 0, 0, 'kids')
+      }
+      // Newly added Care Team card: show it near the top instead of the very bottom
+      if (missing.includes('careteam')) {
+        const without = merged.filter((k) => k !== 'careteam' && k !== 'appointments')
+        const at = without.indexOf('summary')
+        without.splice(at >= 0 ? at + 1 : 0, 0, 'careteam', 'appointments')
+        setOrder(without)
+      } else if (missing.includes('appointments')) {
+        const without = merged.filter((k) => k !== 'appointments')
+        const at = without.indexOf('careteam')
+        without.splice(at >= 0 ? at + 1 : 0, 0, 'appointments')
+        setOrder(without)
+      } else {
+        setOrder(merged)
+      }
     }
     if (data?.card_sizes) setCardSizes(data.card_sizes)
   }
@@ -317,6 +446,7 @@ export default function PatientHome() {
       fetchSleep(userId),
       fetchTrends(userId),
       fetchSupplements(userId),
+      fetchKidMeds(userId),
       fetchActivity(userId),
       buildDailySummary(userId),
     ])
@@ -406,6 +536,41 @@ export default function PatientHome() {
     const map: Record<string, string> = {}
     if (checkRes.data) checkRes.data.forEach((c: any) => { map[c.supplement_id] = c.id })
     setSuppTaken(map)
+  }
+
+  function localToday() {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  async function fetchKidMeds(userId: string) {
+    const k = await supabase.from('kids').select('id, name, birth_date, photo_path').eq('parent_id', userId).order('created_at', { ascending: true })
+    if (k.error || !k.data || k.data.length === 0) { setKidList([]); setKidMeds([]); setKidLogs([]); return }
+    const [m, l] = await Promise.all([
+      supabase.from('kid_meds').select('*').eq('parent_id', userId).eq('active', true),
+      supabase.from('kid_med_logs').select('*').eq('parent_id', userId).eq('log_date', localToday()),
+    ])
+    setKidList(k.data as any)
+    ;(async () => {
+      const next: Record<string, string> = {}
+      for (const x of (k.data as any[])) { if (x.photo_path) { const u = await signedUrl(x.photo_path); if (u) next[x.id] = u } }
+      setKidPhotos(next)
+    })()
+    setKidMeds(m.error ? [] : ((m.data as KidMed[]) || []))
+    setKidLogs(l.error ? [] : ((l.data as KidLog[]) || []))
+  }
+  async function toggleKidSlot(m: KidMed, key: string) {
+    const userId = session?.user.id
+    if (!userId) return
+    const today = localToday()
+    const existing = kidLogs.find((x) => x.med_id === m.id && x.log_date === today && x.slot === key)
+    if (existing) {
+      setKidLogs((all) => all.filter((x) => x.id !== existing.id))
+      await supabase.from('kid_med_logs').delete().eq('id', existing.id)
+      logEvent(userId, { kid_id: m.kid_id, kid_name: kidList.find((k) => k.id === m.kid_id)?.name || null, category: 'dose', action: 'unmarked', title: `${m.name} unmarked` })
+    } else {
+      const { data, error } = await supabase.from('kid_med_logs').insert({ kid_id: m.kid_id, med_id: m.id, parent_id: userId, med_name: m.name, kind: m.kind, slot: key, log_date: today }).select().single()
+      if (!error && data) { setKidLogs((all) => [data as KidLog, ...all]); logEvent(userId, { kid_id: m.kid_id, kid_name: kidList.find((k) => k.id === m.kid_id)?.name || null, category: 'dose', action: 'given', title: `${m.name} given` }) }
+    }
   }
 
   async function fetchActivity(userId: string) {
@@ -498,6 +663,9 @@ export default function PatientHome() {
     }
   }
 
+  // Coming back to the dashboard from the Kids page picks up any doses that were ticked off there.
+  useEffect(() => { if (activePage === 'dashboard' && session?.user.id) fetchKidMeds(session.user.id) }, [activePage])
+
   function openDrawer() {
     setDrawerOpen(true)
     Animated.timing(drawerAnim, { toValue: 0, duration: 250, useNativeDriver: true }).start()
@@ -507,6 +675,41 @@ export default function PatientHome() {
     Animated.timing(drawerAnim, { toValue: -DRAWER_WIDTH, duration: 200, useNativeDriver: true }).start(() => setDrawerOpen(false))
   }
 
+
+  // Swipe in from the left edge to pull the menu open, swipe left on it to close.
+  const edgePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_e, g) => g.x0 < 40 && g.dx > 10 && Math.abs(g.dx) > Math.abs(g.dy) * 1.2,
+      onPanResponderGrant: () => { drawerAnim.stopAnimation(); setDrawerOpen(true) },
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: (_e, g) => { drawerAnim.setValue(Math.min(0, -DRAWER_WIDTH + g.dx)) },
+      onPanResponderRelease: (_e, g) => {
+        if (g.dx > DRAWER_WIDTH * 0.35 || g.vx > 0.5) {
+          Animated.timing(drawerAnim, { toValue: 0, duration: 180, useNativeDriver: true }).start()
+        } else {
+          Animated.timing(drawerAnim, { toValue: -DRAWER_WIDTH, duration: 160, useNativeDriver: true }).start(() => setDrawerOpen(false))
+        }
+      },
+      onPanResponderTerminate: () => { Animated.timing(drawerAnim, { toValue: -DRAWER_WIDTH, duration: 160, useNativeDriver: true }).start(() => setDrawerOpen(false)) },
+    })
+  ).current
+
+  const drawerPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_e, g) => g.dx < -8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.2,
+      onPanResponderGrant: () => { drawerAnim.stopAnimation() },
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: (_e, g) => { drawerAnim.setValue(Math.max(-DRAWER_WIDTH, Math.min(0, g.dx))) },
+      onPanResponderRelease: (_e, g) => {
+        if (g.dx < -DRAWER_WIDTH * 0.3 || g.vx < -0.5) {
+          Animated.timing(drawerAnim, { toValue: -DRAWER_WIDTH, duration: 160, useNativeDriver: true }).start(() => setDrawerOpen(false))
+        } else {
+          Animated.timing(drawerAnim, { toValue: 0, duration: 160, useNativeDriver: true }).start()
+        }
+      },
+    })
+  ).current
+
   function navigate(page: typeof activePage) {
     closeDrawer()
     setTimeout(() => setActivePage(page), 200)
@@ -515,6 +718,8 @@ export default function PatientHome() {
   function goToTab(page: typeof activePage) {
     if (drawerOpen) closeDrawer()
     setThreadOpen(false)
+    if (page === 'labelreader') setSavedLabel(null)
+    navStack.current = []
     setActivePage(page)
   }
 
@@ -563,7 +768,7 @@ export default function PatientHome() {
             )
           })}
           <SvgText x={cx} y={cy - 2} textAnchor="middle" fontSize="11" fill="#3D3229" fontWeight="bold">Today</SvgText>
-          <SvgText x={cx} y={cy + 11} textAnchor="middle" fontSize="8" fill="#8A7E72">Food Quality</SvgText>
+          <SvgText x={cx} y={cy + 11} textAnchor="middle" fontSize="8" fill="#4F5048">Food Quality</SvgText>
         </Svg>
         <View style={styles.ringLegend}>
           {rings.map((ring, i) => (
@@ -609,7 +814,7 @@ export default function PatientHome() {
           <View key={i}>
             <Circle cx={toX(i)} cy={toY(d.value)} r={4} fill="#fff" stroke={color} strokeWidth="2" />
             <SvgText x={toX(i)} y={toY(d.value) - 8} textAnchor="middle" fontSize="9" fontWeight="bold" fill={color}>{d.value}</SvgText>
-            <SvgText x={toX(i)} y={chartH - 4} textAnchor="middle" fontSize="8" fill="#8A7E72">{d.label}</SvgText>
+            <SvgText x={toX(i)} y={chartH - 4} textAnchor="middle" fontSize="8" fill="#4F5048">{d.label}</SvgText>
           </View>
         ))}
       </Svg>
@@ -804,6 +1009,12 @@ export default function PatientHome() {
     dragScale.value = withTiming(1, { duration: 160 })
   }
 
+  function dueSlotsFor(kidId: string) {
+    const names: string[] = []
+    for (const m of kidMeds.filter((x) => x.kid_id === kidId)) { if (dueSlots(m, kidLogs).length > 0) names.push(m.name) }
+    return names
+  }
+
   function renderCard(key: string, cw: number) {
     switch (key) {
       case 'summary':
@@ -818,6 +1029,133 @@ export default function PatientHome() {
           </FrostedCard>
         </ReAnimated.View>
         )
+      case 'careteam': {
+        const n = recentNote
+        const docName = n?.doctorName || ''
+        const initials = docName.replace(/^(dr\.?|doc)\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w: string) => w[0]?.toUpperCase()).join('') || 'D'
+        const snippet = (n?.snippet || '').toString().trim()
+        const when = n?.date || ''
+        return (
+<ReAnimated.View key="careteam" entering={FadeInDown.delay(40)}>
+          <FrostedCard solid>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Care Team</Text>
+              <TouchableOpacity onPress={() => setActivePage('share')} style={styles.addRow}>
+                <Text style={styles.cardLinkText}>Open</Text>
+                <Icon name="forward" size={15} color="#2F4A1E" />
+              </TouchableOpacity>
+            </View>
+            {n ? (
+              <TouchableOpacity activeOpacity={0.85} onPress={() => setActivePage('share')} style={styles.noteBox}>
+                <View style={styles.noteTop}>
+                  <View style={styles.noteAvatar}>
+                    {n.photo ? <Image source={n.photo} style={styles.notePhoto} resizeMode="cover" /> : <Text style={styles.noteAvatarText}>{initials}</Text>}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.noteLabel}>Recent note</Text>
+                    <Text style={styles.noteDoctor} numberOfLines={1}>{docName}</Text>
+                    <Text style={styles.noteMeta} numberOfLines={1}>{[n.role, when].filter(Boolean).join('  |  ')}</Text>
+                  </View>
+                </View>
+                {!!snippet && <Text style={styles.noteSnippet} numberOfLines={3}>{snippet}</Text>}
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.noteBox}>
+                <Text style={styles.noteLabel}>Recent note</Text>
+                <Text style={styles.noteSnippet}>No notes from your doctors yet. When a doctor writes one, it shows up here.</Text>
+              </View>
+            )}
+            <View style={styles.careActions}>
+              <TouchableOpacity style={styles.careBtn} onPress={() => setActivePage('share')}>
+                <Text style={styles.careBtnText}>Open Care Team</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.careBtnGhost} onPress={() => setActivePage('share')}>
+                <Icon name="share" size={14} color="#2F4A1E" />
+                <Text style={styles.careBtnGhostText}>Share link</Text>
+              </TouchableOpacity>
+            </View>
+          </FrostedCard>
+        </ReAnimated.View>
+        )
+      }
+      case 'appointments': {
+        const next = followUps.slice(0, 3)
+        return (
+<ReAnimated.View key="appointments" entering={FadeInDown.delay(60)}>
+          <FrostedCard>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Appointments</Text>
+              <TouchableOpacity onPress={() => setActivePage('share')} style={styles.addRow}>
+                <Text style={styles.cardLinkText}>See all</Text>
+                <Icon name="forward" size={15} color="#2F4A1E" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.apptSub}>Follow ups your care team asked you to keep.</Text>
+            {next.length === 0 ? (
+              <View style={styles.noteBox}>
+                <Text style={styles.noteSnippet}>No follow ups yet. When a doctor sets one, it shows up here.</Text>
+              </View>
+            ) : next.map((f) => (
+              <TouchableOpacity key={f.doctorName} activeOpacity={0.85} onPress={() => setActivePage('share')} style={[styles.apptRow, f.overdue && styles.apptRowOverdue]} accessibilityRole="button" accessibilityLabel={`${f.when}, set by ${f.doctorName}`}>
+                <View style={[styles.apptDate, f.overdue && styles.apptDateOverdue]}>
+                  <Text style={[styles.apptMonth, f.overdue && { color: '#A4500F' }]}>{f.month}</Text>
+                  <Text style={[styles.apptDay, f.overdue && { color: '#A4500F' }]}>{f.day}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.noteDoctor} numberOfLines={1}>{f.doctorName}</Text>
+                  <Text style={styles.noteMeta} numberOfLines={1}>{f.role}</Text>
+                  <Text style={[styles.apptWhen, f.overdue && { color: '#A4500F' }]} numberOfLines={1}>{f.overdue ? `${f.when}. Message to reschedule` : f.when}</Text>
+                </View>
+                <Icon name="forward" size={16} color="#5B6650" />
+              </TouchableOpacity>
+            ))}
+          </FrostedCard>
+        </ReAnimated.View>
+        )
+      }
+      case 'kids': {
+        const turns = (bd: Date | null) => {
+          if (!bd) return null
+          const n = Math.round((new Date(bd.getFullYear() + 18, bd.getMonth(), bd.getDate()).getTime() - new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime()) / 86400000)
+          return n <= 60 ? (n <= 0 ? 'Turned 18' : n === 1 ? 'Turns 18 tomorrow' : `Turns 18 in ${n} days`) : null
+        }
+        return (
+<ReAnimated.View key="kids" entering={FadeInDown.delay(40)}>
+          <FrostedCard>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Bridgette for Kids</Text>
+              <TouchableOpacity onPress={() => setActivePage('kids')} style={styles.addRow}>
+                <Text style={styles.cardLinkText}>{kidList.length ? 'Open' : '+ Add a child'}</Text>
+              </TouchableOpacity>
+            </View>
+            {kidList.length === 0 ? (
+              <TouchableOpacity onPress={() => setActivePage('kids')} accessibilityRole="button">
+                <Text style={styles.cardSub}>Keep your child's vaccines, medicines and doctor visits in one place.</Text>
+              </TouchableOpacity>
+            ) : kidList.slice(0, 3).map((k) => {
+              const bd = parseKidISO(k.birth_date || null)
+              const due = dueSlotsFor(k.id)
+              const t18 = turns(bd)
+              return (
+                <TouchableOpacity key={k.id} style={styles.kidRow} onPress={() => setActivePage('kids')} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`Open ${k.name}`}>
+                  <View style={styles.kidAvatar}>
+                    {kidPhotos[k.id] ? <Image source={{ uri: kidPhotos[k.id] }} style={{ width: 40, height: 40 }} resizeMode="cover" /> : <Text style={styles.kidAvatarTxt}>{(k.name || '?').trim().charAt(0).toUpperCase()}</Text>}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.kidRowName}>{k.name}</Text>
+                    <Text style={styles.kidRowSub}>{bd ? ageText(daysOld(bd)) : ''}</Text>
+                    {due.length > 0 && <Text style={styles.kidRowDue}>Due now: {due.join(', ')}</Text>}
+                    {t18 && <Text style={styles.kidRowTurn}>{t18}</Text>}
+                  </View>
+                  <Icon name="forward" size={16} color="#4F5048" />
+                </TouchableOpacity>
+              )
+            })}
+            {kidList.length > 3 && <Text style={styles.cardSub}>+ {kidList.length - 3} more</Text>}
+          </FrostedCard>
+        </ReAnimated.View>
+        )
+      }
       case 'trends':
         return (
 <ReAnimated.View key="trends" entering={FadeInDown.delay(80)}>
@@ -828,7 +1166,7 @@ export default function PatientHome() {
                 <Text style={styles.testSelectorText} numberOfLines={1}>
                   {selectedTest.replace(' Cholesterol', '').replace(' (Fasting)', '')}
                 </Text>
-                <Icon name={testPickerOpen ? 'up' : 'down'} size={12} color="#8A7E72" />
+                <Icon name={testPickerOpen ? 'up' : 'down'} size={12} color="#4F5048" />
               </TouchableOpacity>
             </View>
             {testPickerOpen && (
@@ -857,7 +1195,7 @@ export default function PatientHome() {
           <FrostedCard>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Foods</Text>
-              <TouchableOpacity onPress={() => setActivePage('lifestyle')}>
+              <TouchableOpacity onPress={() => { setLifestyleStart(null); setActivePage('lifestyle') }}>
                 <Text style={styles.cardLinkText}>+ Add Meal Log</Text>
               </TouchableOpacity>
             </View>
@@ -880,7 +1218,7 @@ export default function PatientHome() {
                 <Text style={styles.cardLinkText}>Manage</Text>
               </TouchableOpacity>
             </View>
-            {supplements.length === 0 ? (
+            {supplements.length === 0 && !kidMeds.some((m) => scheduledToday(m) && slotsFor(m).length > 0) ? (
               <TouchableOpacity onPress={() => setActivePage('supplements')}>
                 <Text style={styles.noDataNote}>No supplements yet. Tap Manage to add your daily list.</Text>
               </TouchableOpacity>
@@ -904,6 +1242,30 @@ export default function PatientHome() {
                 )
               })
             )}
+            {kidList.map((k) => {
+              const rows = kidMeds.filter((m) => m.kid_id === k.id && scheduledToday(m)).flatMap((m) => slotsFor(m).map((sl) => ({ m, sl })))
+              if (rows.length === 0) return null
+              return (
+                <View key={k.id}>
+                  <Text style={styles.kidHead}>{k.name}</Text>
+                  {rows.map(({ m, sl }) => {
+                    const taken = takenKeys(kidLogs, m.id, localToday()).has(sl.key)
+                    return (
+                      <TouchableOpacity key={m.id + sl.key} style={styles.suppRow} onPress={() => toggleKidSlot(m, sl.key)} accessibilityRole="checkbox" accessibilityState={{ checked: taken }}>
+                        <Icon name="medication" size={18} color="#7B4B94" />
+                        <View style={styles.suppInfo}>
+                          <Text style={styles.suppName}>{m.name}</Text>
+                          <Text style={styles.suppTime}>{sl.label}{m.dosage ? `  |  ${m.dosage}` : ''}{m.kind === 'supplement' ? '  |  Supplement' : ''}</Text>
+                        </View>
+                        <View style={[styles.checkbox, taken && styles.checkboxOn]}>
+                          {taken && <Icon name="ok" size={13} color="#FFFFFF" />}
+                        </View>
+                      </TouchableOpacity>
+                    )
+                  })}
+                </View>
+              )
+            })}
           </FrostedCard>
         </ReAnimated.View>
         )
@@ -916,7 +1278,7 @@ export default function PatientHome() {
                 <Text style={styles.cardTitle}>Activity</Text>
                 <Icon name="trainer" size={16} color="#B5451B" />
               </View>
-              <TouchableOpacity onPress={() => setActivePage('lifestyle')}>
+              <TouchableOpacity onPress={() => { setLifestyleStart(null); setActivePage('lifestyle') }}>
                 <Text style={styles.cardLinkText}>+ Log Activity</Text>
               </TouchableOpacity>
             </View>
@@ -930,7 +1292,7 @@ export default function PatientHome() {
           <FrostedCard>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Sleep</Text>
-              <TouchableOpacity onPress={() => setActivePage('lifestyle')}>
+              <TouchableOpacity onPress={() => { setLifestyleStart(null); setActivePage('lifestyle') }}>
                 <Text style={styles.cardLinkText}>+ Add Sleep Log</Text>
               </TouchableOpacity>
             </View>
@@ -947,104 +1309,49 @@ export default function PatientHome() {
     }
   }
 
-  if (activePage === 'records') return (
-    <View style={styles.tabHost}>
-      <View style={{ flex: 1 }}><MedicalRecordsScreen onBack={() => setActivePage('dashboard')} /></View>
-      <PatientTabBar active="records" onNavigate={goToTab} unread={unreadCount} />
-    </View>
-  )
-  if (activePage === 'history') return <MedicalHistoryScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'trends') return <TrendsScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'lifestyle') return <LifestyleScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'share') return (
-    <View style={styles.tabHost}>
-      <View style={{ flex: 1 }}><ShareLinkScreen onBack={() => setActivePage('dashboard')} /></View>
-      <PatientTabBar active="share" onNavigate={goToTab} unread={unreadCount} />
-    </View>
-  )
-  if (activePage === 'supplements') return <SupplementsScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'caregivers') return <CaregiversScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'caregiving') return <CaregivingScreen onBack={() => setActivePage('dashboard')} />
-  if (activePage === 'messages') return (
-    <View style={styles.tabHost}>
-      <View style={{ flex: 1 }}>
-        <DoctorMessages
-          patientId={session?.user.id || ''}
-          myId={session?.user.id || ''}
-          myRole="patient"
-          myName={profile?.full_name || session?.user.email || 'You'}
-          accent="#5C7340"
-          headerTitle="Messages"
-          onBack={() => setActivePage('dashboard')}
-          onThreadActiveChange={setThreadOpen}
-        />
-      </View>
-      {!threadOpen && <PatientTabBar active="messages" onNavigate={goToTab} unread={unreadCount} />}
-    </View>
-  )
-  if (activePage === 'notifications') return (
-    <View style={styles.tabHost}>
-      <View style={{ flex: 1 }}>
-        <PatientNotificationsScreen
-          onBack={() => { setActivePage('dashboard'); setUnreadCount(0) }}
-          onOpenSummary={() => setActivePage('dashboard')}
-          onOpenDataRequest={(provider) => setActivePage('share')}
-        />
-      </View>
-      <PatientTabBar active="notifications" onNavigate={goToTab} unread={unreadCount} />
-    </View>
-  )
-
-  return (
+  const dashboardView = (
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <ImageBackground source={require('../../assets/dashboard-bg.jpg')} style={styles.root} resizeMode="cover">
+    <View style={styles.root} {...edgePan.panHandlers}>
+      <ScreenBackground />
       <StatusBar barStyle="dark-content" />
 
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={openDrawer} style={styles.hamburger}>
-          <View style={styles.hLine} />
-          <View style={styles.hLine} />
-          <View style={styles.hLine} />
-        </TouchableOpacity>
-        <Text style={styles.topBarLogo}>B</Text>
-        <Text style={styles.topBarTitle}>Dashboard</Text>
-        <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
-          <Icon name="refresh" size={20} color="#5C7340" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={signOut}>
-          <Text style={styles.signOutText}>Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <PatientTopBar
+        onMenu={openDrawer}
+        onBell={() => setActivePage('notifications')}
+        onAvatar={() => setActivePage('profile')}
+        unread={unreadCount}
+        name={profile?.full_name || ''}
+      />
 
       <View style={styles.controls}>
-        <View style={styles.periodRow}>
-          {(['daily', 'weekly', 'annual'] as Period[]).map(p => (
-            <TouchableOpacity key={p} style={[styles.periodBtn, period === p && styles.periodBtnActive]} onPress={() => setPeriod(p)}>
-              <Text style={[styles.periodBtnText, period === p && styles.periodBtnTextActive]}>
-                {p.charAt(0).toUpperCase() + p.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.controlsRow}>
+          <View style={styles.segment}>
+            {(['daily', 'weekly', 'annual'] as Period[]).map(p => (
+              <TouchableOpacity key={p} style={[styles.periodBtn, period === p && styles.periodBtnActive]} onPress={() => setPeriod(p)}>
+                <Text style={[styles.periodBtnText, period === p && styles.periodBtnTextActive]}>
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity onPress={() => setEditMode(!editMode)} style={[styles.editMini, editMode && styles.editMiniActive]}>
+            <Icon name="edit" size={14} color={editMode ? '#FFFFFF' : '#2F4A1E'} />
+            <Text style={[styles.editMiniText, editMode && styles.editMiniTextActive]}>{editMode ? 'Done' : 'Edit'}</Text>
+          </TouchableOpacity>
         </View>
         {period === 'daily' && (
           <View style={styles.datePicker}>
-            <TouchableOpacity onPress={() => changeDate(-1)}>
-              <Icon name="back" size={22} color="#5C7340" />
+            <TouchableOpacity onPress={() => changeDate(-1)} style={styles.dateArrow}>
+              <Icon name="back" size={18} color="#2F4A1E" />
             </TouchableOpacity>
             <Text style={styles.dateLabel}>{formatDate(selectedDate)}</Text>
-            <TouchableOpacity onPress={() => changeDate(1)} disabled={selectedDate >= new Date().toISOString().split('T')[0]}>
+            <TouchableOpacity onPress={() => changeDate(1)} disabled={selectedDate >= new Date().toISOString().split('T')[0]} style={styles.dateArrow}>
               <View style={selectedDate >= new Date().toISOString().split('T')[0] ? { opacity: 0.3 } : undefined}>
-                <Icon name="forward" size={22} color="#5C7340" />
+                <Icon name="forward" size={18} color="#2F4A1E" />
               </View>
             </TouchableOpacity>
           </View>
         )}
-        <View style={styles.editStrip}>
-          <TouchableOpacity onPress={() => setEditMode(!editMode)} style={[styles.editMini, editMode && styles.editMiniActive]}>
-            <Icon name="edit" size={13} color={editMode ? '#FFFFFF' : '#5C7340'} />
-            <Text style={[styles.editMiniText, editMode && styles.editMiniTextActive]}>{editMode ? 'Done' : 'Edit dashboard'}</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       <ScrollView
@@ -1075,6 +1382,14 @@ export default function PatientHome() {
             </View>
           </View>
         ))}
+        {pendingNotes.map((n) => (
+          <TouchableOpacity key={n.id} style={styles.noteCard} activeOpacity={0.85} onPress={() => { setReviewNote({ note: n, from: 'dashboard' }); setActivePage('docnote') }} accessibilityRole="button">
+            <View style={styles.inviteIcon}><Icon name="notes" size={20} color="#C4611A" /></View>
+            <Text style={styles.inviteTitle}>{providerFullName(n)} left you a note</Text>
+            <Text style={styles.inviteBody}>{n.title ? n.title + '. ' : ''}It is not in your Care Team yet. Review it to decide.</Text>
+            <View style={styles.noteBtn}><Text style={styles.noteBtnText}>Review note</Text></View>
+          </TouchableOpacity>
+        ))}
         {editMode && (
           <View style={styles.moveHint}>
             <Text style={styles.moveHintText}>Press and hold a card to move it. Drag the corner to resize. Tap Done when finished.</Text>
@@ -1103,230 +1418,428 @@ export default function PatientHome() {
         <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={closeDrawer} />
       )}
 
-      <Animated.View style={[styles.drawer, { transform: [{ translateX: drawerAnim }] }]}>
+      {!drawerOpen && !dragging && !editMode && (
+        <>
+          {quickOpen && (
+            <View style={styles.quickFull} pointerEvents="box-none">
+              <BlurView intensity={45} tint="dark" style={StyleSheet.absoluteFill} />
+              <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setQuickOpen(false)} accessibilityLabel="Close quick add" />
+              <ReAnimated.View entering={FadeInDown.duration(180)} style={styles.quickSheet}>
+                <Text style={styles.quickHeading}>Food</Text>
+                <View style={styles.quickGrid}>
+                  {([
+                    ['Breakfast', 'breakfast', '#D9A441', { kind: 'food', mealType: 'Breakfast' }],
+                    ['Lunch', 'lunch', '#C4611A', { kind: 'food', mealType: 'Lunch' }],
+                    ['Dinner', 'dinner', '#7B4B94', { kind: 'food', mealType: 'Dinner' }],
+                    ['Snacks', 'snack', '#5C7340', { kind: 'food', mealType: 'Snack' }],
+                  ] as [string, string, string, NonNullable<LifestyleStart>][]).map(([label, icon, color, start]) => (
+                    <TouchableOpacity key={label} style={styles.quickCell} onPress={() => { setQuickOpen(false); setLifestyleStart(start); setActivePage('lifestyle') }} accessibilityRole="button" accessibilityLabel={`Add ${label}`}>
+                      <View style={[styles.quickBubble, { backgroundColor: color }]}><Icon name={icon as any} size={28} color="#FFFFFF" /></View>
+                      <Text style={styles.quickCellText}>{label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={styles.quickHeading}>Move, rest and medicine</Text>
+                <View style={styles.quickGrid}>
+                  {([
+                    ['Exercise', 'trainer', '#2F4A1E', () => { setLifestyleStart({ kind: 'workout' }); setActivePage('lifestyle') }],
+                    ['Sleep', 'sleep', '#4B3F72', () => { setLifestyleStart({ kind: 'sleep' }); setActivePage('lifestyle') }],
+                    ['Meds', 'medication', '#3D7A5E', () => setActivePage('supplements')],
+                  ] as [string, string, string, () => void][]).map(([label, icon, color, fn]) => (
+                    <TouchableOpacity key={label} style={styles.quickCell} onPress={() => { setQuickOpen(false); fn() }} accessibilityRole="button" accessibilityLabel={`Log ${label}`}>
+                      <View style={[styles.quickBubble, { backgroundColor: color }]}><Icon name={icon as any} size={28} color="#FFFFFF" /></View>
+                      <Text style={styles.quickCellText}>{label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ReAnimated.View>
+            </View>
+          )}
+          <View style={styles.quickWrap} pointerEvents="box-none">
+            <TouchableOpacity style={styles.quickFab} onPress={() => setQuickOpen(!quickOpen)} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={quickOpen ? 'Close quick add' : 'Quick add'}>
+              <Icon name={quickOpen ? 'close' : 'add'} size={26} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
+      <Animated.View style={[styles.drawer, { transform: [{ translateX: drawerAnim }] }]} {...drawerPan.panHandlers}>
         <View style={styles.drawerInner}>
           <View style={styles.drawerHeader}>
-            <View style={styles.drawerLogo}>
-              <Text style={styles.drawerLogoText}>B</Text>
-            </View>
-            <Text style={styles.drawerBrandName}>bridgette</Text>
+            <Image source={require('../../assets/bridgette-logo.png')} style={styles.drawerWordmark} resizeMode="contain" />
           </View>
 
-          <View style={styles.drawerSection}>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('lifestyle')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="diet" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Logged Foods</Text>
+          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.drawerScroll}>
+            <TouchableOpacity style={styles.drawerItem} activeOpacity={0.7} onPress={() => navigate('notifications')}>
+              <View style={styles.drawerIconTile}>
+                <Icon name="bell" size={18} color="#2F4A1E" />
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('supplements')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="medication" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Supplements & Medicine</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('records')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="lab" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Medical Records</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('history')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="notes" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Medical History</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('trends')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="trends" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Lab Trends</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="careteam" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Care Team</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('messages')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="message" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Messages</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('caregivers')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="careteam" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Caregivers</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('caregiving')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="careteam" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>People I care for</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('notifications')}>
-              <View style={styles.drawerItemRow}>
-                <View style={styles.drawerItemRow}>
-                  <Icon name="bell" size={18} color="rgba(255,255,255,0.8)" />
-                  <Text style={styles.drawerItemText}>Notifications</Text>
+              <Text style={styles.drawerItemText} numberOfLines={1}>Notifications</Text>
+              {unreadCount > 0 && (
+                <View style={styles.drawerBadge}>
+                  <Text style={styles.drawerBadgeText}>{unreadCount}</Text>
                 </View>
-                {unreadCount > 0 && (
-                  <View style={styles.drawerBadge}>
-                    <Text style={styles.drawerBadgeText}>{unreadCount}</Text>
-                  </View>
-                )}
-              </View>
+              )}
             </TouchableOpacity>
-          </View>
 
-          <View style={styles.drawerDivider} />
+            <TouchableOpacity style={styles.drawerItem} activeOpacity={0.7} onPress={() => navigate('kids')}>
+              <View style={styles.drawerIconTile}>
+                <Icon name="kids" size={18} color="#2F4A1E" />
+              </View>
+              <Text style={styles.drawerItemText} numberOfLines={1}>Bridgette for Kids</Text>
+            </TouchableOpacity>
 
-          <View style={styles.drawerSection}>
-            <Text style={styles.drawerSectionLabel}>SHARE HEALTH LINK</Text>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="share" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>Share with Doctor</Text>
+            <TouchableOpacity style={styles.drawerItem} activeOpacity={0.7} onPress={() => navigate('pets')}>
+              <View style={styles.drawerIconTile}>
+                <Icon name="paw" size={18} color="#2F4A1E" />
+              </View>
+              <Text style={styles.drawerItemText} numberOfLines={1}>Bridgette for Pets</Text>
+              <View style={styles.drawerSoon}>
+                <Text style={styles.drawerSoonText}>Soon</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.drawerItem} onPress={() => navigate('share')}>
-              <View style={styles.drawerItemRow}>
-                <Icon name="share" size={18} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.drawerItemText}>External Link</Text>
+
+            <TouchableOpacity style={styles.drawerItem} activeOpacity={0.7} onPress={() => navigate('community')}>
+              <View style={styles.drawerIconTile}>
+                <Icon name="careteam" size={18} color="#2F4A1E" />
+              </View>
+              <Text style={styles.drawerItemText} numberOfLines={1}>Community</Text>
+              <View style={styles.drawerSoon}>
+                <Text style={styles.drawerSoonText}>Soon</Text>
               </View>
             </TouchableOpacity>
-          </View>
+
+            <View style={styles.drawerDivider} />
+
+            {([
+              { key: 'mhist', icon: 'record', label: 'Medical History', items: [['history:all', 'All History'], ['history:surgery', 'Past Surgery'], ['history:records', 'Medical Records']] },
+              { key: 'health', icon: 'notes', label: 'My Health', items: [['vaccines', 'Vaccines'], ['allergies', 'Allergies'], ['trends', 'Lab Trends']] },
+              { key: 'log', icon: 'diet', label: 'Daily Log', items: [['lifestyle', 'Logged Foods'], ['labelreader', 'Label Reader'], ['grocery', 'Grocery List'], ['supplements', 'Supplements & Medicine']] },
+              { key: 'care', icon: 'careteam', label: 'Care', items: [['share', 'Care Team'], ['messages', 'Messages'], ['share', 'Share with Doctor'], ['share', 'External Link']] },
+              { key: 'family', icon: 'careteam', label: 'Family', items: [['caregivers', 'Caregivers'], ['caregiving', 'People I care for']] },
+            ] as { key: string; icon: any; label: string; items: [string, string][] }[]).map((g) => {
+              const open = openGroups.includes(g.key)
+              return (
+                <View key={g.key} style={open ? styles.drawerGroupOpen : undefined}>
+                  <TouchableOpacity
+                    style={styles.drawerItem}
+                    activeOpacity={0.7}
+                    onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenGroups((cur) => (open ? cur.filter((k) => k !== g.key) : [...cur, g.key])) }}
+                  >
+                    <View style={[styles.drawerIconTile, open && { backgroundColor: '#2F4A1E' }]}>
+                      <Icon name={g.icon} size={18} color={open ? '#FFFFFF' : '#2F4A1E'} />
+                    </View>
+                    <Text style={styles.drawerItemText} numberOfLines={1}>{g.label}</Text>
+                    <View style={{ transform: [{ rotate: open ? '90deg' : '0deg' }] }}>
+                      <Icon name="forward" size={16} color="#5B6650" />
+                    </View>
+                  </TouchableOpacity>
+                  {open && (
+                    <View style={styles.drawerSub}>
+                      {g.items.map(([page, label]) => (
+                        <TouchableOpacity key={label} style={styles.drawerSubItem} activeOpacity={0.7} onPress={() => { if (page.startsWith('history:')) { setHistTab(page.split(':')[1] as any); navigate('history') } else navigate(page as any) }}>
+                          <Text style={styles.drawerSubText} numberOfLines={1}>{label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )
+            })}
+          </ScrollView>
 
           <View style={styles.drawerBottom}>
+            <View style={styles.drawerFootRow}>
+              <TouchableOpacity style={styles.drawerFootBtn} activeOpacity={0.7} onPress={() => navigate('profile')}>
+                <Icon name="account" size={16} color="#2F4A1E" />
+                <Text style={styles.drawerFootText}>Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.drawerFootBtn} activeOpacity={0.7} onPress={() => navigate('settings')}>
+                <Icon name="settings" size={16} color="#2F4A1E" />
+                <Text style={styles.drawerFootText}>Settings</Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity onPress={signOut} style={styles.drawerSignOut}>
               <Text style={styles.drawerSignOutText}>Sign out</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Animated.View>
-    </ImageBackground>
+    </View>
     <PatientTabBar active="dashboard" onNavigate={goToTab} unread={unreadCount} />
     </GestureHandlerRootView>
+  )
+
+  const renderPage = (): React.ReactNode => {
+  if (activePage === 'records') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}>
+    <View style={styles.tabHost}>
+      <ScreenBackground />
+      <PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Medical Records" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} />
+      <View style={{ flex: 1 }}><MedicalRecordsScreen onBack={goBack} onOpenTrends={() => setActivePage('trends')} /></View>
+      <PatientTabBar active="records" onNavigate={goToTab} unread={unreadCount} />
+    </View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'history') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Medical History" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><MedicalHubScreen initialTab={histTab} onBack={goBack} onOpenTrends={() => setActivePage('trends')} onTabChange={setHistTab} onOpenCare={(n) => { pendingProfile.name = n; skipSub.current = true; setActivePage('share') }} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'trends') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Lab Trends" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><TrendsScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'lifestyle') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Lifestyle Log" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><LifestyleScreen key={JSON.stringify(lifestyleStart)} onBack={() => { setLifestyleStart(null); setActivePage('dashboard') }} initialAdd={lifestyleStart} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'share') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={backSub}>
+    <View style={styles.tabHost}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F5F2EC' }} />
+      {/* The page fills the whole screen and scrolls behind the floating header and tab bar. */}
+      <ChromeInsetCtx.Provider value={{ top: 112, bottom: 100 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}><ShareLinkScreen onBack={goBack} onReviewNote={(n: any) => { setReviewNote({ note: n, from: 'share' }); setActivePage('docnote') }} /></View>
+      </ChromeInsetCtx.Provider>
+      <EdgeFades color="#F5F2EC" top={120} bottom={120} solidTop={0.5} solidBottom={0.4} />
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }} pointerEvents="box-none">
+        <PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={backSub} unread={unreadCount} title="Care Team" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} />
+      </View>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} pointerEvents="box-none">
+        <PatientTabBar active="share" onNavigate={goToTab} unread={unreadCount} />
+      </View>
+    </View></SwipeBack></EmbeddedCtx.Provider>
+  )
+
+  if (activePage === 'supplements') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Supplements" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><SupplementsScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'profile') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Profile" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><ProfileScreen onBack={goBack} onOpen={(t) => setActivePage(t)} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'settings') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Settings" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><SettingsScreen onBack={goBack} onOpen={(t) => setActivePage(t)} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'community') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Community" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><CommunityScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'vaccines') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Vaccines" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><VaccinesScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'labelreader') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={() => { if (savedLabel) { setSavedLabel(null); setActivePage('grocery') } else goBack() }}><View style={{ flex: 1, backgroundColor: '#F5F2EC' }}><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={() => { if (savedLabel) { setSavedLabel(null); setActivePage('grocery') } else goBack() }} unread={unreadCount} title="Label Reader" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><LabelReaderScreen key={savedLabel ? 'saved' : 'new'} initialLabel={savedLabel} onBack={() => { if (savedLabel) { setSavedLabel(null); setActivePage('grocery') } else goBack() }} onOpenGrocery={() => setActivePage('grocery')} onOpenAllergies={() => setActivePage('allergies')} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'grocery') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Grocery List" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><GroceryScreen onBack={goBack} onScan={() => { setSavedLabel(null); setActivePage('labelreader') }} onOpenItem={(l) => { setSavedLabel(l); setActivePage('labelreader') }} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'allergies') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1, backgroundColor: '#F5F2EC' }}><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Allergies" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><AllergiesScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>)
+  if (activePage === 'activitylog') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Activity log" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><ActivityLogScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>)
+  if (activePage === 'kids') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={backSub}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={backSub} unread={unreadCount} title={kidsTitle} onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><KidsScreen onBack={goBack} onTitle={setKidsTitle} /></View></View></SwipeBack></EmbeddedCtx.Provider>)
+  if (activePage === 'pets') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Bridgette for Pets" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><PetsScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'caregivers') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Caregivers" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><CaregiversScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'caregiving') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}><View style={{ flex: 1 }}><ScreenBackground /><PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Caregiving" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} /><View style={{ flex: 1 }}><CaregivingScreen onBack={goBack} /></View></View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'messages') return (<EmbeddedCtx.Provider value={true}>
+    <View style={styles.tabHost}>
+      <ScreenBackground />
+      <ChromeInsetCtx.Provider value={threadOpen ? { top: 0, bottom: 0 } : { top: 112, bottom: 100 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <DoctorMessages
+            patientId={session?.user.id || ''}
+            myId={session?.user.id || ''}
+            myRole="patient"
+            myName={profile?.full_name || session?.user.email || 'You'}
+            accent="#5C7340"
+            headerTitle="Messages"
+            onBack={goBack}
+            onThreadActiveChange={setThreadOpen}
+            plain
+            onOpenCareTeam={() => goToTab('share')}
+          />
+        </View>
+      </ChromeInsetCtx.Provider>
+      {!threadOpen && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }} pointerEvents="box-none">
+          <PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBell={() => setMsgNotifOpen(true)} onAvatar={() => setActivePage('profile')} unread={unreadCount} title="Messages" onBack={goBack} />
+        </View>
+      )}
+      {!threadOpen && (
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} pointerEvents="box-none">
+          <PatientTabBar active="messages" onNavigate={goToTab} unread={unreadCount} />
+        </View>
+      )}
+      {msgNotifOpen && !threadOpen && <NotificationsPopover onClose={() => setMsgNotifOpen(false)} onSeeAll={() => { setMsgNotifOpen(false); setActivePage('notifications') }} />}
+    </View></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'docnote' && reviewNote) return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={goBack}>
+    <View style={styles.tabHost}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#F5F2EC' }} />
+      <ChromeInsetCtx.Provider value={{ top: 112, bottom: 100 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <DocNoteScreen note={reviewNote.note} onDone={(accepted) => {
+            setPendingNotes((p) => p.filter((x) => x.id !== reviewNote.note.id))
+            setUnreadCount(0)
+            if (accepted) goBackTo('share'); else goBack()
+          }} />
+        </View>
+      </ChromeInsetCtx.Provider>
+      <EdgeFades color="#F5F2EC" top={120} bottom={120} solidTop={0.5} solidBottom={0.4} />
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }} pointerEvents="box-none">
+        <PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={goBack} unread={unreadCount} title="Review note" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} />
+      </View>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} pointerEvents="box-none">
+        <PatientTabBar active="share" onNavigate={goToTab} unread={unreadCount} />
+      </View>
+    </View></SwipeBack></EmbeddedCtx.Provider>
+  )
+  if (activePage === 'notifications') return (<EmbeddedCtx.Provider value={true}><SwipeBack onBack={() => { goBack(); setUnreadCount(0) }}>
+    <View style={styles.tabHost}>
+      <ScreenBackground />
+      <PatientTopBar onMenu={() => { setActivePage('dashboard'); setTimeout(openDrawer, 50) }} onBack={() => { goBack(); setUnreadCount(0) }} unread={unreadCount} title="Notifications" onBell={() => setActivePage('notifications')} onAvatar={() => setActivePage('profile')} />
+      <View style={{ flex: 1 }}>
+        <PatientNotificationsScreen
+          onBack={() => { goBack(); setUnreadCount(0) }}
+          onOpenSummary={() => setActivePage('dashboard')}
+          onOpenDataRequest={(provider) => setActivePage('share')}
+          onReviewNote={(n: any) => { setReviewNote({ note: n, from: 'notifications' }); setActivePage('docnote') }}
+        />
+      </View>
+      <PatientTabBar active="notifications" onNavigate={goToTab} unread={unreadCount} />
+    </View></SwipeBack></EmbeddedCtx.Provider>
+  )
+    return null
+  }
+  const page = renderPage()
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={StyleSheet.absoluteFill} pointerEvents={page ? 'none' : 'auto'}>{dashboardView}</View>
+      {page}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F5F2EC' },
   tabHost: { flex: 1, backgroundColor: '#F5F2EC' },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 56,
-    paddingBottom: 12,
-    backgroundColor: 'rgba(245,242,236,0.92)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(229,223,211,0.8)',
-  },
-  hamburger: { marginRight: 10 },
-  hLine: { width: 22, height: 2, backgroundColor: '#3D3229', borderRadius: 1, marginBottom: 4 },
-  topBarLogo: { fontFamily: 'Georgia', fontSize: 22, color: '#5C7340', fontWeight: '700', marginRight: 8 },
-  topBarTitle: { fontSize: 16, fontWeight: '600', color: '#3D3229', flex: 1 },
-  refreshBtn: { marginRight: 12 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 56, paddingBottom: 10 },
+  roundBtn: { width: 40, height: 40, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.85)', borderWidth: 1, borderColor: 'rgba(47,74,30,0.12)', alignItems: 'center', justifyContent: 'center' },
+  hLine: { width: 18, height: 2, backgroundColor: '#2F4A1E', borderRadius: 1, marginBottom: 4 },
+  brandWrap: { flex: 1, alignItems: 'center' },
+  brandLogo: { width: 132, height: 29 },
   doneBtn: { backgroundColor: '#5C7340', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 12 },
-  doneBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
-  signOutText: { fontSize: 12, color: '#8A7E72' },
-  controls: {
-    backgroundColor: 'rgba(245,242,236,0.92)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(229,223,211,0.8)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  periodRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  editStrip: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 6 },
-  editMini: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14, borderWidth: 1, borderColor: '#5C7340', backgroundColor: 'rgba(255,255,255,0.6)' },
-  editMiniActive: { backgroundColor: '#5C7340', borderColor: '#5C7340' },
-  editMiniText: { fontSize: 11, fontWeight: '700', color: '#5C7340' },
+  doneBtnText: { fontSize: 12, fontFamily: 'DMSans-Bold', color: '#fff' },
+  signOutText: { fontSize: 12, color: '#4F5048' },
+  controls: { paddingHorizontal: 16, paddingBottom: 8 },
+  controlsRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  segment: { flex: 1, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 14, padding: 3, borderWidth: 1, borderColor: 'rgba(47,74,30,0.12)' },
+  editMini: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(47,74,30,0.12)', backgroundColor: 'rgba(255,255,255,0.85)' },
+  editMiniActive: { backgroundColor: '#2F4A1E', borderColor: '#2F4A1E' },
+  editMiniText: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#2F4A1E' },
   editMiniTextActive: { color: '#FFFFFF' },
   rowWrap: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   cardGrid: { position: 'relative', width: '100%' },
   cardAbs: { position: 'absolute', top: 0, left: 0 },
   moveHint: { backgroundColor: 'rgba(92,115,64,0.12)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12 },
+  noteCard: { backgroundColor: 'rgba(255,250,244,0.97)', borderRadius: 16, borderWidth: 1, borderColor: '#C4611A', padding: 16, marginBottom: 14 },
+  noteBtn: { alignSelf: 'flex-start', backgroundColor: '#5C7340', borderRadius: 99, paddingHorizontal: 16, paddingVertical: 9, marginTop: 12 },
+  noteBtnText: { color: '#fff', fontSize: 13, fontFamily: 'DMSans-Bold' },
   inviteCard: { backgroundColor: 'rgba(245,242,236,0.96)', borderRadius: 16, borderWidth: 1, borderColor: '#5C7340', padding: 16, marginBottom: 14 },
   inviteIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#EBEFE3', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  inviteTitle: { fontFamily: 'Georgia', fontSize: 17, color: '#3D3229', marginBottom: 6 },
+  inviteTitle: { fontFamily: 'DMSans-Medium', fontSize: 17, color: '#383A33', marginBottom: 6 },
   inviteBody: { fontSize: 13, color: '#5A4A38', lineHeight: 20, marginBottom: 14 },
-  inviteTier: { fontWeight: '700', color: '#5C7340' },
+  inviteTier: { fontFamily: 'DMSans-Medium', color: '#5C7340' },
   inviteActions: { flexDirection: 'row', gap: 10 },
   inviteDecline: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E5DFD3', alignItems: 'center' },
-  inviteDeclineText: { fontSize: 14, fontWeight: '600', color: '#8A7E72' },
+  inviteDeclineText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#4F5048' },
   inviteAccept: { flex: 2, paddingVertical: 12, borderRadius: 10, backgroundColor: '#5C7340', alignItems: 'center' },
-  inviteAcceptText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  moveHintText: { fontSize: 12, color: '#3D3229', fontWeight: '600', textAlign: 'center' },
+  inviteAcceptText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#fff' },
+  moveHintText: { fontSize: 12, color: '#383A33', fontFamily: 'DMSans-Bold', textAlign: 'center' },
   cardPicked: { opacity: 0.55 },
   sizeTag: { position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(61,50,41,0.85)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  sizeTagText: { fontSize: 10, fontWeight: '700', color: '#FFFFFF' },
+  sizeTagText: { fontSize: 10, fontFamily: 'DMSans-Bold', color: '#FFFFFF' },
   resizeHandle: { position: 'absolute', right: 6, bottom: 16, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.96)', alignItems: 'center', justifyContent: 'center', zIndex: 20, borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 4 },
   resizeHandleIcon: { transform: [{ rotate: '45deg' }] },
   selRing: { position: 'absolute', top: -3, left: -3, right: -3, bottom: 11, borderWidth: 2, borderColor: '#5C7340', borderRadius: 18, zIndex: 15 },
   dragClone: { position: 'absolute', zIndex: 999, elevation: 20 },
   sizeBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(61,50,41,0.92)', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 12 },
-  sizeBtnText: { fontSize: 10, fontWeight: '700', color: '#FFFFFF' },
-  periodBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.6)', borderWidth: 1, borderColor: '#E5DFD3' },
-  periodBtnActive: { backgroundColor: '#3D3229', borderColor: '#3D3229' },
-  periodBtnText: { fontSize: 12, fontWeight: '600', color: '#8A7E72' },
-  periodBtnTextActive: { color: '#fff' },
-  datePicker: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  dateLabel: { fontSize: 13, fontWeight: '600', color: '#3D3229' },
+  sizeBtnText: { fontSize: 10, fontFamily: 'DMSans-Bold', color: '#FFFFFF' },
+  periodBtn: { flex: 1, paddingVertical: 8, borderRadius: 11, alignItems: 'center' },
+  periodBtnActive: { backgroundColor: '#2F4A1E' },
+  periodBtnText: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#5B6650' },
+  periodBtnTextActive: { color: '#FFFFFF' },
+  datePicker: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 14, borderWidth: 1.5, borderColor: '#5C7340', paddingHorizontal: 6, paddingVertical: 4 },
+  dateArrow: { width: 36, height: 32, alignItems: 'center', justifyContent: 'center' },
+  dateLabel: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#383A33' },
   dashboard: { flex: 1 },
 
-  cardBlur: { borderRadius: 16, overflow: 'hidden', marginBottom: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
-  cardTint: { backgroundColor: 'rgba(245,242,236,0.82)', padding: 16 },
+  cardBlur: { borderRadius: 16, overflow: 'hidden', marginBottom: 14, borderWidth: 1, borderColor: '#DDD7CB' },
+  cardTint: { backgroundColor: 'rgba(255,255,255,0.72)', padding: 16 },
 
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  cardTitle: { fontFamily: 'Georgia', fontSize: 16, color: '#3D3229' },
-  cardSub: { fontSize: 11, color: '#8A7E72', marginBottom: 4 },
-  noDataNote: { fontSize: 12, color: '#8A7E72', fontStyle: 'italic', marginVertical: 6 },
+  cardTitle: { fontSize: 16, fontFamily: 'DMSans-Medium', color: '#383A33' },
+  cardSub: { fontSize: 11, color: '#4F5048', marginBottom: 4 },
+  noDataNote: { fontSize: 12, color: '#4F5048', fontStyle: 'italic', marginVertical: 6 },
   legend: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: '#8A7E72' },
+  legendText: { fontSize: 11, color: '#4F5048' },
   cardLink: { alignSelf: 'flex-end', marginTop: 8 },
-  cardLinkText: { fontSize: 12, color: '#5C7340', fontWeight: '600' },
+  cardLinkText: { fontSize: 12, color: '#2F4A1E', fontFamily: 'DMSans-Bold' },
+  careRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  apptSub: { fontSize: 12, color: '#4F5048', marginTop: 2, marginBottom: 4 },
+  apptRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8, padding: 10, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.85)', borderWidth: 1, borderColor: 'rgba(47,74,30,0.10)' },
+  apptRowOverdue: { backgroundColor: '#FBEBDD', borderColor: '#F0D3BB' },
+  apptDate: { width: 48, height: 52, borderRadius: 12, backgroundColor: '#EEF3E6', alignItems: 'center', justifyContent: 'center' },
+  apptDateOverdue: { backgroundColor: '#fff' },
+  apptMonth: { fontSize: 11, fontFamily: 'DMSans-Bold', color: '#3F5229', textTransform: 'uppercase' },
+  apptDay: { fontSize: 20, fontFamily: 'DMSans-Bold', color: '#2F4A1E', lineHeight: 24 },
+  apptWhen: { fontSize: 12.5, fontFamily: 'DMSans-Bold', color: '#3F5229', marginTop: 2 },
+  noteBox: { marginTop: 8, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(47,74,30,0.10)' },
+  noteTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  noteAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#EEF3E6', borderWidth: 2, borderColor: '#2F4A1E', alignItems: 'center', justifyContent: 'center' },
+  notePhoto: { width: 40, height: 40, borderRadius: 20 },
+  noteAvatarText: { fontSize: 15, fontFamily: 'DMSans-Medium', color: '#2F4A1E' },
+  noteLabel: { fontSize: 11, fontFamily: 'DMSans-Bold', color: '#5B6650', marginBottom: 2 },
+  noteDoctor: { fontSize: 15, fontFamily: 'DMSans-Medium', color: '#383A33' },
+  noteMeta: { fontSize: 12, color: '#5B6650', marginTop: 1 },
+  noteSnippet: { fontSize: 13, color: '#383A33', lineHeight: 19, marginTop: 10 },
+  careIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#EEF3E6', alignItems: 'center', justifyContent: 'center' },
+  careText: { flex: 1, fontSize: 13, color: '#383A33', lineHeight: 19 },
+  careActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  careBtn: { backgroundColor: '#2F4A1E', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  careBtnText: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#FFFFFF' },
+  careBtnGhost: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: '#2F4A1E', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  careBtnGhostText: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#2F4A1E' },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   emptyChart: { height: 60, alignItems: 'center', justifyContent: 'center' },
-  emptyChartText: { fontSize: 12, color: '#8A7E72', fontStyle: 'italic' },
+  emptyChartText: { fontSize: 12, color: '#4F5048', fontStyle: 'italic' },
 
   summaryHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  aiChip: { backgroundColor: '#F6EDDA', borderColor: '#DCC089', borderWidth: 1, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  aiChipText: { fontSize: 10, fontWeight: '700', color: '#C4611A', letterSpacing: 0.5 },
+  aiChip: { backgroundColor: '#EEF3E6', borderColor: '#A9BE8F', borderWidth: 1, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+  aiChipText: { fontSize: 10, fontFamily: 'DMSans-Bold', color: '#2F4A1E', letterSpacing: 0.5 },
   summaryText: { fontSize: 13, color: '#5A4A38', lineHeight: 20 },
 
   testSelector: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: '#E5DFD3', maxWidth: 160 },
-  testSelectorText: { fontSize: 11, fontWeight: '600', color: '#3D3229', flex: 1 },
+  testSelectorText: { fontSize: 11, fontFamily: 'DMSans-Bold', color: '#383A33', flex: 1 },
   testDropdown: { backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#E5DFD3', marginTop: 6, marginBottom: 4, overflow: 'hidden' },
   testDropdownItem: { paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#F0EBE1' },
   testDropdownItemActive: { backgroundColor: '#F0EBE1' },
-  testDropdownText: { fontSize: 13, color: '#8A7E72' },
-  testDropdownTextActive: { color: '#3D3229', fontWeight: '600' },
+  testDropdownText: { fontSize: 13, color: '#4F5048' },
+  testDropdownTextActive: { color: '#383A33', fontFamily: 'DMSans-Medium' },
 
   ringContainer: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8 },
   ringLegend: { flex: 1, gap: 8 },
   ringLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   ringDot: { width: 10, height: 10, borderRadius: 5 },
   ringLegendText: { fontSize: 12, color: '#5A4A38' },
-  ringPct: { fontSize: 13, fontWeight: '700', color: '#5C7340', marginTop: 2 },
+  ringPct: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#5C7340', marginTop: 2 },
 
   suppRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(229,223,211,0.6)' },
   suppInfo: { flex: 1 },
-  suppName: { fontSize: 13, fontWeight: '600', color: '#3D3229' },
-  suppTime: { fontSize: 11, color: '#8A7E72' },
+  kidRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  kidAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#EEF3E6', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  kidAvatarTxt: { fontSize: 16, fontFamily: 'DMSans-Bold', color: '#2F4A1E' },
+  kidRowName: { fontSize: 15, fontFamily: 'DMSans-Medium', color: '#383A33' },
+  kidRowSub: { fontSize: 12, color: '#4F5048', marginTop: 1 },
+  kidRowDue: { fontSize: 12, fontFamily: 'DMSans-Medium', color: '#B8442E', marginTop: 3 },
+  kidRowTurn: { fontSize: 12, fontFamily: 'DMSans-Medium', color: '#9A6A12', marginTop: 3 },
+  kidHead: { fontSize: 12, fontFamily: 'DMSans-Bold', color: '#4F5048', marginTop: 12, marginBottom: 2 },
+  suppName: { fontSize: 13, fontFamily: 'DMSans-Bold', color: '#383A33' },
+  suppTime: { fontSize: 11, color: '#4F5048' },
   checkbox: { width: 24, height: 24, borderRadius: 7, borderWidth: 2, borderColor: '#E5DFD3', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' },
   checkboxOn: { backgroundColor: '#5C7340', borderColor: '#5C7340' },
 
   barRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginTop: 12, height: 60 },
   barItem: { alignItems: 'center', gap: 4 },
   bar: { width: 14, borderRadius: 4 },
-  barLabel: { fontSize: 9, color: '#8A7E72' },
+  barLabel: { fontSize: 9, color: '#4F5048' },
 
   bellFloat: {
     position: 'absolute', bottom: 32, right: 20, width: 56, height: 56, borderRadius: 28,
@@ -1337,43 +1850,64 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9,
     backgroundColor: '#C4611A', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#3D3229',
   },
-  bellBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
+  bellBadgeText: { fontSize: 9, fontFamily: 'DMSans-Bold', color: '#fff' },
 
+  quickBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 4 },
+  quickWrap: { position: 'absolute', right: 20, bottom: 16, alignItems: 'flex-end', gap: 12, zIndex: 8 },
+  quickFab: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#2F4A1E', alignItems: 'center', justifyContent: 'center', shadowColor: '#1F3A24', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+  quickFull: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 6, justifyContent: 'center', alignItems: 'center', paddingBottom: 60 },
+  quickSheet: { width: '88%', borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.94)', paddingVertical: 20, paddingHorizontal: 14 },
+  quickBubble: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
+  quickHeading: { fontSize: 15, fontFamily: 'DMSans-Bold', color: '#383A33', textAlign: 'center', marginBottom: 14 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', rowGap: 14, marginBottom: 18 },
+  quickCell: { width: '25%', alignItems: 'center', gap: 6 },
+  quickCellText: { fontSize: 12.5, fontFamily: 'DMSans-Bold', color: '#383A33' },
+  quickMenu: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#DDD7CB', padding: 14, shadowColor: '#1F3A24', shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
+  quickItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: '#ECE8DE' },
+  quickIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#EEF3E6', alignItems: 'center', justifyContent: 'center' },
+  quickText: { fontSize: 14.5, fontFamily: 'DMSans-Bold', color: '#383A33', paddingRight: 6 },
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 10 },
-  drawer: { position: 'absolute', top: 0, left: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: '#3D3229', zIndex: 20, shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 20 },
+  drawer: { position: 'absolute', top: 0, left: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: '#F7F4EC', zIndex: 20, borderRightWidth: 1.5, borderRightColor: 'rgba(47,74,30,0.35)', borderTopRightRadius: 24, borderBottomRightRadius: 24, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 20 },
   drawerInner: { flex: 1, paddingTop: 56 },
-  drawerHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 20, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)' },
-  drawerLogo: { width: 36, height: 36, borderRadius: 9, backgroundColor: '#5C7340', alignItems: 'center', justifyContent: 'center' },
-  drawerLogoText: { fontFamily: 'Georgia', fontSize: 20, color: '#fff', fontWeight: '700' },
-  drawerBrandName: { fontFamily: 'Georgia', fontSize: 18, color: '#fff' },
-  drawerSection: { paddingHorizontal: 12, paddingTop: 16 },
-  drawerSectionLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5, color: 'rgba(255,255,255,0.35)', paddingHorizontal: 10, marginBottom: 8 },
-  drawerItem: { paddingHorizontal: 10, paddingVertical: 13, borderRadius: 10, marginBottom: 2 },
-  drawerItemText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
-  drawerItemRow: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' },
-  drawerBadge: { backgroundColor: '#C4611A', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10 },
-  drawerBadgeText: { fontSize: 10, fontWeight: '700', color: '#fff' },
-  drawerDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginHorizontal: 20, marginVertical: 8 },
-  drawerBottom: { position: 'absolute', bottom: 40, left: 0, right: 0, paddingHorizontal: 20 },
-  drawerSignOut: { paddingVertical: 12, alignItems: 'center', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  drawerSignOutText: { fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  drawerHeader: { paddingHorizontal: 20, paddingBottom: 18, borderBottomWidth: 1, borderBottomColor: 'rgba(47,74,30,0.12)' },
+  drawerWordmark: { width: 150, height: 33 },
+  drawerScroll: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 12 },
+  drawerSectionLabel: { fontSize: 12, fontFamily: 'DMSans-Bold', color: '#5B6650', paddingHorizontal: 10, marginTop: 4, marginBottom: 6 },
+  drawerItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 8, paddingVertical: 7, borderRadius: 14 },
+  drawerIconTile: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#EEF3E6', alignItems: 'center', justifyContent: 'center' },
+  drawerItemText: { flex: 1, fontSize: 15, fontFamily: 'DMSans-Medium', color: '#383A33' },
+  drawerGroupOpen: { backgroundColor: 'rgba(47,74,30,0.05)', borderRadius: 16, marginBottom: 4 },
+  drawerSub: { marginLeft: 26, paddingLeft: 22, paddingBottom: 8, borderLeftWidth: 2, borderLeftColor: 'rgba(47,74,30,0.25)' },
+  drawerSubItem: { paddingVertical: 11, paddingRight: 12 },
+  drawerSubText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#383A33' },
+  drawerSoon: { backgroundColor: '#FBEBDD', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  drawerSoonText: { fontSize: 11, fontFamily: 'DMSans-Bold', color: '#9A4A12' },
+  drawerFootRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  drawerFootBtn: { flex: 1, height: 44, borderRadius: 14, backgroundColor: '#EEF3E6', borderWidth: 1, borderColor: 'rgba(47,74,30,0.35)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  drawerFootText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#2F4A1E' },
+  drawerBadge: { backgroundColor: '#C4611A', minWidth: 22, height: 22, paddingHorizontal: 6, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  drawerBadgeText: { fontSize: 11, fontFamily: 'DMSans-Bold', color: '#fff' },
+  drawerDivider: { height: 1, backgroundColor: 'rgba(47,74,30,0.12)', marginHorizontal: 8, marginVertical: 12 },
+  drawerBottom: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40, borderTopWidth: 1, borderTopColor: 'rgba(47,74,30,0.12)' },
+  drawerSignOut: { height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 14, borderWidth: 1.5, borderColor: '#2F4A1E' },
+  drawerSignOutText: { fontSize: 14, color: '#2F4A1E', fontFamily: 'DMSans-Bold' },
   cz_backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   cz_sheet: { backgroundColor: '#F5F2EC', borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 20 },
   cz_handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#D8D0C2', alignSelf: 'center', marginBottom: 10 },
   cz_header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cz_title: { fontFamily: 'Georgia', fontSize: 18, color: '#3D3229' },
-  cz_sub: { fontSize: 12, color: '#8A7E72', marginTop: 4, marginBottom: 12, lineHeight: 17 },
+  cz_title: { fontFamily: 'DMSans-Medium', fontSize: 18, color: '#383A33' },
+  cz_sub: { fontSize: 12, color: '#4F5048', marginTop: 4, marginBottom: 12, lineHeight: 17 },
   cz_row: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5DFD3', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8, gap: 12 },
-  cz_rowNum: { width: 20, fontSize: 13, fontWeight: '700', color: '#8A7E72' },
-  cz_rowLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: '#3D3229' },
+  cz_rowNum: { width: 20, fontSize: 13, fontFamily: 'DMSans-Bold', color: '#4F5048' },
+  cz_rowLabel: { flex: 1, fontSize: 15, fontFamily: 'DMSans-Medium', color: '#383A33' },
   cz_arrows: { flexDirection: 'row', gap: 6 },
   cz_arrowBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#F0EBE1', alignItems: 'center', justifyContent: 'center' },
   cz_arrowDisabled: { backgroundColor: '#F5F2EC' },
   cz_actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
   cz_resetBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#E5DFD3', alignItems: 'center', backgroundColor: '#fff' },
-  cz_resetText: { fontSize: 14, fontWeight: '600', color: '#8A7E72' },
+  cz_resetText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#4F5048' },
   cz_doneBtn: { flex: 2, backgroundColor: '#5C7340', padding: 14, borderRadius: 10, alignItems: 'center' },
-  cz_doneText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  cz_doneText: { fontSize: 14, fontFamily: 'DMSans-Bold', color: '#fff' },
   cz_rowActive: { borderColor: '#5C7340', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 10 },
   cz_grip: { gap: 3, paddingHorizontal: 6, paddingVertical: 4 },
   cz_gripBar: { width: 18, height: 2, borderRadius: 1, backgroundColor: '#C9C0B0' },
